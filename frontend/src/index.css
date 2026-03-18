@@ -1,8 +1,69 @@
-/* 1 seule ligne ! */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
 @import "tailwindcss";
-/* Classes réutilisables (optionnel) */
+
+:root {
+	--azim-ink: #0f1f2e;
+	--azim-ink-soft: #395268;
+	--azim-surface: #f6fbff;
+	--azim-panel: #ffffff;
+	--azim-accent: #0f766e;
+	--azim-accent-strong: #0d9488;
+	--azim-warm: #f59e0b;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: 'Space Grotesk', sans-serif;
+	color: var(--azim-ink);
+	background:
+		radial-gradient(circle at 10% 10%, rgba(15, 118, 110, 0.12), transparent 42%),
+		radial-gradient(circle at 90% 15%, rgba(245, 158, 11, 0.16), transparent 40%),
+		linear-gradient(180deg, #f9fcff 0%, #eef7fb 100%);
+}
+
+#root {
+	min-height: 100vh;
+}
+
+@layer utilities {
+	.scrollbar-none {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-none::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 @layer components {
-.btn { @apply px-6 py-2 rounded-lg font-medium transition-all; }
-.btn-primary { @apply bg-indigo-600 text-white hover:bg-indigo-700; }
-.form-input { @apply w-full px-4 py-2 border-2 rounded-lg; }
+	.btn {
+		@apply px-5 py-2.5 rounded-xl font-semibold transition-all duration-200;
+	}
+
+	.btn-primary {
+		@apply text-white;
+		background: linear-gradient(120deg, var(--azim-accent), var(--azim-accent-strong));
+	}
+
+	.btn-primary:hover {
+		filter: brightness(1.06);
+	}
+
+	.btn-soft {
+		@apply text-slate-800 border border-slate-200 bg-white hover:bg-slate-50;
+	}
+
+	.mono {
+		font-family: 'JetBrains Mono', monospace;
+	}
+
+	.form-input {
+		@apply w-full px-4 py-2.5 border border-slate-300 rounded-xl bg-white/90 focus:outline-none focus:ring-2;
+		--tw-ring-color: rgba(15, 118, 110, 0.35);
+	}
 }

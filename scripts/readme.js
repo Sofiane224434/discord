@@ -8,6 +8,11 @@ const WATCH_MODE = process.argv.includes('--watch');
 const CHECK_MODE = process.argv.includes('--check');
 const IGNORE = new Set(['node_modules', '.git', 'dist', 'build', 'conception', '.cache']);
 
+function readJson(filePath) {
+    const raw = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+    return JSON.parse(raw);
+}
+
 function normalizePath(filePath = '') {
     return String(filePath).replace(/\\/g, '/');
 }
@@ -50,7 +55,7 @@ function generateScripts() {
     ];
     let md = '';
     for (const { label, file } of sources) {
-        const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, file), 'utf8'));
+        const pkg = readJson(path.join(ROOT, file));
         const scripts = Object.entries(pkg.scripts || {}).filter(([k]) => k !== 'test');
         if (!scripts.length) continue;
         md += `### ${label}\n\n| Commande | Rôle |\n|----------|------|\n`;
@@ -66,9 +71,9 @@ function generateScripts() {
 // --- Génération du tableau des technologies ---
 function generateTech() {
     const v = (pkg, name) => (pkg.dependencies?.[name] || pkg.devDependencies?.[name] || '-').replace(/^\^|~/, '');
-    const be = JSON.parse(fs.readFileSync(path.join(ROOT, 'backend/package.json'), 'utf8'));
-    const fe = JSON.parse(fs.readFileSync(path.join(ROOT, 'frontend/package.json'), 'utf8'));
-    const root = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+    const be = readJson(path.join(ROOT, 'backend/package.json'));
+    const fe = readJson(path.join(ROOT, 'frontend/package.json'));
+    const root = readJson(path.join(ROOT, 'package.json'));
 
     const row = (name, ver) => `| ${name} | ${ver} |\n`;
     let md = '**Backend**\n\n| Technologie | Version |\n|-------------|----------|\n';

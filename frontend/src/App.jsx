@@ -9,25 +9,35 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import EmailPage from './pages/EmailPage.jsx';
+import DiscordCallback from './pages/DiscordCallback.jsx';
+import PublicServers from './pages/PublicServers.jsx';
+import Commands from './pages/Commands.jsx';
+import Help from './pages/Help.jsx';
+import Status from './pages/Status.jsx';
 function App() {
   const { loading } = useAuth();
   if (loading) return <div><p>Chargement...</p></div>;
   return (
     <Routes>
-    {/* Routes AVEC Header + Footer */}
+      {/* Routes AVEC Header + Footer */}
       <Route element={<MainLayout />}>
-      <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={
-        <PrivateRoute><Dashboard /></PrivateRoute>
+        <Route path="/" element={<Home />} />
+        <Route path="/public-servers" element={<PublicServers />} />
+        <Route path="/commands" element={<Commands />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/status" element={<Status />} />
+        <Route path="/dashboard" element={
+          <PrivateRoute><Dashboard /></PrivateRoute>
         } />
-      <Route path="/email" element={
-        <PrivateRoute><EmailPage /></PrivateRoute>
+        <Route path="/email" element={
+          <PrivateRoute><EmailPage /></PrivateRoute>
         } />
       </Route>
       {/* Routes SANS Header (plein écran) */}
       <Route element={<AuthLayout />}>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/oauth/discord/callback" element={<DiscordCallback />} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

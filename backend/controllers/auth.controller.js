@@ -2,7 +2,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 // Génère un token JWT
-const generateToken = (user) => {
+export const generateToken = (user) => {
     return jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET,

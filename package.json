@@ -1,4 +1,4 @@
-﻿{
+{
   "devDependencies": {
     "concurrently": "^9.2.1",
     "deepl-node": "^1.24.0",

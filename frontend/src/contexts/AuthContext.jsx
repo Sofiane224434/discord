@@ -26,6 +26,14 @@ export function AuthProvider({ children }) {
         setUser(data.user);
         return data;
     };
+
+    const setSession = (sessionUser, token) => {
+        if (token) {
+            localStorage.setItem('token', token);
+        }
+        setUser(sessionUser || null);
+    };
+
     const register = async (userData) => {
         const data = await authService.register(userData);
         localStorage.setItem('token', data.token);
@@ -34,12 +42,13 @@ export function AuthProvider({ children }) {
     };
     const logout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('discord_guilds');
         setUser(null);
     };
     return (
         <AuthContext.Provider value={{
             user, loading, isAuthenticated: !!user,
-            login, register, logout
+            login, register, logout, setSession
         }}>
             {children}
         </AuthContext.Provider>

@@ -115,19 +115,25 @@ starter-kit/
 │   │   └── db.js
 │   ├── controllers/
 │   │   ├── auth.controller.js
+│   │   ├── bot.controller.js
+│   │   ├── discord.controller.js
 │   │   └── email.controller.js
 │   ├── middlewares/
 │   │   └── auth.middleware.js
 │   ├── models/
+│   │   ├── dashboard.model.js
 │   │   └── user.model.js
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── routes/
 │   │   ├── auth.routes.js
+│   │   ├── bot.routes.js
+│   │   ├── discord.routes.js
 │   │   └── email.routes.js
 │   ├── schema.sql
 │   ├── server.js
 │   └── services/
+│       ├── bot.service.js
 │       └── email.service.js
 ├── frontend/
 │   ├── eslint.config.js
@@ -204,7 +210,52 @@ BREVO_SENDER_EMAIL=votre@email.com
 BREVO_SENDER_NAME=Votre Nom
 
 DEEPL_API_KEY=votre-cle:fx
+
+# Dashboard bot Discord
+BOT_API_URL=http://localhost:3005
+BOT_API_TOKEN=votre_token_partage_dashboard
+BOT_API_TIMEOUT_MS=5000
 ```
+
+---
+
+## 🤖 Dashboard Bot Discord
+
+Le starter inclut un pont backend pour afficher des donnees de ton bot sur la page dashboard.
+
+- Endpoint frontend consomme: `GET /api/bot/overview` (route protegee JWT)
+- Le backend proxy vers: `GET BOT_API_URL/dashboard/overview`
+- Header optionnel envoye au bot: `x-dashboard-token: BOT_API_TOKEN`
+
+### Contrat attendu de l API bot
+
+```json
+{
+  "bot": {
+    "name": "Azim",
+    "status": "online",
+    "uptime": 86400,
+    "latency": 42,
+    "connectedAt": "2026-03-17T12:00:00.000Z"
+  },
+  "stats": {
+    "guildCount": 12,
+    "memberCount": 5432,
+    "commandCount24h": 380,
+    "activeUsers24h": 210
+  },
+  "guilds": [
+    {
+      "id": "123",
+      "name": "Mon serveur",
+      "memberCount": 420,
+      "iconUrl": "https://..."
+    }
+  ]
+}
+```
+
+Si `BOT_API_URL` est absent, le dashboard reste fonctionnel et affiche des valeurs par defaut (mode non configure).
 
 ---
 
@@ -306,6 +357,12 @@ await sendCustomEmail({
 |---------|----------|------------|------|
 | POST | `/api/email/send` | 🔒 JWT | `{ to, subject, message, name? }` |
 
+### Bot Dashboard
+
+| Méthode | Endpoint | Protection | Body |
+|---------|----------|------------|------|
+| GET | `/api/bot/overview` | 🔒 JWT | — |
+
 ---
 
 ## 🛠️ Scripts Disponibles
@@ -315,7 +372,7 @@ await sendCustomEmail({
 
 | Commande | Rôle |
 |----------|------|
-| `npm run prepare` | `node -e "try{require('child_process').execSync('git config c…` |
+| `npm run sync` | `sync-studio` |
 | `npm run dev` | `concurrently "npm run dev:backend" "npm run dev:frontend" "n…` |
 | `npm run dev:backend` | `cd backend && npm run dev` |
 | `npm run dev:frontend` | `cd frontend && npm run dev` |

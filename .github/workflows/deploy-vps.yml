@@ -7,23 +7,35 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST || vars.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER || vars.VPS_USER }}
+      VPS_PORT: ${{ secrets.VPS_PORT || vars.VPS_PORT || '22' }}
+      VPS_APP_DIR: ${{ vars.VPS_APP_DIR || '/home/debian/apps/discord' }}
+      VPS_COMPOSE_PROJECT: ${{ vars.VPS_COMPOSE_PROJECT || 'discord-dashboard' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate deployment settings
+        run: |
+          test -n "$VPS_HOST" || { echo "::error::Missing VPS_HOST. Define it in repository Variables or Secrets."; exit 1; }
+          test -n "$VPS_USER" || { echo "::error::Missing VPS_USER. Define it in repository Variables or Secrets."; exit 1; }
+          test -n "${{ secrets.VPS_SSH_KEY }}" || { echo "::error::Missing VPS_SSH_KEY secret."; exit 1; }
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
+          host: ${{ env.VPS_HOST }}
+          username: ${{ env.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
+          port: ${{ env.VPS_PORT }}
           script: |
             set -e
 
-            APP_DIR=${{ vars.VPS_APP_DIR }}
-            PROJECT=${{ vars.VPS_COMPOSE_PROJECT }}
+            APP_DIR=${{ env.VPS_APP_DIR }}
+            PROJECT=${{ env.VPS_COMPOSE_PROJECT }}
             REPO_URL=https://github.com/${{ github.repository }}.git
             FETCH_URL=https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
 

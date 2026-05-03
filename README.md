@@ -267,6 +267,18 @@ Le starter inclut un pont backend pour afficher des donnees de ton bot sur la pa
 }
 ```
 
+## 🚚 Deploiement VPS
+
+Le workflow GitHub Actions [deploy-vps.yml](.github/workflows/deploy-vps.yml) deploye automatiquement sur chaque push sur `main`.
+
+Configuration GitHub requise:
+
+- Secrets: `VPS_SSH_KEY`
+- Variables ou secrets: `VPS_HOST`, `VPS_USER`, `VPS_PORT`
+- Variables optionnelles: `VPS_APP_DIR` (defaut `/home/debian/apps/discord`), `VPS_COMPOSE_PROJECT` (defaut `discord-dashboard`)
+
+Si `VPS_HOST` ou `VPS_USER` manquent, le workflow echoue maintenant avec un message explicite avant l'etape SSH.
+
 Si `BOT_API_URL` est absent, le dashboard reste fonctionnel et affiche des valeurs par defaut (mode non configure).
 
 ---

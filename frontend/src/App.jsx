@@ -14,6 +14,7 @@ import PublicServers from './pages/PublicServers.jsx';
 import Commands from './pages/Commands.jsx';
 import Help from './pages/Help.jsx';
 import Status from './pages/Status.jsx';
+import CommandHistory from './pages/CommandHistory.jsx';
 function App() {
   const { loading } = useAuth();
   if (loading) return <div><p>Chargement...</p></div>;
@@ -31,6 +32,9 @@ function App() {
         } />
         <Route path="/email" element={
           <PrivateRoute><EmailPage /></PrivateRoute>
+        } />
+        <Route path="/command-history" element={
+          <PrivateRoute><CommandHistory /></PrivateRoute>
         } />
       </Route>
       {/* Routes SANS Header (plein écran) */}

@@ -140,6 +140,12 @@
     "top_commands_empty": "No command has been executed yet.",
     "errors_breakdown_title": "Error breakdown",
     "errors_breakdown_empty": "No typed errors available.",
+    "guild_history_title": "Snapshot history",
+    "guild_history_empty": "No history available for this server.",
+    "back": "← Back to dashboard",
+    "oauth_test_btn": "Test Discord OAuth",
+    "oauth_testing": "Testing...",
+    "oauth_missing_client_id": "Client ID missing",
     "status": {
       "online": "Bot online",
       "offline": "Bot offline"
@@ -151,6 +157,28 @@
       "active_users_24h": "Active users 24h",
       "errors_total": "Errors (total)"
     }
+  },
+  "status": {
+    "loading": "Loading service status...",
+    "fetch_error": "Unable to fetch service health.",
+    "checked_at": "Checked at",
+    "oauth_label": "Discord OAuth",
+    "oauth_desc": "Discord OAuth credentials configuration (client_id / client_secret).",
+    "badge": {
+      "ok": "Operational",
+      "degraded": "Degraded",
+      "error": "Error",
+      "unconfigured": "Not configured"
+    }
+  },
+  "command_history": {
+    "title": "Command History",
+    "total": "{{count}} total uses",
+    "unique": "{{count}} distinct commands",
+    "search_placeholder": "Search a command...",
+    "sort_count": "Sort by usage",
+    "sort_name": "Sort by name",
+    "no_results": "No command found."
   },
   "oauth": {
     "title": "Discord sign in",

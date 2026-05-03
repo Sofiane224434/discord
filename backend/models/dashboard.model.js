@@ -121,6 +121,24 @@ const DashboardModel = {
             generatedAt: snapshot.created_at,
         };
     },
+
+    async getGuildHistory(guildId, limit = 20) {
+        const rows = await query(
+            `SELECT
+        bg.guild_name,
+        bg.member_count AS memberCount,
+        bs.bot_status AS botStatus,
+        bs.command_count_24h AS commandCount24h,
+        bs.created_at AS createdAt
+      FROM bot_guilds bg
+      JOIN bot_snapshots bs ON bg.snapshot_id = bs.id
+      WHERE bg.guild_id = ?
+      ORDER BY bs.id DESC
+      LIMIT ?`,
+            [String(guildId), Number(limit)]
+        );
+        return rows;
+    },
 };
 
 export default DashboardModel;

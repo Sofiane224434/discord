@@ -48,7 +48,8 @@ export const emailService = {
 }
 
 export const botService = {
-    getOverview: () => fetchAPI('/bot/overview')
+    getOverview: () => fetchAPI('/bot/overview'),
+    getGuildStats: (id) => fetchAPI(`/bot/guilds/${encodeURIComponent(id)}/stats`),
 }
 
 export const discordService = {
@@ -57,5 +58,9 @@ export const discordService = {
     exchangeCode: (code, redirectUri) => fetchAPI('/discord/exchange', {
         method: 'POST',
         body: JSON.stringify({ code, redirectUri })
-    })
+    }),
+}
+
+export const systemService = {
+    getHealth: () => fetchAPI('/system/health'),
 }

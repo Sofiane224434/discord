@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
-import { botService } from '../services/api.js';
+import { botService, discordService, systemService } from '../services/api.js';
 
 function hasManageGuildPermission(permissions) {
     try {
@@ -28,6 +29,11 @@ function Dashboard() {
     const [overview, setOverview] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [oauthStatus, setOauthStatus] = useState(null);
+    const [oauthTesting, setOauthTesting] = useState(false);
+    const [expandedGuild, setExpandedGuild] = useState(null);
+    const [guildHistory, setGuildHistory] = useState({});
+    const [guildHistoryLoading, setGuildHistoryLoading] = useState({});
 
     useEffect(() => {
         let mounted = true;
@@ -56,6 +62,36 @@ function Dashboard() {
             mounted = false;
         };
     }, [t]);
+
+    const testOAuth = useCallback(async () => {
+        setOauthTesting(true);
+        try {
+            const health = await systemService.getHealth();
+            setOauthStatus(health?.services?.oauth || { status: 'error' });
+        } catch {
+            setOauthStatus({ status: 'error' });
+        } finally {
+            setOauthTesting(false);
+        }
+    }, []);
+
+    const toggleGuildHistory = useCallback(async (guildId) => {
+        if (expandedGuild === guildId) {
+            setExpandedGuild(null);
+            return;
+        }
+        setExpandedGuild(guildId);
+        if (guildHistory[guildId]) return;
+        setGuildHistoryLoading(prev => ({ ...prev, [guildId]: true }));
+        try {
+            const data = await botService.getGuildStats(guildId);
+            setGuildHistory(prev => ({ ...prev, [guildId]: data.history || [] }));
+        } catch {
+            setGuildHistory(prev => ({ ...prev, [guildId]: [] }));
+        } finally {
+            setGuildHistoryLoading(prev => ({ ...prev, [guildId]: false }));
+        }
+    }, [expandedGuild, guildHistory]);
 
     const stats = overview?.stats || {};
     const bot = overview?.bot || {};
@@ -156,6 +192,29 @@ function Dashboard() {
                             </span>
                         ) : null}
                     </div>
+
+                    <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-slate-100">
+                        <button
+                            onClick={testOAuth}
+                            disabled={oauthTesting}
+                            className="btn btn-soft text-sm disabled:opacity-60"
+                        >
+                            {oauthTesting ? t('dashboard.oauth_testing') : t('dashboard.oauth_test_btn')}
+                        </button>
+                        <Link to="/command-history" className="btn btn-soft text-sm">
+                            {t('command_history.title')}
+                        </Link>
+                        {oauthStatus && (
+                            <span className={`text-xs px-2 py-1 rounded-full border font-medium ${
+                                oauthStatus.status === 'ok'
+                                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                                    : 'text-amber-700 bg-amber-50 border-amber-200'
+                            }`}>
+                                OAuth: {t(`status.badge.${oauthStatus.status}`, oauthStatus.status)}
+                                {oauthStatus.status !== 'ok' && !oauthStatus.clientId ? ` — ${t('dashboard.oauth_missing_client_id')}` : ''}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 {loading ? (
@@ -186,20 +245,52 @@ function Dashboard() {
                             ) : (
                                 <div className="grid md:grid-cols-2 gap-3">
                                     {guilds.map((guild) => (
-                                        <div key={guild.id || guild.name} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3">
-                                            {guild.iconUrl ? (
-                                                <img src={guild.iconUrl} alt={guild.name} className="w-10 h-10 rounded-full object-cover" />
-                                            ) : (
-                                                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-bold">
-                                                    {(guild.name || '?').slice(0, 1).toUpperCase()}
+                                        <div key={guild.id || guild.name} className="rounded-xl border border-slate-100 overflow-hidden">
+                                            <button
+                                                onClick={() => toggleGuildHistory(guild.id)}
+                                                className="flex items-center gap-3 w-full p-3 text-left hover:bg-slate-50 transition-colors"
+                                            >
+                                                {guild.iconUrl ? (
+                                                    <img src={guild.iconUrl} alt={guild.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-sm font-bold shrink-0">
+                                                        {(guild.name || '?').slice(0, 1).toUpperCase()}
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-slate-800 font-medium truncate">{guild.name}</p>
+                                                    <p className="text-slate-500 text-sm">
+                                                        {t('dashboard.guild_members', { count: guild.memberCount || 0 })}
+                                                    </p>
+                                                </div>
+                                                <span className="text-slate-400 text-xs shrink-0">
+                                                    {expandedGuild === guild.id ? '▲' : '▼'}
+                                                </span>
+                                            </button>
+                                            {expandedGuild === guild.id && (
+                                                <div className="border-t border-slate-100 bg-slate-50/40 px-3 py-3">
+                                                    {guildHistoryLoading[guild.id] && (
+                                                        <p className="text-slate-400 text-sm">{t('dashboard.loading')}</p>
+                                                    )}
+                                                    {!guildHistoryLoading[guild.id] && (!guildHistory[guild.id] || guildHistory[guild.id].length === 0) && (
+                                                        <p className="text-slate-400 text-sm">{t('dashboard.guild_history_empty')}</p>
+                                                    )}
+                                                    {!guildHistoryLoading[guild.id] && guildHistory[guild.id]?.length > 0 && (
+                                                        <div className="space-y-1.5">
+                                                            <p className="text-xs text-slate-500 font-medium mb-2">{t('dashboard.guild_history_title')}</p>
+                                                            {guildHistory[guild.id].slice(0, 5).map((snap, i) => (
+                                                                <div key={i} className="flex items-center justify-between text-xs text-slate-600 rounded px-2 py-1 bg-white border border-slate-100">
+                                                                    <span>{new Date(snap.createdAt).toLocaleString()}</span>
+                                                                    <span>{t('dashboard.guild_members', { count: snap.memberCount || 0 })}</span>
+                                                                    <span className={`px-1.5 py-0.5 rounded-full ${snap.botStatus === 'online' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                                                        {snap.botStatus}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
-                                            <div>
-                                                <p className="text-slate-800 font-medium">{guild.name}</p>
-                                                <p className="text-slate-500 text-sm">
-                                                    {t('dashboard.guild_members', { count: guild.memberCount || 0 })}
-                                                </p>
-                                            </div>
                                         </div>
                                     ))}
                                 </div>

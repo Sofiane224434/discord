@@ -140,6 +140,12 @@
     "top_commands_empty": "Aucune commande executee pour le moment.",
     "errors_breakdown_title": "Repartition des erreurs",
     "errors_breakdown_empty": "Aucune erreur typee disponible.",
+    "guild_history_title": "Historique des snapshots",
+    "guild_history_empty": "Aucun historique disponible pour ce serveur.",
+    "back": "← Retour au dashboard",
+    "oauth_test_btn": "Tester OAuth Discord",
+    "oauth_testing": "Test en cours...",
+    "oauth_missing_client_id": "Client ID manquant",
     "status": {
       "online": "Bot en ligne",
       "offline": "Bot hors ligne"
@@ -151,6 +157,28 @@
       "active_users_24h": "Utilisateurs actifs 24h",
       "errors_total": "Erreurs (total)"
     }
+  },
+  "status": {
+    "loading": "Chargement des statuts...",
+    "fetch_error": "Impossible de recuperer l'etat des services.",
+    "checked_at": "Verifie a",
+    "oauth_label": "OAuth Discord",
+    "oauth_desc": "Configuration des identifiants OAuth Discord (client_id / client_secret).",
+    "badge": {
+      "ok": "Operationnel",
+      "degraded": "Degrade",
+      "error": "Erreur",
+      "unconfigured": "Non configure"
+    }
+  },
+  "command_history": {
+    "title": "Historique des commandes",
+    "total": "{{count}} utilisations au total",
+    "unique": "{{count}} commandes distinctes",
+    "search_placeholder": "Rechercher une commande...",
+    "sort_count": "Trier par usage",
+    "sort_name": "Trier par nom",
+    "no_results": "Aucune commande trouvee."
   },
   "oauth": {
     "title": "Connexion Discord",

@@ -109,6 +109,12 @@ const DashboardModel = {
                 memberCount: Number(snapshot.member_count || 0),
                 commandCount24h: Number(snapshot.command_count_24h || 0),
                 activeUsers24h: Number(snapshot.active_users_24h || 0),
+                errorTotal: 0,
+            },
+            observability: {
+                errorTotal: 0,
+                errorByType: {},
+                topCommands: [],
             },
             guilds,
             source: snapshot.source || 'cache',

@@ -8,6 +8,8 @@ function Commands() {
 
     const commands = [
         { name: '/help', description: t('categories.commands.list.help') },
+        { name: '/version', description: t('categories.commands.list.version') },
+        { name: '/versions', description: t('categories.commands.list.versions') },
         { name: '/setup', description: t('categories.commands.list.setup') },
         { name: '/logs', description: t('categories.commands.list.logs') },
         { name: '/moderation', description: t('categories.commands.list.moderation') },

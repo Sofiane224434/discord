@@ -11,6 +11,15 @@ function getBaseUrl() {
 function normalizeOverview(payload = {}) {
     const stats = payload.stats || {};
     const bot = payload.bot || {};
+    const observability = payload.observability || {};
+    const commandByName = (observability.commandByName && typeof observability.commandByName === 'object')
+        ? observability.commandByName
+        : {};
+    const topCommands = Object.entries(commandByName)
+        .map(([name, count]) => ({ name, count: Number(count || 0) }))
+        .filter((item) => item.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
 
     return {
         bot: {
@@ -25,6 +34,14 @@ function normalizeOverview(payload = {}) {
             memberCount: Number(stats.memberCount || 0),
             commandCount24h: Number(stats.commandCount24h || 0),
             activeUsers24h: Number(stats.activeUsers24h || 0),
+            errorTotal: Number(stats.errorTotal || observability.errorTotal || 0),
+        },
+        observability: {
+            errorTotal: Number(observability.errorTotal || 0),
+            errorByType: (observability.errorByType && typeof observability.errorByType === 'object')
+                ? observability.errorByType
+                : {},
+            topCommands,
         },
         guilds: Array.isArray(payload.guilds)
             ? payload.guilds.map((guild) => ({
@@ -69,6 +86,12 @@ function getDefaultOverview() {
             memberCount: 0,
             commandCount24h: 0,
             activeUsers24h: 0,
+            errorTotal: 0,
+        },
+        observability: {
+            errorTotal: 0,
+            errorByType: {},
+            topCommands: [],
         },
         guilds: [],
     };

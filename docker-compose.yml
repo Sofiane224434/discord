@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8
+    container_name: discord-dashboard-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: azim_dashboard
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    container_name: discord-dashboard-api
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+      BOT_API_URL: http://host.docker.internal:3005
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: discord-dashboard-app
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3011:80"
+
+volumes:
+  dbdata:

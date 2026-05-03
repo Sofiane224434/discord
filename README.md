@@ -242,7 +242,19 @@ Le starter inclut un pont backend pour afficher des donnees de ton bot sur la pa
     "guildCount": 12,
     "memberCount": 5432,
     "commandCount24h": 380,
-    "activeUsers24h": 210
+    "activeUsers24h": 210,
+    "errorTotal": 7
+  },
+  "observability": {
+    "errorTotal": 7,
+    "errorByType": {
+      "command_execution": 5,
+      "unhandled_rejection": 2
+    },
+    "topCommands": [
+      { "name": "help", "count": 120 },
+      { "name": "youtube", "count": 80 }
+    ]
   },
   "guilds": [
     {

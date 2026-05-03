@@ -59,9 +59,18 @@ function Dashboard() {
 
     const stats = overview?.stats || {};
     const bot = overview?.bot || {};
+    const observability = overview?.observability || {};
+    const topCommands = Array.isArray(observability.topCommands) ? observability.topCommands : [];
     const guilds = useMemo(() => overview?.guilds || [], [overview]);
     const dataSource = overview?.source || 'defaults';
     const generatedAt = overview?.generatedAt;
+    const isStale = Boolean(overview?.isStale);
+    const errorByType = observability.errorByType && typeof observability.errorByType === 'object'
+        ? Object.entries(observability.errorByType)
+            .map(([type, count]) => ({ type, count: Number(count || 0) }))
+            .filter((row) => row.count > 0)
+            .sort((a, b) => b.count - a.count)
+        : [];
 
     const botIsOnline = bot.status === 'online';
     const discordGuilds = useMemo(() => {
@@ -103,6 +112,11 @@ function Dashboard() {
             label: t('dashboard.cards.active_users_24h'),
             value: stats.activeUsers24h || 0,
         },
+        {
+            key: 'errorTotal',
+            label: t('dashboard.cards.errors_total'),
+            value: stats.errorTotal || 0,
+        },
     ];
 
     return (
@@ -132,6 +146,9 @@ function Dashboard() {
                         </span>
                         <span className={`text-xs px-2 py-1 rounded-full border ${dataSource === 'api' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
                             {dataSource === 'api' ? t('dashboard.source_api') : t('dashboard.source_cache')}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded-full border ${isStale ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'}`}>
+                            {isStale ? t('dashboard.data_stale') : t('dashboard.data_fresh')}
                         </span>
                         {generatedAt ? (
                             <span className="text-xs text-slate-500 mono">
@@ -183,6 +200,38 @@ function Dashboard() {
                                                     {t('dashboard.guild_members', { count: guild.memberCount || 0 })}
                                                 </p>
                                             </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+
+                        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                            <h2 className="text-xl font-semibold text-slate-800 mb-4">{t('dashboard.top_commands_title')}</h2>
+                            {topCommands.length === 0 ? (
+                                <p className="text-slate-500">{t('dashboard.top_commands_empty')}</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {topCommands.map((row, index) => (
+                                        <div key={row.name} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+                                            <span className="text-slate-700 font-medium">{index + 1}. /{row.name}</span>
+                                            <span className="text-slate-500 text-sm">{row.count.toLocaleString()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+
+                        <section className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                            <h2 className="text-xl font-semibold text-slate-800 mb-4">{t('dashboard.errors_breakdown_title')}</h2>
+                            {errorByType.length === 0 ? (
+                                <p className="text-slate-500">{t('dashboard.errors_breakdown_empty')}</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {errorByType.map((row) => (
+                                        <div key={row.type} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+                                            <span className="text-slate-700 font-medium">{row.type}</span>
+                                            <span className="text-slate-500 text-sm">{row.count.toLocaleString()}</span>
                                         </div>
                                     ))}
                                 </div>

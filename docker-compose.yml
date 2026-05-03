@@ -24,10 +24,10 @@ services:
       - ./backend/.env
     environment:
       DB_HOST: db
-      BOT_API_URL: http://nexus-discord-manager:8080
+      BOT_API_URL: http://azim-bot:3005
     networks:
       - default
-      - nexus_bridge
+      - azim_bot_bridge
     depends_on:
       db:
         condition: service_healthy
@@ -47,6 +47,6 @@ volumes:
   dbdata:
 
 networks:
-  nexus_bridge:
+  azim_bot_bridge:
     external: true
-    name: nexus-v_default
+    name: azim-bot_default

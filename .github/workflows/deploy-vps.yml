@@ -8,9 +8,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      VPS_HOST: ${{ secrets.VPS_HOST || vars.VPS_HOST }}
-      VPS_USER: ${{ secrets.VPS_USER || vars.VPS_USER }}
-      VPS_PORT: ${{ secrets.VPS_PORT || vars.VPS_PORT || '22' }}
+      VPS_HOST: ${{ secrets.VPS_HOST || vars.VPS_HOST || '51.210.244.46' }}
+      VPS_USER: ${{ secrets.VPS_USER || vars.VPS_USER || 'debian' }}
+      VPS_PORT: ${{ secrets.VPS_PORT || vars.VPS_PORT || '2222' }}
       VPS_APP_DIR: ${{ vars.VPS_APP_DIR || '/home/debian/apps/discord' }}
       VPS_COMPOSE_PROJECT: ${{ vars.VPS_COMPOSE_PROJECT || 'discord-dashboard' }}
 
@@ -20,8 +20,6 @@ jobs:
 
       - name: Validate deployment settings
         run: |
-          test -n "$VPS_HOST" || { echo "::error::Missing VPS_HOST. Define it in repository Variables or Secrets."; exit 1; }
-          test -n "$VPS_USER" || { echo "::error::Missing VPS_USER. Define it in repository Variables or Secrets."; exit 1; }
           test -n "${{ secrets.VPS_SSH_KEY }}" || { echo "::error::Missing VPS_SSH_KEY secret."; exit 1; }
 
       - name: Deploy to VPS

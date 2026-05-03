@@ -5,3 +5,6 @@
 /node_modules
 /scripts/.translate-cache.json
 /conception/aides/contexte-projets-prive.md
+
+/agent
+/conception/aides

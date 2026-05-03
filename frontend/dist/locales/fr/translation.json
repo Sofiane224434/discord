@@ -43,6 +43,8 @@
       "cta_dashboard": "Gerer mes commandes",
       "list": {
         "help": "Affiche la liste des commandes disponibles.",
+        "version": "Affiche la version actuelle du bot.",
+        "versions": "Affiche l'historique des versions du bot.",
         "setup": "Configure rapidement les modules du bot.",
         "logs": "Consulte les journaux de moderation.",
         "moderation": "Applique les actions de moderation en direct."
@@ -131,7 +133,13 @@
     "guild_members": "{{count}} membres",
     "source_api": "Source: API live",
     "source_cache": "Source: cache SQL",
+    "data_fresh": "Donnees fraiches",
+    "data_stale": "Donnees stale (cache)",
     "updated_at": "Derniere mise a jour",
+    "top_commands_title": "Top commandes (global)",
+    "top_commands_empty": "Aucune commande executee pour le moment.",
+    "errors_breakdown_title": "Repartition des erreurs",
+    "errors_breakdown_empty": "Aucune erreur typee disponible.",
     "status": {
       "online": "Bot en ligne",
       "offline": "Bot hors ligne"
@@ -140,7 +148,8 @@
       "guilds": "Serveurs",
       "members": "Membres",
       "commands_24h": "Commandes 24h",
-      "active_users_24h": "Utilisateurs actifs 24h"
+      "active_users_24h": "Utilisateurs actifs 24h",
+      "errors_total": "Erreurs (total)"
     }
   },
   "oauth": {

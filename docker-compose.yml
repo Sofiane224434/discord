@@ -24,9 +24,10 @@ services:
       - ./backend/.env
     environment:
       DB_HOST: db
-      BOT_API_URL: http://host.docker.internal:3005
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      BOT_API_URL: http://nexus-discord-manager:8080
+    networks:
+      - default
+      - nexus_bridge
     depends_on:
       db:
         condition: service_healthy
@@ -44,3 +45,8 @@ services:
 
 volumes:
   dbdata:
+
+networks:
+  nexus_bridge:
+    external: true
+    name: nexus-v_default

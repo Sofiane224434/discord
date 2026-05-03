@@ -238,6 +238,7 @@ Le starter inclut un pont backend pour afficher des donnees de ton bot sur la pa
 - Endpoint frontend consomme: `GET /api/bot/overview` (route protegee JWT)
 - Le backend proxy vers: `GET BOT_API_URL/dashboard/overview`
 - Header optionnel envoye au bot: `x-dashboard-token: BOT_API_TOKEN`
+- En production avec la stack Nexus sur le meme hote Docker: `BOT_API_URL=http://nexus-discord-manager:8080`
 
 ### Contrat attendu de l API bot
 

@@ -7,7 +7,7 @@ import HttpBackend from 'i18next-http-backend';
 import { initReactI18next } from 'react-i18next';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
-import { AuthProvider } from './contexts/authcontext.jsx';
+import { AuthProvider } from './contexts/AuthContext.jsx';
 import './index.css';
 
 i18n

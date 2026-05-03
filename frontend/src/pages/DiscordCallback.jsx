@@ -4,6 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { discordService } from '../services/api.js';
 import { useAuth } from '../hooks/useAuth.js';
 
+function formatApiError(err, fallback) {
+    if (!err) return fallback;
+    if (err.hint) {
+        return `${err.message || fallback} - ${err.hint}`;
+    }
+    return err.message || fallback;
+}
+
 function DiscordCallback() {
     const [searchParams] = useSearchParams();
     const [error, setError] = useState('');
@@ -37,7 +45,7 @@ function DiscordCallback() {
                 navigate('/dashboard', { replace: true });
             } catch (apiError) {
                 if (mounted) {
-                    setError(apiError.message || t('oauth.error_exchange'));
+                    setError(formatApiError(apiError, t('oauth.error_exchange')));
                     setLoading(false);
                 }
             }

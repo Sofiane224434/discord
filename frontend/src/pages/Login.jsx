@@ -5,6 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from "../hooks/useAuth.js";
 import { discordService } from '../services/api.js';
 
+function formatApiError(err, fallback) {
+    if (!err) return fallback;
+    if (err.hint) {
+        return `${err.message || fallback} - ${err.hint}`;
+    }
+    return err.message || fallback;
+}
+
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -24,7 +32,7 @@ function Login() {
             await login(email, password);
             navigate(from, { replace: true });
         } catch (err) {
-            setError(err.message || t('errors.login_error'));
+            setError(formatApiError(err, t('errors.login_error')));
         } finally {
             setLoading(false);
         }
@@ -38,7 +46,7 @@ function Login() {
             sessionStorage.setItem('discord_oauth_redirect_uri', data.redirectUri || redirectUri);
             window.location.href = data.url;
         } catch (err) {
-            setError(err.message || t('oauth.error_exchange'));
+            setError(formatApiError(err, t('oauth.error_exchange')));
         }
     };
 

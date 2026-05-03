@@ -215,7 +215,19 @@ DEEPL_API_KEY=votre-cle:fx
 BOT_API_URL=http://localhost:3005
 BOT_API_TOKEN=votre_token_partage_dashboard
 BOT_API_TIMEOUT_MS=5000
+
+# OAuth Discord
+DISCORD_CLIENT_ID=votre_client_id_discord
+DISCORD_CLIENT_SECRET=votre_client_secret_discord
+DISCORD_REDIRECT_URI=http://localhost:5173/oauth/discord/callback
 ```
+
+Notes OAuth Discord:
+
+- `DISCORD_CLIENT_ID` et `DISCORD_CLIENT_SECRET` sont obligatoires pour `Connexion Discord`.
+- `DISCORD_REDIRECT_URI` doit correspondre exactement a l'URL de callback configuree dans le portail developpeur Discord.
+- En production pour ce projet, la callback publique attendue est `https://discord.azim404.com/oauth/discord/callback`.
+- Si la config est absente, l'API renvoie maintenant une erreur explicite avec hint exploite cote frontend.
 
 ---
 

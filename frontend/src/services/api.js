@@ -13,7 +13,12 @@ async function fetchAPI(endpoint, options = {}) {
         });
         const data = await response.json();
         if (!response.ok) {
-            throw { status: response.status, message: data.error || 'Erreur' };
+            throw {
+                status: response.status,
+                message: data.error || 'Erreur',
+                hint: data.hint,
+                details: data.details,
+            };
         }
         return data;
     } catch (error) {

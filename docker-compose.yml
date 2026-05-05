@@ -1,7 +1,6 @@
 services:
   db:
     image: mysql:8
-    container_name: discord-dashboard-db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: azim_dashboard
@@ -18,7 +17,6 @@ services:
   api:
     build:
       context: ./backend
-    container_name: discord-dashboard-api
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -36,7 +34,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: discord-dashboard-app
     restart: unless-stopped
     depends_on:
       - api

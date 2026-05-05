@@ -54,5 +54,6 @@ jobs:
             fi
 
             docker compose -p "$PROJECT" down || true
+            docker rm -f discord-dashboard-db discord-dashboard-api discord-dashboard-app 2>/dev/null || true
             docker compose -p "$PROJECT" up -d --build
             docker compose -p "$PROJECT" ps

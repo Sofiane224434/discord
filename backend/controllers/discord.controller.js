@@ -228,3 +228,28 @@ export const exchangeCode = async (req, res) => {
         });
     }
 };
+
+export const getBotInviteUrl = (req, res) => {
+    const { guild_id } = req.query || {};
+    const clientId = process.env.DISCORD_CLIENT_ID;
+
+    if (!hasValidClientId(clientId)) {
+        return res.status(500).json({
+            error: 'DISCORD_CLIENT_ID manquant',
+            hint: 'Renseigne DISCORD_CLIENT_ID dans backend/.env',
+        });
+    }
+
+    const params = new URLSearchParams({
+        client_id: clientId,
+        permissions: '268823632', // permissions minimales utiles
+        scope: 'bot applications.commands',
+    });
+
+    if (guild_id && /^\d+$/.test(String(guild_id))) {
+        params.set('guild_id', String(guild_id));
+        params.set('disable_guild_select', 'true');
+    }
+
+    return res.json({ url: `https://discord.com/oauth2/authorize?${params.toString()}` });
+};

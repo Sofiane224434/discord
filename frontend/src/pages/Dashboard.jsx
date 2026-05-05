@@ -34,6 +34,7 @@ function Dashboard() {
     const [expandedGuild, setExpandedGuild] = useState(null);
     const [guildHistory, setGuildHistory] = useState({});
     const [guildHistoryLoading, setGuildHistoryLoading] = useState({});
+    const [inviteLoading, setInviteLoading] = useState(null);
 
     useEffect(() => {
         let mounted = true;
@@ -72,6 +73,18 @@ function Dashboard() {
             setOauthStatus({ status: 'error' });
         } finally {
             setOauthTesting(false);
+        }
+    }, []);
+
+    const handleAddBot = useCallback(async (guildId) => {
+        setInviteLoading(guildId);
+        try {
+            const data = await discordService.getBotInviteUrl(guildId);
+            window.open(data.url, '_blank', 'noopener,noreferrer');
+        } catch {
+            // silencieux — le serveur est peut-être indisponible
+        } finally {
+            setInviteLoading(null);
         }
     }, []);
 
@@ -341,9 +354,20 @@ function Dashboard() {
                                             <div key={guild.id} className="rounded-xl border border-slate-100 p-3 bg-slate-50/40">
                                                 <p className="text-slate-800 font-medium">{guild.name}</p>
                                                 <p className="text-slate-500 text-sm">ID: {guild.id}</p>
-                                                <span className={`inline-flex mt-2 text-xs px-2 py-1 rounded-full border ${isConnected ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
-                                                    {isConnected ? t('dashboard.discord_server_connected') : t('dashboard.discord_server_not_connected')}
-                                                </span>
+                                                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                    <span className={`inline-flex text-xs px-2 py-1 rounded-full border ${isConnected ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                                                        {isConnected ? t('dashboard.discord_server_connected') : t('dashboard.discord_server_not_connected')}
+                                                    </span>
+                                                    {!isConnected && (
+                                                        <button
+                                                            onClick={() => handleAddBot(guild.id)}
+                                                            disabled={inviteLoading === guild.id}
+                                                            className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60"
+                                                        >
+                                                            {inviteLoading === guild.id ? '...' : t('dashboard.add_bot_btn')}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     })}

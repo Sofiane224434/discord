@@ -59,6 +59,8 @@ export const discordService = {
         method: 'POST',
         body: JSON.stringify({ code, redirectUri })
     }),
+    getBotInviteUrl: (guildId) =>
+        fetchAPI(`/discord/bot-invite${guildId ? `?guild_id=${encodeURIComponent(guildId)}` : ''}`),
 }
 
 export const systemService = {

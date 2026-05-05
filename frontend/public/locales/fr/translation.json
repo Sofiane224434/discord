@@ -130,6 +130,7 @@
     "discord_servers_empty": "Connecte-toi avec Discord pour voir tes serveurs gerables.",
     "discord_server_connected": "Bot present sur ce serveur",
     "discord_server_not_connected": "Bot absent de ce serveur",
+    "add_bot_btn": "Ajouter Azim",
     "guild_members": "{{count}} membres",
     "source_api": "Source: API live",
     "source_cache": "Source: cache SQL",

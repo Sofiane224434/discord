@@ -8,3 +8,11 @@
 
 /agent
 /conception/aides
+# Private context and secrets
+.env.local
+.env.*.local
+agent/
+shared-context/
+project-context.md
+*contexte*prive*.md
+conception/contexte-projets-prive.md

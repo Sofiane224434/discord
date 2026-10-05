@@ -2,33 +2,42 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
-import { botService } from '../services/api.js';
+import { systemService } from '../services/api.js';
 
 function Home() {
     const { isAuthenticated } = useAuth();
-    const [overview, setOverview] = useState(null);
+    const [health, setHealth] = useState(null);
     const [apiChecked, setApiChecked] = useState(false);
 
     useEffect(() => {
         let active = true;
-        botService.getOverview().then((data) => {
+        systemService.getHealth().then((data) => {
             if (active) {
-                setOverview(data);
+                setHealth(data);
                 setApiChecked(true);
             }
         }).catch(() => {
             if (active) {
-                setOverview(null);
+                setHealth(null);
                 setApiChecked(true);
             }
         });
         return () => { active = false; };
     }, []);
 
-    const stats = overview?.stats || {};
-    const bot = overview?.bot || {};
-    const formatStat = (value) => overview ? Number(value || 0).toLocaleString() : '—';
-    const topCommands = (overview?.observability?.topCommands || []).slice(0, 4);
+    const services = health?.services || {};
+    const botApiStatus = services.botApi?.status || 'unconfigured';
+    const serviceLabel = (status) => ({
+        ok: 'OPÉRATIONNEL',
+        degraded: 'DÉGRADÉ',
+        error: 'INDISPONIBLE',
+        unconfigured: 'À CONFIGURER',
+    }[status] || 'EN ATTENTE');
+    const serviceCards = [
+        { label: 'API du bot', status: services.botApi?.status },
+        { label: 'Base de données', status: services.db?.status },
+        { label: 'Connexion Discord', status: services.oauth?.status },
+    ];
     const features = [
         { title: 'Intelligence artificielle', text: 'Un assistant conversationnel par serveur, avec langue et consignes ajustables.', commands: '/ask · /config ia_langue' },
         { title: 'Accueil & communauté', text: 'Messages de bienvenue, règles par rôle et parcours d’arrivée personnalisés.', commands: '/welcome' },
@@ -54,8 +63,8 @@ function Home() {
                         <Link to="/modules" className="btn btn-soft">Explorer les modules</Link>
                     </div>
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                        <span className={`site-live-indicator ${bot.status === 'online' ? '' : 'site-signal-muted'}`} />
-                        <span>{bot.status === 'online' ? 'API du bot opérationnelle' : apiChecked ? 'API du bot indisponible' : 'Vérification de l’API du bot'}</span>
+                        <span className={`site-live-indicator ${botApiStatus === 'ok' ? '' : 'site-signal-muted'}`} />
+                        <span>{botApiStatus === 'ok' ? 'API du bot opérationnelle' : apiChecked ? 'État des services actualisé' : 'Vérification des services'}</span>
                         <span className="text-slate-600">·</span>
                         <Link to="/status" className="site-link">État des services</Link>
                     </div>
@@ -63,28 +72,29 @@ function Home() {
                 <div className="home-control-preview site-panel site-panel-glow">
                     <div className="home-preview-head">
                         <span className="font-semibold text-slate-100">Centre de contrôle</span>
-                        <span className="home-preview-service"><span className={`site-live-indicator ${bot.status === 'online' ? '' : 'site-signal-muted'}`} />{bot.status === 'online' ? 'EN LIGNE' : apiChecked ? 'HORS LIGNE' : 'CONNECTIVITÉ'}</span>
+                        <span className="home-preview-service"><span className={`site-live-indicator ${botApiStatus === 'ok' ? '' : 'site-signal-muted'}`} />{health ? serviceLabel(health.status) : apiChecked ? 'INDISPONIBLE' : 'CONTRÔLE…'}</span>
                     </div>
                     <div className="home-preview-stat-grid">
-                        <div className="home-preview-stat"><span>Serveurs actifs</span><strong>{formatStat(stats.guildCount)}</strong></div>
-                        <div className="home-preview-stat"><span>Membres couverts</span><strong>{formatStat(stats.memberCount)}</strong></div>
-                        <div className="home-preview-stat"><span>Commandes · 24 h</span><strong>{formatStat(stats.commandCount24h)}</strong></div>
+                        {serviceCards.map((service) => (
+                            <div className="home-preview-stat" key={service.label}>
+                                <span>{service.label}</span>
+                                <strong className="home-health-value">{health ? serviceLabel(service.status) : '—'}</strong>
+                            </div>
+                        ))}
                     </div>
                     <div className="flex items-center justify-between border-b border-[#1b3b59] pb-2 pt-1 text-xs">
-                        <span className="font-semibold text-slate-200">Commandes populaires</span>
-                        <Link to="/command-history" className="site-link">Analytics →</Link>
+                        <span className="font-semibold text-slate-200">Surveillance</span>
+                        <Link to="/status" className="site-link">Détails →</Link>
                     </div>
-                    {topCommands.length ? topCommands.map((command) => (
-                        <div className="home-preview-row" key={command.name}>
-                            <span className="home-preview-service"><span className="text-cyan-400">●</span>/{command.name}</span>
-                            <span className="font-mono text-slate-400">{Number(command.count || 0).toLocaleString()}</span>
+                    {serviceCards.map((service) => (
+                        <div className="home-preview-row" key={service.label}>
+                            <span className="home-preview-service"><span className={`site-live-indicator ${service.status === 'ok' ? '' : 'site-signal-muted'}`} />{service.label}</span>
+                            <span className="font-mono text-slate-400">{health ? serviceLabel(service.status) : apiChecked ? 'INJOIGNABLE' : '…'}</span>
                         </div>
-                    )) : (
-                        <div className="home-preview-row"><span className="site-muted">{overview ? 'Aucune commande récente à afficher.' : apiChecked ? 'Les statistiques seront visibles après connexion à l’API.' : 'Chargement des données du bot…'}</span><span className="text-slate-500">—</span></div>
-                    )}
+                    ))}
                     <div className="mt-3 flex items-center justify-between border-t border-[#1b3b59] pt-3 text-xs">
-                        <span className="text-slate-400">Latence Gateway</span>
-                        <span className="font-mono text-amber-300">{overview ? `${Number(bot.latency || 0)} ms` : '—'}</span>
+                        <span className="text-slate-400">Dernière vérification</span>
+                        <span className="font-mono text-amber-300">{health?.timestamp ? new Date(health.timestamp).toLocaleTimeString() : '—'}</span>
                     </div>
                 </div>
             </section>

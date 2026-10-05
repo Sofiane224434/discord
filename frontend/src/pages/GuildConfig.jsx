@@ -80,6 +80,8 @@ function GuildConfig() {
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [newKey, setNewKey] = useState('');
+    const [islamCode, setIslamCode] = useState('');
+    const [activatingIslam, setActivatingIslam] = useState(false);
 
     const refresh = useCallback(async () => {
         const data = await adminService.getGuildConfig(guildId);
@@ -115,7 +117,7 @@ function GuildConfig() {
         setError('');
         setNotice('');
         try {
-            const result = await adminService.updateGuildConfig(guildId, {
+            await adminService.updateGuildConfig(guildId, {
                 ai: { systemPrompt: form.ai.systemPrompt, language: form.ai.language, triggerName: form.ai.triggerName },
                 logs: form.logs,
                 welcome: form.welcome,
@@ -123,16 +125,33 @@ function GuildConfig() {
                 youtube: form.youtube,
                 tiktok: form.tiktok,
                 rank: form.rank,
-                features: form.features,
             });
             await refresh();
-            setNotice(result.commandSync === false
-                ? 'Réglages enregistrés, mais les commandes Islam n’ont pas pu être synchronisées avec Discord.'
-                : 'Configuration enregistrée.');
+            setNotice('Configuration enregistrée.');
         } catch (apiError) {
             setError(apiError.hint || apiError.message || 'Impossible d’enregistrer la configuration.');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const activateIslam = async () => {
+        setActivatingIslam(true);
+        setError('');
+        setNotice('');
+        try {
+            const result = await adminService.activateIslamMode(guildId, islamCode);
+            await refresh();
+            setIslamCode('');
+            setNotice(result.commandSync === false
+                ? 'Mode activé. Les commandes sont enregistrées, mais Discord n’a pas encore confirmé leur synchronisation.'
+                : result.alreadyEnabled
+                    ? 'Le mode Islam est déjà activé sur ce serveur.'
+                    : 'Mode Islam activé. /coran et /quiz sont disponibles sur ce serveur.');
+        } catch (apiError) {
+            setError(apiError.message || 'Impossible de vérifier ce code. Réessayez.');
+        } finally {
+            setActivatingIslam(false);
         }
     };
 
@@ -389,13 +408,35 @@ function GuildConfig() {
                     </div>
                 </section>
 
-                <section className="pb-4">
-                    <h2 className="mb-2 text-xl font-bold text-slate-900">Commandes du mode Islam</h2>
-                    <p className="mb-4 text-sm text-slate-600">Affiche ou retire les commandes conditionnelles sur ce serveur.</p>
-                    <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                        <input type="checkbox" checked={form.features.islamModeEnabled} onChange={(event) => update('features', 'islamModeEnabled', event.target.checked)} className="size-4 accent-teal-700" />
-                        Activer /coran et /quiz
-                    </label>
+                <section className="border-t border-slate-200 pt-6 pb-4">
+                    <h2 className="mb-2 text-xl font-bold text-slate-900">Commandes supplémentaires</h2>
+                    {form.features.islamModeEnabled ? (
+                        <div className="islam-enabled-panel">
+                            <p className="islam-enabled-status"><span aria-hidden="true">●</span> Mode Islam activé sur ce serveur</p>
+                            <p className="mt-2 text-sm text-slate-600">Les commandes suivantes sont disponibles ici :</p>
+                            <div className="module-command-list mt-3">
+                                <code>/coran</code>
+                                <code>/quiz</code>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="islam-code-form">
+                            <p className="mb-4 text-sm text-slate-600">Entrez le code d’accès pour activer /coran et /quiz sur ce serveur.</p>
+                            <div className="flex flex-wrap gap-3">
+                                <TextInput
+                                    value={islamCode}
+                                    onChange={(event) => setIslamCode(event.target.value)}
+                                    placeholder="Code d’accès"
+                                    autoComplete="off"
+                                    maxLength={64}
+                                    aria-label="Code d’accès du mode Islam"
+                                />
+                                <button type="button" onClick={activateIslam} disabled={activatingIslam || !islamCode.trim()} className="btn btn-primary disabled:opacity-60">
+                                    {activatingIslam ? 'Vérification…' : 'Vérifier le code'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 <div className="flex justify-end border-t border-slate-200 pt-5">

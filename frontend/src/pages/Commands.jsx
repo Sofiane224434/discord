@@ -21,7 +21,7 @@ const commandGroups = [
         commands: [
             ['/config', 'Règle la langue IA, le prompt, les journaux et le profil du bot.'],
             ['/welcome', 'Configure les messages d’arrivée et les règles par rôle.'],
-            ['/code', 'Active ou désactive les commandes conditionnelles du mode Islam.'],
+            ['/code', 'Active un module avec son code d’accès.'],
             ['/permissions', 'Consulte les accès requis pour les commandes.'],
         ],
     },
@@ -40,13 +40,6 @@ const commandGroups = [
             ['/tiktok', 'Configure et contrôle les alertes TikTok Live.'],
             ['/pubtimer', 'Suit le temps consacré aux publications de l’équipe.'],
             ['/rappelbump', 'Envoie le rappel de bump du serveur.'],
-        ],
-    },
-    {
-        name: 'Coran & quiz · activation par serveur',
-        commands: [
-            ['/coran', 'Consulte les sourates et versets disponibles.'],
-            ['/quiz', 'Lance un quiz et consulte les classements.'],
         ],
     },
 ];

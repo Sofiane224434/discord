@@ -50,7 +50,7 @@ function Home() {
         { title: 'Niveaux', text: 'Les membres gagnent de l’XP en discutant. Ajoutez des rôles à certains niveaux.', commands: '/rank' },
         { title: 'Modération', text: 'Nettoyez un salon ou mettez en pause les réponses de l’IA.', commands: '/purge · /zzzz' },
         { title: 'Alertes', text: 'Annoncez les nouvelles vidéos YouTube et les débuts de live TikTok.', commands: '/youtube · /tiktok' },
-        { title: 'Coran & quiz', text: 'Consultez les sourates et lancez un quiz quand le mode est activé.', commands: '/coran · /quiz' },
+        { title: 'Informations & rappels', text: 'Consultez les informations du serveur et programmez un rappel.', commands: '/serverinfo · /remindme' },
     ];
 
     return (
@@ -79,7 +79,7 @@ function Home() {
                 <article className="home-dashboard-metric home-metric-commands">
                     <span className="home-metric-mark" aria-hidden="true" />
                     <span>Commandes</span>
-                    <strong>21</strong>
+                    <strong>19</strong>
                 </article>
             </section>
 

@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { botService, discordService } from '../services/api.js';
 
-function hasManageGuildPermission(permissions) {
+function hasManageGuildPermission(guild) {
+    if (guild?.owner) return true;
     try {
-        return (BigInt(permissions || '0') & (0x20n | 0x8n)) !== 0n;
+        return (BigInt(guild?.permissions || '0') & (0x20n | 0x8n)) !== 0n;
     } catch {
         return false;
     }
@@ -55,7 +56,7 @@ function Dashboard() {
     const discordGuilds = useMemo(() => {
         try {
             const parsed = JSON.parse(localStorage.getItem('discord_guilds') || '[]');
-            return Array.isArray(parsed) ? parsed.filter((guild) => hasManageGuildPermission(guild.permissions)) : [];
+            return Array.isArray(parsed) ? parsed : [];
         } catch {
             return [];
         }
@@ -65,6 +66,7 @@ function Dashboard() {
     const stats = overview?.stats || {};
     const observability = overview?.observability || {};
     const connectedGuildIds = useMemo(() => new Set((overview?.guilds || []).map((guild) => String(guild.id))), [overview]);
+    const guildListIsFresh = overview?.source === 'api' && !overview?.isStale;
     const topCommands = (observability.topCommands || []).slice(0, 6);
     const recentErrors = Array.isArray(observability.recentErrors) ? observability.recentErrors.slice(0, 5) : [];
     const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
@@ -97,6 +99,8 @@ function Dashboard() {
                         <p className="site-muted">Choisissez un serveur pour voir son état ou modifier ses réglages.</p>
                 </div>
                 <div className="ops-heading-actions">
+                    <Link to="/login" className="ops-action-button">Actualiser Discord</Link>
+                    <button type="button" onClick={() => window.location.reload()} className="ops-action-button">Actualiser</button>
                     <span className={`ops-status-chip ${bot.status === 'online' ? 'ops-status-online' : 'ops-status-offline'}`}>
                         <span /> {bot.status === 'online' ? 'Bot actif' : loading ? 'Connexion…' : 'Bot indisponible'}
                     </span>
@@ -120,14 +124,20 @@ function Dashboard() {
                 <section className="ops-panel site-panel">
                     <div className="ops-panel-heading">
                         <div><p className="site-eyebrow">VOS SERVEURS</p><h2>Serveurs à gérer</h2></div>
-                        <span className="ops-count">{discordGuilds.length} gérable(s)</span>
+                        <span className="ops-count">{discordGuilds.length} serveur(s) Discord</span>
                     </div>
                     {discordGuilds.length ? (
                         <>
-                            <div className="ops-table-head"><span>Serveur</span><span>État</span><span>Membres</span><span>Actions rapides</span></div>
+                            <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Actions rapides</span></div>
                             <div className="ops-server-list">
                                 {discordGuilds.map((guild) => {
                                     const connected = connectedGuildIds.has(String(guild.id));
+                                    const canManage = hasManageGuildPermission(guild);
+                                    const statusLabel = connected
+                                        ? guildListIsFresh ? 'Installé' : 'Vu récemment · à vérifier'
+                                        : guildListIsFresh
+                                            ? 'Non ajouté'
+                                            : 'À vérifier';
                                     const icon = getDiscordGuildIcon(guild);
                                     const serverStats = (overview?.guilds || []).find((item) => String(item.id) === String(guild.id));
                                     return (
@@ -136,13 +146,21 @@ function Dashboard() {
                                                 {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
                                                 <span>{guild.name}</span>
                                             </div>
-                                            <span className={`ops-server-status ${connected ? 'is-connected' : 'is-disconnected'}`}><i />{connected ? 'En ligne' : 'Non ajouté'}</span>
+                                            <span className={`ops-server-status ${connected ? 'is-connected' : guildListIsFresh ? 'is-disconnected' : 'is-unknown'}`}><i />{statusLabel}</span>
                                             <span className="ops-server-members">{serverStats ? Number(serverStats.memberCount || 0).toLocaleString() : '—'}</span>
                                             <div className="ops-server-actions">
-                                                {connected ? (
-                                                    <Link to={`/dashboard/servers/${guild.id}/config`} className="ops-action-button">Configurer <span aria-hidden="true">↗</span></Link>
-                                                ) : (
+                                                {connected && !guildListIsFresh ? (
+                                                    <span className="ops-action-hint">Actualisez l’état</span>
+                                                ) : connected ? (
+                                                    canManage ? (
+                                                        <Link to={`/dashboard/servers/${guild.id}/config`} className="ops-action-button">Configurer <span aria-hidden="true">↗</span></Link>
+                                                    ) : <span className="ops-action-hint">Gérer le serveur requis</span>
+                                                ) : guildListIsFresh && canManage ? (
                                                     <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="ops-action-button">{inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter le bot'}</button>
+                                                ) : !canManage ? (
+                                                    <span className="ops-action-hint">Gérer le serveur requis</span>
+                                                ) : (
+                                                    <span className="ops-action-hint">Actualisez pour vérifier</span>
                                                 )}
                                             </div>
                                         </article>
@@ -152,8 +170,8 @@ function Dashboard() {
                         </>
                     ) : (
                         <div className="ops-empty-state">
-                            <p>Aucun serveur administrable trouvé dans cette session Discord.</p>
-                            <Link to="/login" className="site-link">Reconnecter Discord et charger mes serveurs →</Link>
+                                            <p>Aucun serveur Discord n’est chargé dans cette session.</p>
+                                            <Link to="/login" className="site-link">Reconnecter Discord pour actualiser la liste →</Link>
                         </div>
                     )}
                     <div className="ops-server-footer">

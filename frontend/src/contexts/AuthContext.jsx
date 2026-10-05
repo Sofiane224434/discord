@@ -1,7 +1,7 @@
 // contexts/AuthContext.jsx
-import { createContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { authService } from '../services/api.js';
-export const AuthContext = createContext(null);
+import { AuthContext } from './auth-context.js';
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
     }, []);
     const login = async (email, password) => {
         const data = await authService.login(email, password);
+        localStorage.removeItem('discord_guilds');
         localStorage.setItem('token', data.token);
         setUser(data.user);
         return data;
@@ -36,6 +37,7 @@ export function AuthProvider({ children }) {
 
     const register = async (userData) => {
         const data = await authService.register(userData);
+        localStorage.removeItem('discord_guilds');
         localStorage.setItem('token', data.token);
         setUser(data.user);
         return data;

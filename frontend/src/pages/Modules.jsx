@@ -39,9 +39,9 @@ const modules = [
     },
     {
         number: '06',
-        title: 'Contenu & ressources',
-        description: 'Consultez le Coran, lancez un quiz et affichez les informations du serveur ou d’un membre.',
-        commands: ['/coran', '/quiz', '/serverinfo'],
+        title: 'Informations & rappels',
+        description: 'Consultez les informations du serveur ou d’un membre, et programmez vos rappels.',
+        commands: ['/serverinfo', '/userinfo', '/remindme'],
         tone: 'violet',
     },
 ];

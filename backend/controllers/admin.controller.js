@@ -17,6 +17,12 @@ function getBotHeaders() {
     return headers;
 }
 
+function mapBotErrorStatus(status) {
+    if ([400, 404, 409, 422].includes(status)) return status;
+    if (status === 401 || status === 503) return 503;
+    return 502;
+}
+
 /**
  * Vérifie que l'utilisateur a bien la permission Manage Guild sur le serveur demandé.
  * Les guilds Discord de l'utilisateur sont stockées dans son profil après OAuth.
@@ -61,11 +67,17 @@ export const getGuildConfig = async (req, res) => {
             signal: controller.signal,
         });
 
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(`Bot API responded with status ${response.status}`);
+            const status = mapBotErrorStatus(response.status);
+            return res.status(status).json({
+                error: response.status === 401
+                    ? 'L’accès du panel au bot est refusé. Vérifiez le jeton partagé.'
+                    : data.error || 'Impossible de récupérer la configuration du serveur',
+                hint: data.hint,
+                details: process.env.NODE_ENV === 'production' ? undefined : data.details,
+            });
         }
-
-        const data = await response.json();
         res.json(data);
     } catch (error) {
         res.status(502).json({
@@ -106,15 +118,65 @@ export const updateGuildConfig = async (req, res) => {
             signal: controller.signal,
         });
 
+        const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(`Bot API responded with status ${response.status}`);
+            const status = mapBotErrorStatus(response.status);
+            return res.status(status).json({
+                error: response.status === 401
+                    ? 'L’accès du panel au bot est refusé. Vérifiez le jeton partagé.'
+                    : data.error || 'Impossible de mettre à jour la configuration',
+                hint: data.hint,
+                details: process.env.NODE_ENV === 'production' ? undefined : data.details,
+            });
         }
-
-        const data = await response.json();
         res.json(data);
     } catch (error) {
         res.status(502).json({
             error: 'Impossible de mettre a jour la config',
+            details: process.env.NODE_ENV === 'production' ? undefined : error.message,
+        });
+    } finally {
+        clearTimeout(timeout);
+    }
+};
+
+export const activateIslamMode = async (req, res) => {
+    const { guildId } = req.params;
+    if (!guildId) return res.status(400).json({ error: 'Guild ID requis' });
+
+    const userGuilds = req.user?.discord_guild_ids || [];
+    if (!hasManageGuildPermission(userGuilds, guildId)) {
+        return res.status(403).json({
+            error: 'Permission insuffisante',
+            hint: 'Vous devez avoir la permission « Gérer le serveur » sur ce serveur Discord.',
+        });
+    }
+
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) return res.status(503).json({ error: 'Bot API non configurée' });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), BOT_TIMEOUT_MS);
+    try {
+        const response = await fetch(`${baseUrl}/guild/${encodeURIComponent(guildId)}/islam-code`, {
+            method: 'POST',
+            headers: getBotHeaders(),
+            body: JSON.stringify({ code: req.body?.code }),
+            signal: controller.signal,
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const status = [400, 404, 503].includes(response.status) ? response.status : 502;
+            return res.status(status).json({
+                error: data.error || 'Impossible d’activer le mode Islam',
+                hint: data.hint,
+                details: process.env.NODE_ENV === 'production' ? undefined : data.details,
+            });
+        }
+        return res.json(data);
+    } catch (error) {
+        return res.status(502).json({
+            error: 'Le bot ne répond pas. Réessayez dans quelques instants.',
             details: process.env.NODE_ENV === 'production' ? undefined : error.message,
         });
     } finally {

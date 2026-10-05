@@ -122,24 +122,36 @@ async function fetchDiscordToken(code, config) {
 }
 
 async function fetchDiscordUser(accessToken) {
-    const [userRes, guildsRes] = await Promise.all([
-        fetch(`${DISCORD_API_BASE}/users/@me`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-        }),
-        fetch(`${DISCORD_API_BASE}/users/@me/guilds`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-        }),
+    const headers = { Authorization: `Bearer ${accessToken}` };
+    const [userRes, firstGuildsRes] = await Promise.all([
+        fetch(`${DISCORD_API_BASE}/users/@me`, { headers }),
+        fetch(`${DISCORD_API_BASE}/users/@me/guilds?limit=200`, { headers }),
     ]);
 
     if (!userRes.ok) {
         throw new Error('Impossible de recuperer le profil Discord');
     }
 
-    if (!guildsRes.ok) {
+    if (!firstGuildsRes.ok) {
         throw new Error('Impossible de recuperer les serveurs Discord');
     }
 
-    const [user, guilds] = await Promise.all([userRes.json(), guildsRes.json()]);
+    const [user, firstGuildPage] = await Promise.all([userRes.json(), firstGuildsRes.json()]);
+    const guilds = Array.isArray(firstGuildPage) ? [...firstGuildPage] : [];
+    let after = guilds.at(-1)?.id;
+
+    for (let page = 1; guilds.length && guilds.length % 200 === 0 && after && page < 10; page += 1) {
+        const response = await fetch(`${DISCORD_API_BASE}/users/@me/guilds?limit=200&after=${encodeURIComponent(after)}`, { headers });
+        if (!response.ok) throw new Error('Impossible de recuperer tous les serveurs Discord');
+        const nextPage = await response.json();
+        if (!Array.isArray(nextPage) || nextPage.length === 0) break;
+
+        const nextAfter = nextPage[nextPage.length - 1]?.id;
+        if (!nextAfter || String(nextAfter) === String(after)) break;
+        guilds.push(...nextPage);
+        after = nextAfter;
+    }
+
     return { user, guilds };
 }
 
@@ -162,6 +174,10 @@ function hasManageGuildPermission(permissions) {
     } catch {
         return false;
     }
+}
+
+function isGuildManager(guild) {
+    return Boolean(guild?.owner) || hasManageGuildPermission(guild?.permissions);
 }
 
 export const exchangeCode = async (req, res) => {
@@ -203,10 +219,9 @@ export const exchangeCode = async (req, res) => {
             };
         }
 
-        const manageableGuilds = Array.isArray(guilds)
-            ? guilds.filter((guild) => hasManageGuildPermission(guild.permissions))
-            : [];
-        const token = generateToken(localUser, manageableGuilds.map((guild) => String(guild.id)));
+        const allGuilds = Array.isArray(guilds) ? guilds : [];
+        const manageableGuildIds = allGuilds.filter(isGuildManager).map((guild) => String(guild.id));
+        const token = generateToken(localUser, manageableGuildIds);
 
         return res.json({
             token,
@@ -219,7 +234,7 @@ export const exchangeCode = async (req, res) => {
                     ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=128`
                     : null,
             },
-            guilds: manageableGuilds,
+            guilds: allGuilds,
         });
     } catch (error) {
         return res.status(502).json({

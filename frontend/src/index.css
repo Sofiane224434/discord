@@ -1183,6 +1183,8 @@ body {
 .ops-server-status.is-connected i { background: #57d7a9; box-shadow: 0 0 7px rgba(87, 215, 169, 0.6); }
 .ops-server-status.is-disconnected { color: #ac956e; }
 .ops-server-status.is-connected { color: #8ee4c3; }
+.ops-server-status.is-unknown { color: #c2cde0; }
+.ops-server-status.is-unknown i { background: #9baac0; }
 
 .ops-server-members {
 	color: #b6c7d7;
@@ -1190,6 +1192,13 @@ body {
 }
 
 .ops-server-actions { justify-self: end; }
+
+.ops-action-hint {
+	max-width: 145px;
+	color: #b7c6d7;
+	font-size: 10px;
+	text-align: right;
+}
 
 .ops-action-button {
 	display: inline-flex;
@@ -1363,6 +1372,29 @@ body {
 	font-size: 11px;
 	font-weight: 600;
 }
+
+.islam-code-form,
+.islam-enabled-panel {
+	max-width: 720px;
+	padding: 16px;
+	border: 1px solid #285373;
+	border-radius: 4px;
+	background: rgba(13, 31, 51, 0.72);
+}
+
+.islam-code-form .form-input { max-width: 280px; }
+
+.islam-enabled-status {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	color: #91e7c5;
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.islam-enabled-status span { color: #58d9a9; font-size: 11px; }
 
 .faq-list {
 	border-top: 1px solid #1c3d5a;

@@ -11,16 +11,21 @@ async function fetchAPI(endpoint, options = {}) {
             ...options,
             headers
         });
-        const data = await response.json();
+        const contentType = response.headers.get('content-type') || '';
+        const data = contentType.includes('application/json')
+            ? await response.json().catch(() => null)
+            : null;
         if (!response.ok) {
             throw {
                 status: response.status,
-                message: data.error || 'Erreur',
-                hint: data.hint,
-                details: data.details,
+                message: data?.error || (response.status === 502
+                    ? 'Le serveur ne répond pas pour le moment (502). Réessayez dans quelques instants.'
+                    : `Erreur du serveur (${response.status}).`),
+                hint: data?.hint,
+                details: data?.details,
             };
         }
-        return data;
+        return data || {};
     } catch (error) {
         if (!error.status) {
             throw { status: 0, message: 'Serveur inaccessible' };

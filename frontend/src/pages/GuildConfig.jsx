@@ -3,7 +3,14 @@ import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
 
 const EMPTY_CONFIG = {
-    ai: { systemPrompt: '', language: '', triggerName: 'azim', keysCount: 0, keysPreviews: [] },
+    ai: {
+        systemPrompt: '',
+        language: '',
+        triggerName: 'azim',
+        triggerNames: ['azim'],
+        keysCount: 0,
+        keysPreviews: [],
+    },
     logs: { channelId: '', restartAnnouncementEnabled: false },
     welcome: {
         enabled: false,
@@ -21,20 +28,57 @@ const EMPTY_CONFIG = {
     features: { islamModeEnabled: false },
     channels: [],
     roles: [],
+    commands: [],
 };
 
 function mergeConfig(data) {
+    const aiData = data?.ai || {};
+    const rawTriggers = Array.isArray(aiData.triggerNames) && aiData.triggerNames.length > 0
+        ? aiData.triggerNames
+        : [aiData.triggerName || 'azim'];
+    const triggerNames = rawTriggers.map((t) => String(t || '').trim().toLowerCase()).filter(Boolean);
+    if (triggerNames.length === 0) triggerNames.push('azim');
+
+    const welcomeData = data?.welcome || {};
+    const normalizedRules = (welcomeData.rules || []).map((rule) => {
+        const rawRoleIds = Array.isArray(rule.roleIds) && rule.roleIds.length > 0
+            ? rule.roleIds
+            : (rule.roleId ? [rule.roleId] : []);
+        return {
+            condition: rule.condition || 'has_role',
+            matchType: rule.matchType || 'all',
+            roleIds: rawRoleIds.filter(Boolean),
+            roleId: rawRoleIds[0] || '',
+            channelId: rule.channelId || '',
+            message: rule.message || '',
+            dmMessage: rule.dmMessage || '',
+        };
+    });
+
     return {
         ...EMPTY_CONFIG,
         ...data,
-        ai: { ...EMPTY_CONFIG.ai, ...data.ai },
-        logs: { ...EMPTY_CONFIG.logs, ...data.logs },
-        welcome: { ...EMPTY_CONFIG.welcome, ...data.welcome },
-        profile: { ...EMPTY_CONFIG.profile, ...data.profile },
-        youtube: { ...EMPTY_CONFIG.youtube, ...data.youtube },
-        tiktok: { ...EMPTY_CONFIG.tiktok, ...data.tiktok },
-        rank: { ...EMPTY_CONFIG.rank, ...data.rank },
-        features: { ...EMPTY_CONFIG.features, ...data.features },
+        ai: {
+            ...EMPTY_CONFIG.ai,
+            ...aiData,
+            triggerName: triggerNames[0] || 'azim',
+            triggerNames,
+            keysPreviews: Array.isArray(aiData.keysPreviews) ? aiData.keysPreviews : [],
+        },
+        logs: { ...EMPTY_CONFIG.logs, ...data?.logs },
+        welcome: {
+            ...EMPTY_CONFIG.welcome,
+            ...welcomeData,
+            rules: normalizedRules,
+        },
+        profile: { ...EMPTY_CONFIG.profile, ...data?.profile },
+        youtube: { ...EMPTY_CONFIG.youtube, ...data?.youtube },
+        tiktok: { ...EMPTY_CONFIG.tiktok, ...data?.tiktok },
+        rank: { ...EMPTY_CONFIG.rank, ...data?.rank },
+        features: { ...EMPTY_CONFIG.features, ...data?.features },
+        channels: Array.isArray(data?.channels) ? data.channels : [],
+        roles: Array.isArray(data?.roles) ? data.roles : [],
+        commands: Array.isArray(data?.commands) ? data.commands : [],
     };
 }
 
@@ -49,10 +93,10 @@ function getGuildName(guildId) {
 
 function Field({ label, children, hint }) {
     return (
-        <label className="grid gap-1.5 text-sm font-medium text-slate-800">
+        <label className="grid gap-1.5 text-sm font-medium text-slate-200">
             <span>{label}</span>
             {children}
-            {hint ? <span className="text-xs font-normal text-slate-500">{hint}</span> : null}
+            {hint ? <span className="text-xs font-normal text-slate-400">{hint}</span> : null}
         </label>
     );
 }
@@ -75,13 +119,16 @@ function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
 function GuildConfig() {
     const { guildId } = useParams();
     const [form, setForm] = useState(EMPTY_CONFIG);
+    const [activeTab, setActiveTab] = useState('ai');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [notice, setNotice] = useState('');
     const [newKey, setNewKey] = useState('');
+    const [newTrigger, setNewTrigger] = useState('');
     const [islamCode, setIslamCode] = useState('');
     const [activatingIslam, setActivatingIslam] = useState(false);
+    const [commandSearch, setCommandSearch] = useState('');
 
     const refresh = useCallback(async () => {
         const data = await adminService.getGuildConfig(guildId);
@@ -111,23 +158,69 @@ function GuildConfig() {
         }));
     };
 
+    const addTriggerName = () => {
+        const clean = newTrigger.trim().toLowerCase();
+        if (!clean || clean.length < 2 || clean.length > 32) return;
+        if (form.ai.triggerNames.includes(clean)) {
+            setNewTrigger('');
+            return;
+        }
+        const updated = [...form.ai.triggerNames, clean];
+        update('ai', 'triggerNames', updated);
+        update('ai', 'triggerName', updated[0]);
+        setNewTrigger('');
+    };
+
+    const removeTriggerName = (triggerToRemove) => {
+        if (form.ai.triggerNames.length <= 1) return;
+        const updated = form.ai.triggerNames.filter((t) => t !== triggerToRemove);
+        update('ai', 'triggerNames', updated);
+        update('ai', 'triggerName', updated[0] || 'azim');
+    };
+
     const save = async (event) => {
-        event.preventDefault();
+        if (event) event.preventDefault();
         setSaving(true);
         setError('');
         setNotice('');
         try {
+            const commandsPayload = form.commands.reduce((acc, cmd) => {
+                acc[cmd.name.toLowerCase()] = {
+                    enabled: cmd.enabled,
+                    allowedRoleIds: cmd.allowedRoleIds || [],
+                    deniedRoleIds: cmd.deniedRoleIds || [],
+                };
+                return acc;
+            }, {});
+
             await adminService.updateGuildConfig(guildId, {
-                ai: { systemPrompt: form.ai.systemPrompt, language: form.ai.language, triggerName: form.ai.triggerName },
+                ai: {
+                    systemPrompt: form.ai.systemPrompt,
+                    language: form.ai.language,
+                    triggerNames: form.ai.triggerNames,
+                    triggerName: form.ai.triggerNames[0] || 'azim',
+                },
                 logs: form.logs,
-                welcome: form.welcome,
+                welcome: {
+                    ...form.welcome,
+                    rules: form.welcome.rules.map((r) => ({
+                        condition: r.condition,
+                        matchType: r.matchType || 'all',
+                        roleIds: r.roleIds,
+                        roleId: r.roleIds[0] || '',
+                        channelId: r.channelId || null,
+                        message: r.message,
+                        dmMessage: r.dmMessage,
+                    })),
+                },
                 profile: { bio: form.profile.bio },
                 youtube: form.youtube,
                 tiktok: form.tiktok,
                 rank: form.rank,
+                commands: commandsPayload,
             });
             await refresh();
-            setNotice('Configuration enregistrée.');
+            setNotice('Toutes les modifications ont été enregistrées avec succès.');
         } catch (apiError) {
             setError(apiError.hint || apiError.message || 'Impossible d’enregistrer la configuration.');
         } finally {
@@ -145,8 +238,8 @@ function GuildConfig() {
             setIslamCode('');
             if (result.islamModeEnabled || result.alreadyEnabled) {
                 setNotice(result.commandSync === false
-                    ? 'Mode Islam débloqué. Les commandes sont enregistrées mais en cours de synchronisation Discord.'
-                    : 'Code secret validé : le mode Islam et ses commandes sont désormais visibles et actifs sur ce serveur.');
+                    ? 'Mode Islam débloqué. Synchronisation des commandes Discord en cours.'
+                    : 'Code secret validé : le mode Islam et ses commandes (/coran, /quiz) sont débloqués.');
             } else {
                 setNotice('Code appliqué avec succès.');
             }
@@ -198,9 +291,48 @@ function GuildConfig() {
         }
     };
 
-    const updateRule = (index, field, value) => {
+    const updateCommand = (commandName, field, value) => {
+        const updated = form.commands.map((cmd) => {
+            if (cmd.name.toLowerCase() === commandName.toLowerCase()) {
+                return { ...cmd, [field]: value };
+            }
+            return cmd;
+        });
+        setForm((prev) => ({ ...prev, commands: updated }));
+    };
+
+    const toggleCommandRole = (commandName, roleId) => {
+        const cmd = form.commands.find((c) => c.name.toLowerCase() === commandName.toLowerCase());
+        if (!cmd) return;
+        const currentRoles = cmd.allowedRoleIds || [];
+        const nextRoles = currentRoles.includes(roleId)
+            ? currentRoles.filter((id) => id !== roleId)
+            : [...currentRoles, roleId];
+        updateCommand(commandName, 'allowedRoleIds', nextRoles);
+    };
+
+    const updateRuleField = (index, field, value) => {
         const rules = [...form.welcome.rules];
         rules[index] = { ...rules[index], [field]: value };
+        update('welcome', 'rules', rules);
+    };
+
+    const addRoleToRule = (ruleIndex, roleId) => {
+        if (!roleId) return;
+        const rules = [...form.welcome.rules];
+        const currentRoleIds = rules[ruleIndex].roleIds || [];
+        if (!currentRoleIds.includes(roleId)) {
+            rules[ruleIndex].roleIds = [...currentRoleIds, roleId];
+            rules[ruleIndex].roleId = rules[ruleIndex].roleIds[0] || '';
+            update('welcome', 'rules', rules);
+        }
+    };
+
+    const removeRoleFromRule = (ruleIndex, roleId) => {
+        const rules = [...form.welcome.rules];
+        const nextRoleIds = (rules[ruleIndex].roleIds || []).filter((id) => id !== roleId);
+        rules[ruleIndex].roleIds = nextRoleIds;
+        rules[ruleIndex].roleId = nextRoleIds[0] || '';
         update('welcome', 'rules', rules);
     };
 
@@ -211,284 +343,828 @@ function GuildConfig() {
     };
 
     if (loading) {
-        return <main className="mx-auto max-w-5xl px-5 py-12 text-slate-600">Chargement de la configuration…</main>;
+        return (
+            <main className="mx-auto max-w-5xl px-5 py-16 text-center text-slate-400">
+                <div className="inline-block size-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent mb-4" />
+                <p>Chargement du panneau d'administration…</p>
+            </main>
+        );
     }
 
     const channelOptions = form.channels.map((channel) => ({ value: channel.id, label: `#${channel.name}` }));
     const roleOptions = form.roles.map((role) => ({ value: role.id, label: role.name }));
 
+    const filteredCommands = form.commands.filter((cmd) => {
+        if (!commandSearch.trim()) return true;
+        const q = commandSearch.toLowerCase().trim();
+        return cmd.name.toLowerCase().includes(q) || (cmd.description || '').toLowerCase().includes(q);
+    });
+
+    const tabs = [
+        { id: 'ai', label: 'IA & Déclencheurs', icon: '🤖' },
+        { id: 'commands', label: 'Permissions Commandes', icon: '🛡️', count: form.commands.length },
+        { id: 'welcome', label: 'Bienvenue & Rôles', icon: '👋', count: form.welcome.rules?.length || 0 },
+        { id: 'logs', label: 'Logs & Profil', icon: '📋' },
+        { id: 'social', label: 'Réseaux & Niveaux', icon: '📢' },
+        { id: 'islam', label: form.features.islamModeEnabled ? 'Mode Islam' : 'Code Secret', icon: '🔒' },
+    ];
+
     return (
-        <main className="site-page site-section-page guild-config-page max-w-5xl">
-            <div className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-5">
+        <main className="site-page site-section-page guild-config-page max-w-5xl pb-16">
+            {/* Top Bar Header */}
+            <div className="sticky top-0 z-20 mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/60 bg-[#081625]/90 py-4 backdrop-blur-md">
                 <div>
-                    <Link to="/dashboard" className="text-sm font-medium text-teal-800 hover:underline">← Console</Link>
-                    <p className="mt-5 text-xs font-bold uppercase tracking-widest text-teal-800">Administration du serveur</p>
-                    <h1 className="mt-1 text-3xl font-bold text-slate-900">{getGuildName(guildId)}</h1>
-                    <p className="mt-1 font-mono text-xs text-slate-500">{guildId}</p>
+                    <div className="flex items-center gap-2">
+                        <Link to="/dashboard" className="text-xs font-semibold text-cyan-400 hover:underline">← Console</Link>
+                        <span className="text-xs text-slate-600">/</span>
+                        <span className="site-eyebrow text-[10px]">Administration</span>
+                    </div>
+                    <h1 className="mt-1 text-2xl font-bold text-white flex items-center gap-2">
+                        {getGuildName(guildId)}
+                        <span className="rounded bg-slate-800/80 px-2 py-0.5 font-mono text-xs font-normal text-slate-400">{guildId}</span>
+                    </h1>
                 </div>
-                <button type="submit" form="guild-config" disabled={saving} className="btn btn-primary disabled:opacity-60">
-                    {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={save}
+                        disabled={saving}
+                        className="btn btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
+                    >
+                        {saving ? (
+                            <>
+                                <span className="size-3.5 animate-spin rounded-full border border-white border-t-transparent" />
+                                Enregistrement…
+                            </>
+                        ) : 'Enregistrer les modifications'}
+                    </button>
+                </div>
             </div>
 
-            {error ? <div role="alert" className="mb-5 border-l-4 border-rose-600 bg-rose-50 px-4 py-3 text-sm text-rose-800">{error}</div> : null}
-            {notice ? <div role="status" className="mb-5 border-l-4 border-emerald-600 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{notice}</div> : null}
+            {error ? <div role="alert" className="mb-6 rounded border-l-4 border-rose-500 bg-rose-950/40 p-4 text-sm text-rose-200">{error}</div> : null}
+            {notice ? <div role="status" className="mb-6 rounded border-l-4 border-emerald-500 bg-emerald-950/40 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
-            <form id="guild-config" onSubmit={save} className="space-y-8">
-                <section className="border-b border-slate-200 pb-8">
-                    <div className="mb-5">
-                        <h2 className="text-xl font-bold text-slate-900">Intelligence artificielle</h2>
-                        <p className="mt-1 text-sm text-slate-600">Réglages utilisés par /ask et les réponses automatiques.</p>
-                    </div>
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <Field label="Langue des réponses" hint="Laisser vide pour laisser l’IA choisir selon la conversation.">
-                            <TextInput maxLength={50} placeholder="Français, English, العربية…" value={form.ai.language || ''} onChange={(event) => update('ai', 'language', event.target.value)} />
-                        </Field>
-                        <Field label="Mot déclencheur" hint="Nom utilisé pour appeler l’IA dans la conversation.">
-                            <TextInput minLength={2} maxLength={32} value={form.ai.triggerName || ''} onChange={(event) => update('ai', 'triggerName', event.target.value)} />
-                        </Field>
-                        <Field label="Prompt système" hint="Instructions propres à ce serveur, maximum 6000 caractères.">
-                            <textarea className="form-input min-h-32 resize-y" maxLength={6000} value={form.ai.systemPrompt || ''} onChange={(event) => update('ai', 'systemPrompt', event.target.value)} />
-                        </Field>
-                    </div>
-                    <div className="mt-6 max-w-2xl border-t border-slate-200 pt-5">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                            <h3 className="font-semibold text-slate-900">Clés Groq</h3>
-                            <span className="text-sm text-slate-500">{form.ai.keysCount} configurée(s)</span>
-                        </div>
-                        <div className="space-y-2">
-                            {form.ai.keysPreviews.map((key) => (
-                                <div key={key.index} className="flex items-center justify-between gap-4 border-b border-slate-100 py-2 text-sm">
-                                    <span className="font-mono text-slate-700">{key.preview}</span>
-                                    <button type="button" disabled={form.ai.keysCount <= 1} onClick={() => manageKey({ removeKeyIndex: key.index })} className="text-rose-700 hover:underline disabled:opacity-40">Supprimer</button>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            <TextInput type="password" autoComplete="new-password" placeholder="gsk_…" value={newKey} onChange={(event) => setNewKey(event.target.value)} />
-                            <button type="button" disabled={!newKey.trim()} onClick={() => manageKey({ addKey: newKey.trim() })} className="btn btn-soft disabled:opacity-50">Ajouter une clé</button>
-                        </div>
-                    </div>
-                </section>
+            {/* Navigation par Onglets */}
+            <nav className="admin-tab-nav" aria-label="Sections de configuration">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`admin-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                    >
+                        <span>{tab.icon}</span>
+                        <span>{tab.label}</span>
+                        {typeof tab.count === 'number' && tab.count > 0 ? (
+                            <span className="admin-tab-badge">{tab.count}</span>
+                        ) : null}
+                    </button>
+                ))}
+            </nav>
 
-                <section className="border-b border-slate-200 pb-8">
-                    <div className="mb-5">
-                        <h2 className="text-xl font-bold text-slate-900">Bienvenue</h2>
-                        <p className="mt-1 text-sm text-slate-600">Messages par défaut et règles conditionnelles par rôle.</p>
-                    </div>
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                            <input type="checkbox" checked={form.welcome.enabled} onChange={(event) => update('welcome', 'enabled', event.target.checked)} className="size-4 accent-teal-700" />
-                            Activer les messages de bienvenue
-                        </label>
-                        <Field label="Salon de bienvenue">
-                            <SelectInput value={form.welcome.channelId} onChange={(event) => update('welcome', 'channelId', event.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
-                        </Field>
-                        <Field label="Destination">
-                            <SelectInput value={form.welcome.destination} onChange={(event) => update('welcome', 'destination', event.target.value)} options={[
-                                { value: 'both', label: 'Salon et message privé' },
-                                { value: 'channel', label: 'Salon uniquement' },
-                                { value: 'dm', label: 'Message privé uniquement' },
-                            ]} />
-                        </Field>
-                        <Field label="Déclencheur">
-                            <SelectInput value={form.welcome.trigger} onChange={(event) => update('welcome', 'trigger', event.target.value)} options={[
-                                { value: 'arrivee', label: 'À l’arrivée' },
-                                { value: 'role', label: 'Selon les rôles' },
-                            ]} />
-                        </Field>
-                        <Field label="Message public par défaut">
-                            <textarea className="form-input min-h-24 resize-y" maxLength={2000} value={form.welcome.defaultMessage || ''} onChange={(event) => update('welcome', 'defaultMessage', event.target.value)} />
-                        </Field>
-                        <Field label="Message privé par défaut">
-                            <textarea className="form-input min-h-24 resize-y" maxLength={2000} value={form.welcome.defaultDmMessage || ''} onChange={(event) => update('welcome', 'defaultDmMessage', event.target.value)} />
-                        </Field>
-                    </div>
-                    <div className="mt-6">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                            <h3 className="font-semibold text-slate-900">Règles par rôle</h3>
-                            <button type="button" onClick={() => update('welcome', 'rules', [...form.welcome.rules, { condition: 'has_role', roleId: '', channelId: '', message: '', dmMessage: '' }])} className="btn btn-soft text-sm">Ajouter une règle</button>
-                        </div>
-                        {form.welcome.rules.map((rule, index) => (
-                            <div key={`${rule.roleId}-${index}`} className="mb-3 grid gap-3 border-l-2 border-teal-700 bg-white/60 p-3 md:grid-cols-2">
-                                <Field label="Condition">
-                                    <SelectInput value={rule.condition || 'has_role'} onChange={(event) => updateRule(index, 'condition', event.target.value)} options={[
-                                        { value: 'has_role', label: 'Possède le rôle' },
-                                        { value: 'lacks_role', label: 'Ne possède pas le rôle' },
-                                    ]} />
-                                </Field>
-                                <Field label="Rôle concerné">
-                                    <SelectInput value={rule.roleId} onChange={(event) => updateRule(index, 'roleId', event.target.value)} options={roleOptions} emptyLabel="Choisir un rôle" />
-                                </Field>
-                                <Field label="Salon spécifique (facultatif)">
-                                    <SelectInput value={rule.channelId} onChange={(event) => updateRule(index, 'channelId', event.target.value)} options={channelOptions} emptyLabel="Salon par défaut" />
-                                </Field>
-                                <Field label="Message public">
-                                    <TextInput maxLength={2000} value={rule.message || ''} onChange={(event) => updateRule(index, 'message', event.target.value)} />
-                                </Field>
-                                <Field label="Message privé">
-                                    <TextInput maxLength={2000} value={rule.dmMessage || ''} onChange={(event) => updateRule(index, 'dmMessage', event.target.value)} />
-                                </Field>
-                                <div className="flex items-end justify-end">
-                                    <button type="button" onClick={() => update('welcome', 'rules', form.welcome.rules.filter((_, ruleIndex) => ruleIndex !== index))} className="text-sm font-medium text-rose-700 hover:underline">Supprimer cette règle</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                <section className="border-b border-slate-200 pb-8">
-                    <h2 className="mb-5 text-xl font-bold text-slate-900">Logs et profil du bot</h2>
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <Field label="Salon des logs">
-                            <SelectInput value={form.logs.channelId} onChange={(event) => update('logs', 'channelId', event.target.value)} options={channelOptions} emptyLabel="Aucun salon" />
-                        </Field>
-                        <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                            <input type="checkbox" checked={form.logs.restartAnnouncementEnabled} onChange={(event) => update('logs', 'restartAnnouncementEnabled', event.target.checked)} className="size-4 accent-teal-700" />
-                            Annoncer les redémarrages dans les logs
-                        </label>
-                        <Field label="Bio du bot sur ce serveur" hint="Maximum 190 caractères.">
-                            <TextInput maxLength={190} value={form.profile.bio || ''} onChange={(event) => update('profile', 'bio', event.target.value)} />
-                        </Field>
-                        <div className="grid gap-2">
-                            <Field label="Avatar local du bot" hint="URL HTTPS d’une image sur cdn.discordapp.com ou media.discordapp.net.">
-                                <TextInput type="url" placeholder="https://cdn.discordapp.com/…" value={form.profile.avatarUrl || ''} onChange={(event) => update('profile', 'avatarUrl', event.target.value)} />
-                            </Field>
-                            <div className="flex flex-wrap gap-2">
-                                <button type="button" disabled={!form.profile.avatarUrl?.trim()} onClick={() => updateAvatar(form.profile.avatarUrl.trim())} className="btn btn-soft text-sm disabled:opacity-50">Appliquer l’avatar</button>
-                                <button type="button" onClick={() => updateAvatar('')} className="btn btn-soft text-sm">Retirer l’avatar local</button>
-                                {form.profile.avatarUpdatedAt ? <span className="self-center text-xs text-slate-500">Avatar local actif</span> : null}
+            <form id="guild-config" onSubmit={save} className="space-y-6">
+                {/* 1. ONGLET IA & DÉCLENCHEURS */}
+                {activeTab === 'ai' ? (
+                    <section className="admin-card space-y-6">
+                        <div className="admin-card-header">
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Intelligence Artificielle & Déclencheurs</h2>
+                                <p className="text-sm text-slate-400">Configurez la personnalité, la langue et les mots-clés d'appel d'Azim.</p>
                             </div>
                         </div>
-                    </div>
-                </section>
 
-                <section className="border-b border-slate-200 pb-8">
-                    <h2 className="mb-5 text-xl font-bold text-slate-900">Surveillance des réseaux</h2>
-                    <div className="grid gap-8 md:grid-cols-2">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-slate-900">YouTube</h3>
-                            <Field label="Chaînes surveillées" hint="Un identifiant de chaîne UC… par ligne.">
-                                <textarea className="form-input min-h-28 resize-y font-mono text-sm" value={(form.youtube.channels || []).join('\n')} onChange={(event) => update('youtube', 'channels', event.target.value.split(/\r?\n/).map((id) => id.trim()).filter(Boolean))} />
-                            </Field>
-                            <Field label="Salon de publication">
-                                <SelectInput value={form.youtube.targetChannelId} onChange={(event) => update('youtube', 'targetChannelId', event.target.value)} options={channelOptions} emptyLabel="Aucun salon" />
+                        {/* Mots déclencheurs multiples */}
+                        <div className="rounded-lg border border-cyan-800/40 bg-slate-900/40 p-4">
+                            <Field
+                                label="Mots déclencheurs de l'IA (Multi-déclencheurs)"
+                                hint="Mots ou préfixes qui réveillent et font répondre l'IA en plus des mentions directes."
+                            >
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                    {form.ai.triggerNames.map((trig) => (
+                                        <span key={trig} className="trigger-chip">
+                                            {trig}
+                                            {form.ai.triggerNames.length > 1 ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeTriggerName(trig)}
+                                                    className="role-badge-remove text-xs"
+                                                    title={`Retirer ${trig}`}
+                                                >
+                                                    ×
+                                                </button>
+                                            ) : null}
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="mt-3 flex max-w-md items-center gap-2">
+                                    <TextInput
+                                        placeholder="Ajouter un mot déclencheur (ex: azim, az, bot)…"
+                                        value={newTrigger}
+                                        onChange={(e) => setNewTrigger(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                addTriggerName();
+                                            }
+                                        }}
+                                        maxLength={32}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addTriggerName}
+                                        disabled={!newTrigger.trim() || newTrigger.trim().length < 2}
+                                        className="btn btn-soft text-xs disabled:opacity-40"
+                                    >
+                                        + Ajouter
+                                    </button>
+                                </div>
                             </Field>
                         </div>
-                        <div className="space-y-4">
-                            <h3 className="font-semibold text-slate-900">TikTok Live</h3>
-                            <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                                <input type="checkbox" checked={form.tiktok.enabled} onChange={(event) => update('tiktok', 'enabled', event.target.checked)} className="size-4 accent-teal-700" />
-                                Activer les alertes de live
+
+                        <div className="grid gap-5 md:grid-cols-2">
+                            <Field label="Langue par défaut des réponses" hint="Ex: Français, English, العربية... (Laisser vide pour adaptation automatique)">
+                                <TextInput
+                                    maxLength={50}
+                                    placeholder="Français, English, العربية…"
+                                    value={form.ai.language || ''}
+                                    onChange={(e) => update('ai', 'language', e.target.value)}
+                                />
+                            </Field>
+                        </div>
+
+                        <Field label="Prompt système personnalisé" hint="Instructions et contexte propres à ce serveur (max 6000 caractères).">
+                            <textarea
+                                className="form-input min-h-32 resize-y font-sans text-sm"
+                                maxLength={6000}
+                                placeholder="Tu es Azim, l'assistant officiel de ce serveur Discord..."
+                                value={form.ai.systemPrompt || ''}
+                                onChange={(e) => update('ai', 'systemPrompt', e.target.value)}
+                            />
+                        </Field>
+
+                        {/* Clés Groq */}
+                        <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-4">
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3 className="font-semibold text-white">Clés API Groq du serveur</h3>
+                                <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{form.ai.keysCount} active(s)</span>
+                            </div>
+                            <div className="space-y-2">
+                                {form.ai.keysPreviews.map((key) => (
+                                    <div key={key.index} className="flex items-center justify-between rounded border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm">
+                                        <span className="font-mono text-cyan-300">{key.preview}</span>
+                                        <button
+                                            type="button"
+                                            disabled={form.ai.keysCount <= 1}
+                                            onClick={() => manageKey({ removeKeyIndex: key.index })}
+                                            className="text-xs text-rose-400 hover:underline disabled:opacity-40"
+                                        >
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <TextInput
+                                    type="password"
+                                    autoComplete="new-password"
+                                    placeholder="gsk_…"
+                                    value={newKey}
+                                    onChange={(e) => setNewKey(e.target.value)}
+                                />
+                                <button
+                                    type="button"
+                                    disabled={!newKey.trim()}
+                                    onClick={() => manageKey({ addKey: newKey.trim() })}
+                                    className="btn btn-soft text-xs disabled:opacity-50"
+                                >
+                                    Ajouter une clé
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                ) : null}
+
+                {/* 2. ONGLET PERMISSIONS DES COMMANDES */}
+                {activeTab === 'commands' ? (
+                    <section className="admin-card space-y-6">
+                        <div className="admin-card-header">
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Permissions et Accès aux Commandes</h2>
+                                <p className="text-sm text-slate-400">
+                                    Définissez précisément quelles commandes peuvent être utilisées et par quels rôles sur ce serveur.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Search Toolbar */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700/60 bg-slate-900/40 p-3">
+                            <div className="w-full max-w-sm">
+                                <TextInput
+                                    type="search"
+                                    placeholder="Rechercher une commande (/ask, /welcome, /rank…)…"
+                                    value={commandSearch}
+                                    onChange={(e) => setCommandSearch(e.target.value)}
+                                />
+                            </div>
+                            <span className="text-xs text-slate-400">{filteredCommands.length} commande(s) affichée(s)</span>
+                        </div>
+
+                        {/* Commands List */}
+                        <div className="space-y-3">
+                            {filteredCommands.map((cmd) => {
+                                const allowedRoles = cmd.allowedRoleIds || [];
+                                const isEnabled = cmd.enabled !== false;
+
+                                return (
+                                    <div
+                                        key={cmd.name}
+                                        className={`rounded-lg border p-4 transition-all ${
+                                            !isEnabled
+                                                ? 'border-rose-900/40 bg-rose-950/10 opacity-70'
+                                                : 'border-slate-700/60 bg-slate-900/50 hover:border-cyan-700/50'
+                                        }`}
+                                    >
+                                        <div className="flex flex-wrap items-start justify-between gap-4">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <code className="text-base font-bold text-cyan-300">/{cmd.name}</code>
+                                                    {cmd.isIslamic ? (
+                                                        <span className="rounded bg-emerald-950/70 border border-emerald-600/50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">Mode Islam</span>
+                                                    ) : null}
+                                                    {cmd.defaultLevel === 'admin' ? (
+                                                        <span className="rounded bg-amber-950/60 border border-amber-600/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">Admin par défaut</span>
+                                                    ) : null}
+                                                </div>
+                                                <p className="mt-1 text-xs text-slate-400">{cmd.description || 'Aucune description'}</p>
+                                            </div>
+
+                                            {/* Enable / Disable Switch */}
+                                            <div className="flex items-center gap-3">
+                                                <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-300">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isEnabled}
+                                                        onChange={(e) => updateCommand(cmd.name, 'enabled', e.target.checked)}
+                                                        className="size-4 accent-cyan-500"
+                                                    />
+                                                    {isEnabled ? 'Activée' : 'Désactivée'}
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {isEnabled ? (
+                                            <div className="mt-4 border-t border-slate-800/80 pt-3">
+                                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                                    <span className="text-xs font-semibold text-slate-300">Rôles autorisés :</span>
+                                                    <div className="max-w-xs">
+                                                        <SelectInput
+                                                            value=""
+                                                            onChange={(e) => {
+                                                                if (e.target.value) {
+                                                                    toggleCommandRole(cmd.name, e.target.value);
+                                                                    e.target.value = '';
+                                                                }
+                                                            }}
+                                                            options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
+                                                            emptyLabel="+ Ajouter un rôle autorisé…"
+                                                            className="text-xs py-1"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                    {allowedRoles.length === 0 ? (
+                                                        <span className="text-xs italic text-slate-500">
+                                                            {cmd.defaultLevel === 'admin'
+                                                                ? 'Réservée aux administrateurs du serveur (ou ajoutez des rôles pour autoriser des membres)'
+                                                                : 'Accessible à tous les membres (@everyone)'}
+                                                        </span>
+                                                    ) : (
+                                                        allowedRoles.map((roleId) => {
+                                                            const roleName = form.roles.find((r) => r.id === roleId)?.name || roleId;
+                                                            return (
+                                                                <span key={roleId} className="role-badge">
+                                                                    <span>@{roleName}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => toggleCommandRole(cmd.name, roleId)}
+                                                                        className="role-badge-remove"
+                                                                        title="Retirer ce rôle"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                </span>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                ) : null}
+
+                {/* 3. ONGLET BIENVENUE & MULTI-RÔLES */}
+                {activeTab === 'welcome' ? (
+                    <section className="admin-card space-y-6">
+                        <div className="admin-card-header">
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Messages de Bienvenue Conditionnels</h2>
+                                <p className="text-sm text-slate-400">
+                                    Personnalisez l'accueil et créez des messages sur-mesure selon des combinaisons de rôles (ex: Femme + Musulman = Selem ma soeur).
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Paramètres Généraux */}
+                        <div className="grid gap-5 md:grid-cols-2">
+                            <label className="flex items-center gap-3 text-sm font-semibold text-white">
+                                <input
+                                    type="checkbox"
+                                    checked={form.welcome.enabled}
+                                    onChange={(e) => update('welcome', 'enabled', e.target.checked)}
+                                    className="size-4 accent-cyan-500"
+                                />
+                                Activer le système de bienvenue
                             </label>
-                            <Field label="Pseudo TikTok">
-                                <TextInput placeholder="@pseudo" value={form.tiktok.username || ''} onChange={(event) => update('tiktok', 'username', event.target.value)} />
+                            <Field label="Salon de bienvenue principal">
+                                <SelectInput
+                                    value={form.welcome.channelId}
+                                    onChange={(e) => update('welcome', 'channelId', e.target.value)}
+                                    options={channelOptions}
+                                    emptyLabel="Choisir un salon"
+                                />
                             </Field>
-                            <Field label="Salon des alertes">
-                                <SelectInput value={form.tiktok.targetChannelId} onChange={(event) => update('tiktok', 'targetChannelId', event.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                            <Field label="Destination du message">
+                                <SelectInput
+                                    value={form.welcome.destination}
+                                    onChange={(e) => update('welcome', 'destination', e.target.value)}
+                                    options={[
+                                        { value: 'both', label: 'Salon public ET Message Privé (MP)' },
+                                        { value: 'channel', label: 'Salon public uniquement' },
+                                        { value: 'dm', label: 'Message Privé (MP) uniquement' },
+                                    ]}
+                                />
+                            </Field>
+                            <Field label="Déclencheur">
+                                <SelectInput
+                                    value={form.welcome.trigger}
+                                    onChange={(e) => update('welcome', 'trigger', e.target.value)}
+                                    options={[
+                                        { value: 'arrivee', label: 'Dès l’arrivée sur le serveur' },
+                                        { value: 'role', label: 'Lors de l’attribution d’un rôle' },
+                                    ]}
+                                />
                             </Field>
                         </div>
-                    </div>
-                </section>
 
-                <section className="border-b border-slate-200 pb-8">
-                    <h2 className="mb-2 text-xl font-bold text-slate-900">Niveaux et récompenses</h2>
-                    <p className="mb-5 text-sm text-slate-600">Les membres gagnent de l’XP selon l’activité du serveur.</p>
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                            <input type="checkbox" checked={form.rank.enabled} onChange={(event) => update('rank', 'enabled', event.target.checked)} className="size-4 accent-teal-700" />
-                            Activer le système de niveaux
-                        </label>
-                        <label className="flex items-center gap-3 text-sm font-medium text-slate-800">
-                            <input type="checkbox" checked={form.rank.silent} onChange={(event) => update('rank', 'silent', event.target.checked)} className="size-4 accent-teal-700" />
-                            Ne pas annoncer les montées de niveau
-                        </label>
-                        <Field label="Salon d’annonces">
-                            <SelectInput value={form.rank.announceChannelId} onChange={(event) => update('rank', 'announceChannelId', event.target.value)} options={channelOptions} emptyLabel="Salon où le membre écrit" />
-                        </Field>
-                    </div>
-                    <div className="mt-6">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                            <h3 className="font-semibold text-slate-900">Rôles de récompense</h3>
-                            <button type="button" onClick={() => update('rank', 'rewards', [...form.rank.rewards, { level: 1, roleId: '' }])} className="btn btn-soft text-sm">Ajouter un palier</button>
+                        {/* Messages par défaut */}
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Field label="Message public standard (fallback)" hint="Variables : {mention}, {username}, {serveur}, {nbmembres}">
+                                <textarea
+                                    className="form-input min-h-24 resize-y text-sm"
+                                    maxLength={2000}
+                                    value={form.welcome.defaultMessage || ''}
+                                    onChange={(e) => update('welcome', 'defaultMessage', e.target.value)}
+                                />
+                            </Field>
+                            <Field label="Message privé standard (MP)">
+                                <textarea
+                                    className="form-input min-h-24 resize-y text-sm"
+                                    maxLength={2000}
+                                    value={form.welcome.defaultDmMessage || ''}
+                                    onChange={(e) => update('welcome', 'defaultDmMessage', e.target.value)}
+                                />
+                            </Field>
                         </div>
-                        {form.rank.rewards.map((reward, index) => (
-                            <div key={`${reward.level}-${index}`} className="mb-2 grid gap-3 border-b border-slate-100 py-2 sm:grid-cols-[140px_1fr_auto]">
-                                <Field label="Niveau">
-                                    <TextInput type="number" min="1" max="200" value={reward.level} onChange={(event) => updateReward(index, 'level', Number(event.target.value))} />
-                                </Field>
-                                <Field label="Rôle attribué">
-                                    <SelectInput value={reward.roleId} onChange={(event) => updateReward(index, 'roleId', event.target.value)} options={roleOptions} emptyLabel="Choisir un rôle" />
-                                </Field>
-                                <button type="button" onClick={() => update('rank', 'rewards', form.rank.rewards.filter((_, rewardIndex) => rewardIndex !== index))} className="self-end pb-2 text-sm text-rose-700 hover:underline">Retirer</button>
-                            </div>
-                        ))}
-                    </div>
-                </section>
 
-                <section className="border-t border-slate-200 pt-6 pb-4">
-                    {form.features.islamModeEnabled ? (
-                        <div>
+                        {/* Règles Conditionnelles Multi-Rôles */}
+                        <div className="mt-8 border-t border-slate-700/60 pt-6">
                             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                                 <div>
-                                    <h2 className="text-xl font-bold text-slate-900">Mode Islam</h2>
-                                    <p className="mt-1 text-sm text-slate-600">Commandes spirituelles et quiz islamique activés pour ce serveur.</p>
+                                    <h3 className="text-base font-bold text-white">Règles Conditionnelles Multi-Rôles</h3>
+                                    <p className="text-xs text-slate-400">
+                                        Combinez plusieurs rôles pour déclencher un message spécifique (ex: Rôle Femme + Rôle Musulman).
+                                    </p>
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={disableIslamMode}
-                                    disabled={activatingIslam}
-                                    className="btn btn-soft text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-800 disabled:opacity-50"
+                                    onClick={() =>
+                                        update('welcome', 'rules', [
+                                            ...form.welcome.rules,
+                                            {
+                                                condition: 'has_role',
+                                                matchType: 'all',
+                                                roleIds: [],
+                                                channelId: '',
+                                                message: '',
+                                                dmMessage: '',
+                                            },
+                                        ])
+                                    }
+                                    className="btn btn-primary text-xs"
                                 >
-                                    {activatingIslam ? 'Désactivation…' : 'Désactiver le mode Islam'}
+                                    + Ajouter une règle
                                 </button>
                             </div>
-                            <div className="islam-enabled-panel">
-                                <p className="islam-enabled-status"><span aria-hidden="true">●</span> Mode Islam actif sur ce serveur</p>
-                                <p className="mt-3 text-sm text-slate-600">Les commandes suivantes sont disponibles pour vos membres :</p>
-                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                                    <div className="flex items-center gap-2 rounded bg-slate-50 p-2.5 text-sm text-slate-800 border border-slate-200">
-                                        <code className="font-bold text-teal-800">/coran</code>
-                                        <span className="text-xs text-slate-600">Lecture et écoute (sourate, verset, aléatoire)</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 rounded bg-slate-50 p-2.5 text-sm text-slate-800 border border-slate-200">
-                                        <code className="font-bold text-teal-800">/quiz</code>
-                                        <span className="text-xs text-slate-600">Quiz thématique avec scores et classement</span>
+
+                            {form.welcome.rules.length === 0 ? (
+                                <p className="text-xs italic text-slate-500 py-3">Aucune règle conditionnelle. Le message standard sera envoyé à tous.</p>
+                            ) : null}
+
+                            <div className="space-y-4">
+                                {form.welcome.rules.map((rule, index) => {
+                                    const selectedRoleIds = rule.roleIds || (rule.roleId ? [rule.roleId] : []);
+                                    return (
+                                        <div key={index} className="rounded-lg border border-cyan-800/50 bg-slate-900/60 p-4 space-y-4">
+                                            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                                                <span className="font-mono text-xs font-bold text-cyan-400">Règle #{index + 1}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        update(
+                                                            'welcome',
+                                                            'rules',
+                                                            form.welcome.rules.filter((_, i) => i !== index)
+                                                        )
+                                                    }
+                                                    className="text-xs text-rose-400 hover:underline"
+                                                >
+                                                    Supprimer la règle
+                                                </button>
+                                            </div>
+
+                                            {/* Sélecteur Multi-Rôles & Condition */}
+                                            <div className="grid gap-4 md:grid-cols-2">
+                                                <div>
+                                                    <label className="text-xs font-semibold text-slate-300 block mb-1">
+                                                        Rôles combinés ({selectedRoleIds.length}) :
+                                                    </label>
+                                                    <div className="mb-2 flex flex-wrap gap-1.5">
+                                                        {selectedRoleIds.map((rid) => {
+                                                            const rName = form.roles.find((r) => r.id === rid)?.name || rid;
+                                                            return (
+                                                                <span key={rid} className="role-badge">
+                                                                    <span>@{rName}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => removeRoleFromRule(index, rid)}
+                                                                        className="role-badge-remove"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <SelectInput
+                                                        value=""
+                                                        onChange={(e) => addRoleToRule(index, e.target.value)}
+                                                        options={roleOptions.filter((r) => !selectedRoleIds.includes(r.value))}
+                                                        emptyLabel="+ Ajouter un rôle à la condition…"
+                                                        className="text-xs"
+                                                    />
+                                                </div>
+
+                                                <Field label="Condition de correspondance">
+                                                    <SelectInput
+                                                        value={`${rule.condition || 'has_role'}_${rule.matchType || 'all'}`}
+                                                        onChange={(e) => {
+                                                            const [cond, match] = e.target.value.split('_');
+                                                            updateRuleField(index, 'condition', cond);
+                                                            updateRuleField(index, 'matchType', match);
+                                                        }}
+                                                        options={[
+                                                            { value: 'has_role_all', label: 'Possède TOUS les rôles sélectionnés (ET / AND)' },
+                                                            { value: 'has_role_any', label: 'Possède AU MOINS UN des rôles (OU / OR)' },
+                                                            { value: 'lacks_role_all', label: 'Ne possède AUCUN des rôles sélectionnés' },
+                                                        ]}
+                                                    />
+                                                </Field>
+                                            </div>
+
+                                            <div className="grid gap-4 md:grid-cols-2">
+                                                <Field label="Message public personnalisé (Ex: Selem ma soeur {mention})">
+                                                    <TextInput
+                                                        placeholder="Ex: Selem ma soeur {mention} sur {serveur} !"
+                                                        value={rule.message || ''}
+                                                        onChange={(e) => updateRuleField(index, 'message', e.target.value)}
+                                                    />
+                                                </Field>
+                                                <Field label="Message privé personnalisé (facultatif)">
+                                                    <TextInput
+                                                        placeholder="Message privé personnalisé…"
+                                                        value={rule.dmMessage || ''}
+                                                        onChange={(e) => updateRuleField(index, 'dmMessage', e.target.value)}
+                                                    />
+                                                </Field>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </section>
+                ) : null}
+
+                {/* 4. ONGLET LOGS & PROFIL */}
+                {activeTab === 'logs' ? (
+                    <section className="admin-card space-y-6">
+                        <div className="admin-card-header">
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Logs & Profil du Bot</h2>
+                                <p className="text-sm text-slate-400">Canal de diagnostic et identité locale du bot sur ce serveur.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-5 md:grid-cols-2">
+                            <Field label="Salon dédié aux logs du bot">
+                                <SelectInput
+                                    value={form.logs.channelId}
+                                    onChange={(e) => update('logs', 'channelId', e.target.value)}
+                                    options={channelOptions}
+                                    emptyLabel="Aucun salon de logs"
+                                />
+                            </Field>
+                            <div className="flex items-center">
+                                <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-white">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.logs.restartAnnouncementEnabled}
+                                        onChange={(e) => update('logs', 'restartAnnouncementEnabled', e.target.checked)}
+                                        className="size-4 accent-cyan-500"
+                                    />
+                                    Annoncer les redémarrages dans les logs
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-slate-700/60 pt-5">
+                            <h3 className="mb-4 font-semibold text-white">Profil local d'Azim sur ce serveur</h3>
+                            <div className="grid gap-5 md:grid-cols-2">
+                                <Field label="Bio personnalisée du bot" hint="Maximum 190 caractères.">
+                                    <TextInput
+                                        maxLength={190}
+                                        placeholder="Description affichée sur le profil du bot…"
+                                        value={form.profile.bio || ''}
+                                        onChange={(e) => update('profile', 'bio', e.target.value)}
+                                    />
+                                </Field>
+                                <div>
+                                    <Field label="Avatar spécifique au serveur" hint="URL HTTPS hébergée sur cdn.discordapp.com ou media.discordapp.net">
+                                        <TextInput
+                                            type="url"
+                                            placeholder="https://cdn.discordapp.com/…"
+                                            value={form.profile.avatarUrl || ''}
+                                            onChange={(e) => update('profile', 'avatarUrl', e.target.value)}
+                                        />
+                                    </Field>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        <button
+                                            type="button"
+                                            disabled={!form.profile.avatarUrl?.trim()}
+                                            onClick={() => updateAvatar(form.profile.avatarUrl.trim())}
+                                            className="btn btn-soft text-xs disabled:opacity-50"
+                                        >
+                                            Appliquer cet avatar
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => updateAvatar('')}
+                                            className="btn btn-soft text-xs text-rose-300"
+                                        >
+                                            Rétablir avatar par défaut
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    ) : (
-                        <div>
-                            <h2 className="mb-1 text-xl font-bold text-slate-900">Code secret</h2>
-                            <p className="mb-4 text-sm text-slate-600">Vous possédez un code d’activation ? Saisissez-le pour débloquer des fonctionnalités supplémentaires sur ce serveur.</p>
-                            <div className="islam-code-form">
-                                <div className="flex flex-wrap items-center gap-3">
+                    </section>
+                ) : null}
+
+                {/* 5. ONGLET RÉSEAUX & NIVEAUX */}
+                {activeTab === 'social' ? (
+                    <section className="admin-card space-y-6">
+                        <div className="admin-card-header">
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Réseaux Sociaux & Système de Niveaux XP</h2>
+                                <p className="text-sm text-slate-400">Alertes automatiques YouTube / TikTok et récompenses d'activité.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-8 md:grid-cols-2">
+                            {/* YouTube */}
+                            <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 space-y-4">
+                                <h3 className="font-semibold text-cyan-300">Surveillance YouTube</h3>
+                                <Field label="Chaînes YouTube surveillées" hint="Un identifiant de chaîne UC… par ligne.">
+                                    <textarea
+                                        className="form-input min-h-24 resize-y font-mono text-xs"
+                                        value={(form.youtube.channels || []).join('\n')}
+                                        onChange={(e) =>
+                                            update(
+                                                'youtube',
+                                                'channels',
+                                                e.target.value.split(/\r?\n/).map((id) => id.trim()).filter(Boolean)
+                                            )
+                                        }
+                                    />
+                                </Field>
+                                <Field label="Salon de publication des vidéos">
+                                    <SelectInput
+                                        value={form.youtube.targetChannelId}
+                                        onChange={(e) => update('youtube', 'targetChannelId', e.target.value)}
+                                        options={channelOptions}
+                                        emptyLabel="Aucun salon"
+                                    />
+                                </Field>
+                            </div>
+
+                            {/* TikTok */}
+                            <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 space-y-4">
+                                <h3 className="font-semibold text-cyan-300">Alertes TikTok Live</h3>
+                                <label className="flex items-center gap-3 text-sm font-semibold text-white">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.tiktok.enabled}
+                                        onChange={(e) => update('tiktok', 'enabled', e.target.checked)}
+                                        className="size-4 accent-cyan-500"
+                                    />
+                                    Activer les alertes de live TikTok
+                                </label>
+                                <Field label="Pseudo TikTok du créateur">
+                                    <TextInput
+                                        placeholder="@pseudo"
+                                        value={form.tiktok.username || ''}
+                                        onChange={(e) => update('tiktok', 'username', e.target.value)}
+                                    />
+                                </Field>
+                                <Field label="Salon de notification de live">
+                                    <SelectInput
+                                        value={form.tiktok.targetChannelId}
+                                        onChange={(e) => update('tiktok', 'targetChannelId', e.target.value)}
+                                        options={channelOptions}
+                                        emptyLabel="Choisir un salon"
+                                    />
+                                </Field>
+                            </div>
+                        </div>
+
+                        {/* Niveaux et Récompenses XP */}
+                        <div className="border-t border-slate-700/60 pt-6 space-y-4">
+                            <h3 className="font-semibold text-white">Système d'expérience et Niveaux</h3>
+                            <div className="grid gap-5 md:grid-cols-2">
+                                <label className="flex items-center gap-3 text-sm font-semibold text-white">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.rank.enabled}
+                                        onChange={(e) => update('rank', 'enabled', e.target.checked)}
+                                        className="size-4 accent-cyan-500"
+                                    />
+                                    Activer le gain d'XP et les niveaux
+                                </label>
+                                <label className="flex items-center gap-3 text-sm font-semibold text-white">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.rank.silent}
+                                        onChange={(e) => update('rank', 'silent', e.target.checked)}
+                                        className="size-4 accent-cyan-500"
+                                    />
+                                    Mode silencieux (ne pas annoncer les montées de niveau)
+                                </label>
+                                <Field label="Salon des annonces de niveau">
+                                    <SelectInput
+                                        value={form.rank.announceChannelId}
+                                        onChange={(e) => update('rank', 'announceChannelId', e.target.value)}
+                                        options={channelOptions}
+                                        emptyLabel="Dans le salon où le membre écrit"
+                                    />
+                                </Field>
+                            </div>
+
+                            {/* Paliers */}
+                            <div className="mt-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Rôles de récompense par palier</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => update('rank', 'rewards', [...form.rank.rewards, { level: 1, roleId: '' }])}
+                                        className="btn btn-soft text-xs"
+                                    >
+                                        + Ajouter un palier
+                                    </button>
+                                </div>
+                                {form.rank.rewards.map((reward, index) => (
+                                    <div key={index} className="mb-2 flex flex-wrap items-center gap-3 rounded bg-slate-900/60 p-2.5">
+                                        <div className="w-28">
+                                            <TextInput
+                                                type="number"
+                                                min="1"
+                                                max="200"
+                                                value={reward.level}
+                                                onChange={(e) => updateReward(index, 'level', Number(e.target.value))}
+                                                placeholder="Niveau"
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-[200px]">
+                                            <SelectInput
+                                                value={reward.roleId}
+                                                onChange={(e) => updateReward(index, 'roleId', e.target.value)}
+                                                options={roleOptions}
+                                                emptyLabel="Choisir le rôle attribué"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => update('rank', 'rewards', form.rank.rewards.filter((_, i) => i !== index))}
+                                            className="text-xs text-rose-400 hover:underline"
+                                        >
+                                            Retirer
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                ) : null}
+
+                {/* 6. ONGLET MODE ISLAM / CODE SECRET */}
+                {activeTab === 'islam' ? (
+                    <section className="admin-card space-y-6">
+                        <div className="admin-card-header">
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Mode Islam & Fonctionnalités Spéciales</h2>
+                                <p className="text-sm text-slate-400">Déverrouillage et gestion des commandes spirituelles.</p>
+                            </div>
+                        </div>
+
+                        {form.features.islamModeEnabled ? (
+                            <div className="rounded-lg border border-emerald-700/60 bg-emerald-950/20 p-5 space-y-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="islam-enabled-status">
+                                        <span>●</span> Mode Islam actuellement ACTIF sur ce serveur
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={disableIslamMode}
+                                        disabled={activatingIslam}
+                                        className="btn btn-soft text-xs text-rose-400 border-rose-800/60 hover:bg-rose-950/40 disabled:opacity-50"
+                                    >
+                                        {activatingIslam ? 'Désactivation…' : 'Désactiver le mode Islam'}
+                                    </button>
+                                </div>
+                                <p className="text-sm text-slate-300">Les commandes suivantes sont actives et visibles par vos membres :</p>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
+                                        <code className="text-sm font-bold text-emerald-400">/coran</code>
+                                        <p className="mt-1 text-xs text-slate-400">Lecture et écoute complète du Saint Coran (sourate, verset, traduction française).</p>
+                                    </div>
+                                    <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
+                                        <code className="text-sm font-bold text-emerald-400">/quiz</code>
+                                        <p className="mt-1 text-xs text-slate-400">Quiz thématique islamique avec suivi des scores et classements en direct.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-5 space-y-4">
+                                <div>
+                                    <h3 className="font-semibold text-white">Déverrouillage par Code Secret</h3>
+                                    <p className="mt-1 text-sm text-slate-400">
+                                        Entrez le code secret pour débloquer les fonctionnalités et commandes spirituelles sur ce serveur.
+                                    </p>
+                                </div>
+                                <div className="flex max-w-md items-center gap-3">
                                     <TextInput
                                         value={islamCode}
-                                        onChange={(event) => setIslamCode(event.target.value)}
+                                        onChange={(e) => setIslamCode(e.target.value)}
                                         placeholder="Entrez un code secret…"
                                         autoComplete="off"
                                         maxLength={64}
-                                        aria-label="Code secret d'activation"
                                     />
                                     <button
                                         type="button"
                                         onClick={activateSecretCode}
                                         disabled={activatingIslam || !islamCode.trim()}
-                                        className="btn btn-primary disabled:opacity-60"
+                                        className="btn btn-primary whitespace-nowrap text-sm disabled:opacity-60"
                                     >
                                         {activatingIslam ? 'Vérification…' : 'Valider'}
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </section>
+                        )}
+                    </section>
+                ) : null}
 
-                <div className="flex justify-end border-t border-slate-200 pt-5">
-                    <button type="submit" disabled={saving} className="btn btn-primary disabled:opacity-60">
-                        {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
+                {/* Bottom Save Bar */}
+                <div className="flex justify-end border-t border-slate-800 pt-5">
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        className="btn btn-primary px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+                    >
+                        {saving ? 'Enregistrement en cours…' : 'Enregistrer toutes les modifications'}
                     </button>
                 </div>
             </form>

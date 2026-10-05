@@ -2074,3 +2074,95 @@ body {
 	background: #667f96;
 	box-shadow: none;
 }
+
+/* ===== ADMIN PANEL REDESIGN ===== */
+.admin-tab-nav {
+	display: flex;
+	gap: 6px;
+	overflow-x: auto;
+	border-bottom: 1px solid var(--azim-line);
+	padding-bottom: 10px;
+	margin-bottom: 24px;
+}
+.admin-tab-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--azim-ink-soft);
+	background: rgba(16, 34, 57, 0.6);
+	border: 1px solid rgba(40, 83, 115, 0.45);
+	border-radius: 6px;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: all 0.18s ease;
+}
+.admin-tab-btn:hover {
+	color: var(--azim-ink);
+	background: rgba(23, 48, 76, 0.8);
+	border-color: var(--azim-line);
+}
+.admin-tab-btn.active {
+	color: #fff;
+	background: #087eae;
+	border-color: #28bdf3;
+	box-shadow: 0 0 14px rgba(32, 185, 242, 0.28);
+}
+.admin-tab-badge {
+	font-size: 10px;
+	font-family: 'JetBrains Mono', monospace;
+	padding: 2px 6px;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.25);
+	color: inherit;
+}
+.admin-card {
+	background: rgba(13, 31, 51, 0.92);
+	border: 1px solid var(--azim-line);
+	border-radius: 8px;
+	padding: 22px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.admin-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 18px;
+	padding-bottom: 14px;
+	border-bottom: 1px solid rgba(40, 83, 115, 0.4);
+}
+.role-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 8px;
+	font-size: 11px;
+	font-weight: 500;
+	border-radius: 4px;
+	background: #17324f;
+	border: 1px solid #285373;
+	color: #bfe7ff;
+}
+.role-badge-remove {
+	cursor: pointer;
+	color: #ff917e;
+	font-weight: bold;
+	padding-left: 2px;
+}
+.role-badge-remove:hover {
+	color: #ff4d4d;
+}
+.trigger-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 4px;
+	background: #0c263c;
+	border: 1px solid #20b9f2;
+	color: #72deff;
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 12px;
+}

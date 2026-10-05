@@ -41,6 +41,9 @@ function normalizeOverview(payload = {}) {
             errorByType: (observability.errorByType && typeof observability.errorByType === 'object')
                 ? observability.errorByType
                 : {},
+            recentErrors: Array.isArray(observability.recentErrors)
+                ? observability.recentErrors.slice(0, 10)
+                : [],
             topCommands,
         },
         guilds: Array.isArray(payload.guilds)

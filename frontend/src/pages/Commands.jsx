@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth.js';
 
 const commandGroups = [
     {
-        name: 'Assistant & outils',
+        name: 'Questions & outils',
         commands: [
             ['/ask', 'Pose une question à l’assistant IA du serveur.'],
             ['/help', 'Affiche les commandes actives et leur usage.'],
@@ -17,7 +17,7 @@ const commandGroups = [
         ],
     },
     {
-        name: 'Administration & accueil',
+        name: 'Réglages & accueil',
         commands: [
             ['/config', 'Règle la langue IA, le prompt, les journaux et le profil du bot.'],
             ['/welcome', 'Configure les messages d’arrivée et les règles par rôle.'],
@@ -26,7 +26,7 @@ const commandGroups = [
         ],
     },
     {
-        name: 'Modération & progression',
+        name: 'Modération & niveaux',
         commands: [
             ['/purge', 'Supprime un ensemble de messages selon des filtres.'],
             ['/zzzz', 'Suspend les réponses automatiques dans un salon.'],
@@ -34,7 +34,7 @@ const commandGroups = [
         ],
     },
     {
-        name: 'Automatisation & communauté',
+        name: 'Alertes & rappels',
         commands: [
             ['/youtube', 'Surveille des chaînes et annonce leurs nouvelles vidéos.'],
             ['/tiktok', 'Configure et contrôle les alertes TikTok Live.'],
@@ -43,7 +43,7 @@ const commandGroups = [
         ],
     },
     {
-        name: 'Mode Islam · activable par serveur',
+        name: 'Coran & quiz · activation par serveur',
         commands: [
             ['/coran', 'Consulte les sourates et versets disponibles.'],
             ['/quiz', 'Lance un quiz et consulte les classements.'],
@@ -64,14 +64,14 @@ function Commands() {
     return (
         <main className="site-page site-section-page">
             <header className="site-page-heading">
-                <p className="site-eyebrow">DOCUMENTATION · SLASH COMMANDS</p>
-                <h1>Le catalogue des commandes.</h1>
-                <p>Parcourez les outils réellement disponibles dans Azim et trouvez rapidement leur fonction.</p>
+                <p className="site-eyebrow">AIDE · COMMANDES</p>
+                <h1>Commandes Azim</h1>
+                <p>Retrouvez les commandes du bot et ce qu’elles font. Certaines sont réservées aux admins ou à la modération.</p>
             </header>
 
             <div className="command-search-row">
-                <label className="command-search-label" htmlFor="command-search">Rechercher une commande</label>
-                <input id="command-search" className="form-input command-search-input" type="search" placeholder="Ex. langue, rôle, YouTube…" value={search} onChange={(event) => setSearch(event.target.value)} />
+                <label className="command-search-label" htmlFor="command-search">Trouver une commande</label>
+                <input id="command-search" className="form-input command-search-input" type="search" placeholder="Essayez « langue », « rôle » ou « YouTube »" value={search} onChange={(event) => setSearch(event.target.value)} />
                 <span className="command-total">{commandCount} commande{commandCount === 1 ? '' : 's'}</span>
             </div>
 
@@ -89,14 +89,14 @@ function Commands() {
                         </div>
                     </section>
                 ))}
-                {!filteredGroups.length ? <p className="site-empty-state">Aucune commande ne correspond à cette recherche.</p> : null}
+                {!filteredGroups.length ? <p className="site-empty-state">Aucune commande trouvée. Essayez un autre mot.</p> : null}
             </div>
 
             <aside className="module-cta site-panel">
                 <div>
                     <p className="site-eyebrow">VOTRE SERVEUR</p>
-                    <h2>Chaque module se règle selon vos besoins.</h2>
-                    <p>Connectez votre compte Discord pour ouvrir la configuration des serveurs où Azim est installé.</p>
+                    <h2>Besoin de changer un réglage ?</h2>
+                    <p>Connectez-vous avec Discord pour choisir un serveur et modifier ses options.</p>
                 </div>
                 <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-primary">Accéder au panel <span aria-hidden="true">→</span></Link>
             </aside>

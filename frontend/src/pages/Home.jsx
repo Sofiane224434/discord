@@ -28,84 +28,118 @@ function Home() {
     const services = health?.services || {};
     const botApiStatus = services.botApi?.status || 'unconfigured';
     const serviceLabel = (status) => ({
-        ok: 'OPÉRATIONNEL',
-        degraded: 'DÉGRADÉ',
-        error: 'INDISPONIBLE',
-        unconfigured: 'À CONFIGURER',
-    }[status] || 'EN ATTENTE');
+        ok: 'En ligne',
+        degraded: 'Dégradé',
+        error: 'Indisponible',
+        unconfigured: 'À configurer',
+    }[status] || 'En attente');
     const serviceCards = [
         { label: 'API du bot', status: services.botApi?.status },
         { label: 'Base de données', status: services.db?.status },
         { label: 'Connexion Discord', status: services.oauth?.status },
     ];
+    const quickCommands = [
+        { command: '/welcome', description: 'Messages d’arrivée' },
+        { command: '/rank', description: 'Niveaux et classement' },
+        { command: '/youtube', description: 'Alertes nouvelles vidéos' },
+        { command: '/tiktok', description: 'Alertes TikTok Live' },
+    ];
     const features = [
-        { title: 'Intelligence artificielle', text: 'Un assistant conversationnel par serveur, avec langue et consignes ajustables.', commands: '/ask · /config ia_langue' },
-        { title: 'Accueil & communauté', text: 'Messages de bienvenue, règles par rôle et parcours d’arrivée personnalisés.', commands: '/welcome' },
-        { title: 'Niveaux & récompenses', text: 'Progression d’activité, classements et rôles attribués aux paliers.', commands: '/rank' },
-        { title: 'Modération', text: 'Outils de gestion des messages et contrôle des réponses automatiques.', commands: '/purge · /zzzz' },
-        { title: 'Alertes & automatisation', text: 'Publications YouTube et alertes TikTok Live envoyées dans le bon salon.', commands: '/youtube · /tiktok' },
-        { title: 'Ressources & administration', text: 'Commandes Quran et quiz activables, avec paramètres distincts par serveur.', commands: '/coran · /quiz · /config' },
+        { title: 'Questions à l’IA', text: 'Posez une question avec /ask. Choisissez la langue et les consignes dans /config.', commands: '/ask · /config ia_langue' },
+        { title: 'Messages d’accueil', text: 'Souhaitez la bienvenue aux nouveaux membres, dans un salon ou en message privé.', commands: '/welcome' },
+        { title: 'Niveaux', text: 'Les membres gagnent de l’XP en discutant. Ajoutez des rôles à certains niveaux.', commands: '/rank' },
+        { title: 'Modération', text: 'Nettoyez un salon ou mettez en pause les réponses de l’IA.', commands: '/purge · /zzzz' },
+        { title: 'Alertes', text: 'Annoncez les nouvelles vidéos YouTube et les débuts de live TikTok.', commands: '/youtube · /tiktok' },
+        { title: 'Coran & quiz', text: 'Consultez les sourates et lancez un quiz quand le mode est activé.', commands: '/coran · /quiz' },
     ];
 
     return (
-        <div className="site-page">
-            <section className="home-hero">
-                <div className="home-hero-copy">
-                    <p className="site-eyebrow">BOT DISCORD · CONTRÔLE PAR SERVEUR</p>
-                    <h1>Azim, au cœur de votre serveur.</h1>
-                    <p>Automatisez l’accueil, accompagnez les conversations et gardez le contrôle depuis une console pensée pour vos équipes.</p>
-                    <div className="home-hero-actions">
-                        {isAuthenticated ? (
-                            <Link to="/dashboard" className="btn btn-primary">Ouvrir le dashboard <span aria-hidden="true">→</span></Link>
-                        ) : (
-                            <Link to="/login" className="btn btn-primary">Connecter Discord <span aria-hidden="true">→</span></Link>
-                        )}
-                        <Link to="/modules" className="btn btn-soft">Explorer les modules</Link>
-                    </div>
-                    <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                        <span className={`site-live-indicator ${botApiStatus === 'ok' ? '' : 'site-signal-muted'}`} />
-                        <span>{botApiStatus === 'ok' ? 'API du bot opérationnelle' : apiChecked ? 'État des services actualisé' : 'Vérification des services'}</span>
-                        <span className="text-slate-600">·</span>
-                        <Link to="/status" className="site-link">État des services</Link>
-                    </div>
+        <main className="site-page home-dashboard">
+            <header className="home-dashboard-heading">
+                <div>
+                    <p className="site-eyebrow">BOT DISCORD · AZIM</p>
+                    <h1>Azim Bot</h1>
+                    <p>Accueil, niveaux, alertes et commandes pour votre serveur.</p>
                 </div>
-                <div className="home-control-preview site-panel site-panel-glow">
-                    <div className="home-preview-head">
-                        <span className="font-semibold text-slate-100">Centre de contrôle</span>
-                        <span className="home-preview-service"><span className={`site-live-indicator ${botApiStatus === 'ok' ? '' : 'site-signal-muted'}`} />{health ? serviceLabel(health.status) : apiChecked ? 'INDISPONIBLE' : 'CONTRÔLE…'}</span>
+                <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-soft">{isAuthenticated ? 'Ouvrir le panel' : 'Connexion Discord'} <span aria-hidden="true">→</span></Link>
+            </header>
+
+            <section className="home-dashboard-metrics" aria-label="État rapide">
+                {[
+                    { label: 'Bot Discord', status: services.botApi?.status },
+                    { label: 'Panel', status: services.db?.status },
+                    { label: 'Connexion Discord', status: services.oauth?.status },
+                ].map((item) => (
+                    <article className={`home-dashboard-metric home-metric-${item.status || 'unknown'}`} key={item.label}>
+                        <span className="home-metric-mark" aria-hidden="true" />
+                        <span>{item.label}</span>
+                        <strong>{health ? serviceLabel(item.status) : apiChecked ? 'Indisponible' : 'Vérification…'}</strong>
+                    </article>
+                ))}
+                <article className="home-dashboard-metric home-metric-commands">
+                    <span className="home-metric-mark" aria-hidden="true" />
+                    <span>Commandes</span>
+                    <strong>21</strong>
+                </article>
+            </section>
+
+            <div className="home-dashboard-grid">
+                <section className="home-dashboard-panel site-panel">
+                    <div className="home-panel-heading">
+                        <div><p className="site-eyebrow">BOT</p><h2>Azim</h2></div>
+                        <span className={`home-bot-state ${botApiStatus === 'ok' ? 'is-online' : 'is-offline'}`}><i />{health ? serviceLabel(botApiStatus) : apiChecked ? 'Indisponible' : 'Vérification…'}</span>
                     </div>
-                    <div className="home-preview-stat-grid">
-                        {serviceCards.map((service) => (
-                            <div className="home-preview-stat" key={service.label}>
-                                <span>{service.label}</span>
-                                <strong className="home-health-value">{health ? serviceLabel(service.status) : '—'}</strong>
+                    <div className="home-bot-identity">
+                        <img src="/icon.png" alt="" />
+                        <div><strong>Azim</strong><span>Accueil · niveaux · alertes · modération</span></div>
+                    </div>
+                    <div className="home-quick-actions">
+                        <Link to="/commands" className="home-quick-action"><span aria-hidden="true">⌘</span>Commandes</Link>
+                        <Link to="/modules" className="home-quick-action"><span aria-hidden="true">▦</span>Modules</Link>
+                        <Link to={isAuthenticated ? '/dashboard' : '/login'} className="home-quick-action"><span aria-hidden="true">⚙</span>Configurer</Link>
+                    </div>
+                    <div className="home-command-heading"><h3>Commandes utiles</h3><Link to="/commands" className="site-link">Toutes les commandes →</Link></div>
+                    <div className="home-quick-command-list">
+                        {quickCommands.map((item) => (
+                            <div className="home-quick-command" key={item.command}>
+                                <code>{item.command}</code><span>{item.description}</span>
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center justify-between border-b border-[#1b3b59] pb-2 pt-1 text-xs">
-                        <span className="font-semibold text-slate-200">Surveillance</span>
-                        <Link to="/status" className="site-link">Détails →</Link>
-                    </div>
-                    {serviceCards.map((service) => (
-                        <div className="home-preview-row" key={service.label}>
-                            <span className="home-preview-service"><span className={`site-live-indicator ${service.status === 'ok' ? '' : 'site-signal-muted'}`} />{service.label}</span>
-                            <span className="font-mono text-slate-400">{health ? serviceLabel(service.status) : apiChecked ? 'INJOIGNABLE' : '…'}</span>
+                </section>
+
+                <aside className="home-dashboard-side">
+                    <section className="home-dashboard-panel site-panel">
+                        <div className="home-panel-heading">
+                            <div><p className="site-eyebrow">ÉTAT</p><h2>Services</h2></div>
+                            <Link to="/status" className="site-link">Détails →</Link>
                         </div>
-                    ))}
-                    <div className="mt-3 flex items-center justify-between border-t border-[#1b3b59] pt-3 text-xs">
-                        <span className="text-slate-400">Dernière vérification</span>
-                        <span className="font-mono text-amber-300">{health?.timestamp ? new Date(health.timestamp).toLocaleTimeString() : '—'}</span>
-                    </div>
-                </div>
-            </section>
+                        <div className="home-service-list">
+                            {serviceCards.map((service) => (
+                                <div className="home-service-row" key={service.label}>
+                                    <span className={`home-service-dot ${service.status === 'ok' ? 'is-online' : 'is-offline'}`} />
+                                    <span>{service.label === 'API du bot' ? 'Bot Azim' : service.label === 'Base de données' ? 'Base de données' : 'Discord OAuth'}</span>
+                                    <strong>{health ? serviceLabel(service.status) : apiChecked ? 'Indisponible' : 'Vérification…'}</strong>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="home-last-check">Dernière vérification <span>{health?.timestamp ? new Date(health.timestamp).toLocaleTimeString() : '—'}</span></p>
+                    </section>
+                    <section className="home-dashboard-panel home-help-panel site-panel">
+                        <p className="site-eyebrow">BESOIN D’AIDE ?</p>
+                        <h2>Une commande ne fait pas ce que vous voulez ?</h2>
+                        <Link to="/help" className="site-link">Lire l’aide →</Link>
+                    </section>
+                </aside>
+            </div>
 
             <section className="home-feature-section">
                 <div className="home-feature-heading">
                     <div>
-                        <p className="site-eyebrow">FONCTIONS</p>
-                        <h2>Des outils pour faire tourner le serveur.</h2>
+                        <p className="site-eyebrow">COMMANDES DU BOT</p>
+                        <h2>Qu’est-ce qu’Azim peut faire ?</h2>
                     </div>
-                    <Link to="/modules" className="site-link text-sm">Voir tous les modules →</Link>
+                    <Link to="/modules" className="site-link text-sm">Voir les modules →</Link>
                 </div>
                 <div className="home-feature-grid">
                     {features.map((feature) => (
@@ -117,7 +151,7 @@ function Home() {
                     ))}
                 </div>
             </section>
-        </div>
+        </main>
     );
 }
 

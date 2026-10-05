@@ -92,9 +92,9 @@ function Dashboard() {
         <main className="ops-dashboard">
             <div className="ops-page-heading">
                 <div>
-                    <p className="site-eyebrow">AZIM CONTROL CENTER / ESPACE ADMINISTRATEUR</p>
-                    <h1>Console de pilotage</h1>
-                    <p className="site-muted">Bonjour {user?.firstname || 'et bienvenue'} · vos serveurs, modules et signaux opérationnels au même endroit.</p>
+                        <p className="site-eyebrow">PANEL AZIM</p>
+                        <h1>{user?.firstname ? `Bonjour ${user.firstname}` : 'Vos serveurs'}</h1>
+                        <p className="site-muted">Choisissez un serveur pour voir son état ou modifier ses réglages.</p>
                 </div>
                 <div className="ops-heading-actions">
                     <span className={`ops-status-chip ${bot.status === 'online' ? 'ops-status-online' : 'ops-status-offline'}`}>
@@ -119,7 +119,7 @@ function Dashboard() {
             <div className="ops-main-grid">
                 <section className="ops-panel site-panel">
                     <div className="ops-panel-heading">
-                        <div><p className="site-eyebrow">GESTION PAR SERVEUR</p><h2>Mes serveurs</h2></div>
+                        <div><p className="site-eyebrow">VOS SERVEURS</p><h2>Serveurs à gérer</h2></div>
                         <span className="ops-count">{discordGuilds.length} gérable(s)</span>
                     </div>
                     {discordGuilds.length ? (
@@ -165,7 +165,7 @@ function Dashboard() {
                 <aside className="ops-side-column">
                     <section className="ops-panel site-panel ops-analytics-panel">
                         <div className="ops-panel-heading">
-                            <div><p className="site-eyebrow">USAGE</p><h2>Commandes actives</h2></div>
+                            <div><p className="site-eyebrow">UTILISATION</p><h2>Commandes les plus utilisées</h2></div>
                             <Link to="/command-history" className="site-link text-xs">Tout voir →</Link>
                         </div>
                         {topCommands.length ? (
@@ -184,7 +184,7 @@ function Dashboard() {
 
                     <section className="ops-panel site-panel ops-activity-panel">
                         <div className="ops-panel-heading">
-                            <div><p className="site-eyebrow">OBSERVABILITÉ</p><h2>Erreurs récentes</h2></div>
+                            <div><p className="site-eyebrow">JOURNAL</p><h2>Erreurs récentes</h2></div>
                             <span className="ops-count">{Number(observability.errorTotal || 0)} au total</span>
                         </div>
                         {recentErrors.length ? (

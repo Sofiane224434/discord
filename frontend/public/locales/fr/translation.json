@@ -97,7 +97,7 @@
     "cta_dashboard": "Ouvrir la console"
   },
   "login": {
-    "title": "Connexion a la console",
+    "title": "Connexion",
     "email": "Email",
     "password": "Mot de passe",
     "submit": "Se connecter",
@@ -107,7 +107,7 @@
     "register_link": "S'inscrire"
   },
   "register": {
-    "title": "Creer un acces dashboard",
+    "title": "Créer un compte",
     "email": "Email",
     "password": "Mot de passe",
     "confirm_password": "Confirmer le mot de passe",
@@ -173,7 +173,7 @@
     }
   },
   "command_history": {
-    "title": "Historique des commandes",
+    "title": "Utilisation des commandes",
     "total": "{{count}} utilisations au total",
     "unique": "{{count}} commandes distinctes",
     "search_placeholder": "Rechercher une commande...",
@@ -182,7 +182,7 @@
     "no_results": "Aucune commande trouvee."
   },
   "oauth": {
-    "title": "Connexion Discord",
+    "title": "Connexion à Discord",
     "processing": "Connexion en cours...",
     "error_no_code": "Code OAuth Discord introuvable dans l'URL.",
     "error_exchange": "Impossible de terminer la connexion Discord",
@@ -190,7 +190,7 @@
   },
   "email": {
     "title": "Envoyer un message",
-    "subtitle": "Espace de test d'envoi transactionnel depuis Azim Control Center.",
+    "subtitle": "Envoyez un message de test.",
     "to": "Destinataire",
     "name": "Nom (optionnel)",
     "subject": "Sujet",
@@ -207,6 +207,6 @@
     "register_error": "Erreur lors de l'inscription"
   },
   "footer": {
-    "copyright": "© {{year}} Azim Control Center"
+    "copyright": "© {{year}} Azim"
   }
 }

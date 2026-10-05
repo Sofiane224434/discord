@@ -9,13 +9,13 @@ function Footer() {
                 <div className="site-footer-brand">
                     <img src="/icon.png" alt="" />
                     <span>AZIM<span className="site-brand-dot">.</span></span>
-                    <small>Console de pilotage Discord</small>
+                    <small>Bot Discord et commandes</small>
                 </div>
                 <nav className="site-footer-links" aria-label="Liens du site">
                     <Link to="/modules">Modules</Link>
-                    <Link to="/commands">Documentation</Link>
+                    <Link to="/commands">Commandes</Link>
                     <Link to="/status">Statut</Link>
-                    <Link to="/help">Support</Link>
+                    <Link to="/help">Aide</Link>
                     <Link to="/dashboard">Panel</Link>
                 </nav>
                 <p className="site-footer-copy">{t('footer.copyright', { year: new Date().getFullYear() })}</p>

@@ -60,8 +60,8 @@ function DiscordCallback() {
 
     return (
         <div className="min-h-screen px-4 py-16 flex items-center justify-center">
-            <div className="w-full max-w-md bg-white/90 border border-white rounded-2xl shadow-xl p-8 text-center">
-                <h1 className="text-2xl font-bold text-slate-800 mb-3">{t('oauth.title')}</h1>
+            <div className="auth-card w-full max-w-md text-center">
+                <h1 className="text-2xl font-bold mb-3">{t('oauth.title')}</h1>
                 {loading ? <p className="text-slate-600">{t('oauth.processing')}</p> : null}
                 {error ? (
                     <>

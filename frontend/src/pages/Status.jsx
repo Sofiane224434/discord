@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { systemService } from '../services/api.js';
 
 const serviceLabels = [
-    { key: 'db', name: 'Base de données', detail: 'Stockage et historique du dashboard' },
-    { key: 'botApi', name: 'API du bot', detail: 'Connexion au service Discord Azim' },
-    { key: 'oauth', name: 'Connexion Discord', detail: 'Autorisation et récupération des serveurs' },
+    { key: 'db', name: 'Base de données', detail: 'Historique du panel' },
+    { key: 'botApi', name: 'Bot Azim', detail: 'Connexion au bot Discord' },
+    { key: 'oauth', name: 'Connexion Discord', detail: 'Accès aux serveurs du compte' },
 ];
 
 function Status() {
@@ -41,20 +41,20 @@ function Status() {
 
     const services = health?.services || {};
     const overall = health?.status || 'error';
-    const label = { ok: 'Tous les systèmes sont opérationnels', degraded: 'Service dégradé', error: 'Vérification indisponible', unconfigured: 'Configuration requise' }[overall] || overall;
+    const label = { ok: 'Tout fonctionne', degraded: 'Un service répond difficilement', error: 'Vérification indisponible', unconfigured: 'À configurer' }[overall] || overall;
 
     return (
         <main className="site-page site-section-page">
             <header className="site-page-heading">
-                <p className="site-eyebrow">AZIM SYSTEMS / DISPONIBILITÉ</p>
-                <h1>État des services.</h1>
-                <p>Surveillance de la console, de la connexion au bot et de l’authentification Discord.</p>
+                 <p className="site-eyebrow">ÉTAT</p>
+                 <h1>État des services</h1>
+                 <p>État du panel, du bot et de la connexion Discord.</p>
             </header>
 
             <section className={`status-overall status-state-${overall} site-panel`}>
                 <span className="status-overall-indicator" />
-                <div><p className="site-eyebrow">ÉTAT GLOBAL</p><h2>{loading ? 'Vérification en cours…' : label}</h2></div>
-                <span className="status-auto-refresh">ACTUALISATION · 30 S</span>
+                <div><p className="site-eyebrow">EN CE MOMENT</p><h2>{loading ? 'Vérification en cours…' : label}</h2></div>
+                <span className="status-auto-refresh">MISE À JOUR · 30 S</span>
             </section>
 
             <section className="status-service-list" aria-label="État détaillé">
@@ -72,7 +72,7 @@ function Status() {
 
             <div className="status-last-check">
                 <span>Dernière vérification : {checkedAt ? checkedAt.toLocaleTimeString() : '—'}</span>
-                <span>Source : endpoint santé du dashboard</span>
+                <span>Vérification automatique</span>
             </div>
 
             <div className="help-quick-links">

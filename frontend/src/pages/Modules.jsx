@@ -5,42 +5,42 @@ const modules = [
     {
         number: '01',
         title: 'Assistant IA',
-        description: 'Réponses en messages et via /ask, avec un prompt, une langue et un nom d’appel configurables pour chaque serveur.',
+        description: 'Posez vos questions dans le salon ou avec /ask. Réglez la langue et les consignes pour chaque serveur.',
         commands: ['/ask', '/config ia_langue', '/config ia_prompt'],
         tone: 'cyan',
     },
     {
         number: '02',
         title: 'Accueil des membres',
-        description: 'Messages publics ou privés à l’arrivée, avec déclencheurs et règles conditionnelles par rôle.',
+        description: 'Envoyez un message à l’arrivée, dans un salon ou en privé. Choisissez les règles selon les rôles.',
         commands: ['/welcome'],
         tone: 'amber',
     },
     {
         number: '03',
         title: 'Progression',
-        description: 'XP liée à la participation, profils de niveau, classement et rôles de récompense.',
+        description: 'Faites gagner de l’XP aux membres actifs, affichez le classement et attribuez des rôles par niveau.',
         commands: ['/rank'],
         tone: 'green',
     },
     {
         number: '04',
         title: 'Modération & contrôle',
-        description: 'Nettoyage ciblé des messages, gestion des réponses IA et vérification des permissions.',
+        description: 'Supprimez des messages, mettez les réponses de l’IA en pause et vérifiez les permissions.',
         commands: ['/purge', '/zzzz', '/permissions'],
         tone: 'blue',
     },
     {
         number: '05',
         title: 'Veille des réseaux',
-        description: 'Surveille les nouvelles vidéos YouTube et les lives TikTok pour publier des alertes dans vos salons.',
+        description: 'Recevez une annonce quand une chaîne publie une vidéo ou qu’un compte TikTok passe en live.',
         commands: ['/youtube', '/tiktok'],
         tone: 'coral',
     },
     {
         number: '06',
         title: 'Contenu & ressources',
-        description: 'Commandes Coran et quiz activables par serveur, complétées par des informations sur les membres et le serveur.',
+        description: 'Consultez le Coran, lancez un quiz et affichez les informations du serveur ou d’un membre.',
         commands: ['/coran', '/quiz', '/serverinfo'],
         tone: 'violet',
     },
@@ -52,9 +52,9 @@ function Modules() {
     return (
         <main className="site-page site-section-page">
             <header className="site-page-heading">
-                <p className="site-eyebrow">MODULES AZIM</p>
-                <h1>Les fonctions, serveur par serveur.</h1>
-                <p>Activez les outils utiles à votre communauté et gardez les réglages sous la main dans le panel.</p>
+                <p className="site-eyebrow">COMMANDES ET OUTILS</p>
+                <h1>Que peut faire Azim ?</h1>
+                <p>Choisissez les commandes qui vous servent. Les réglages de chaque serveur se trouvent dans le panel.</p>
             </header>
 
             <section className="module-grid" aria-label="Modules du bot Azim">
@@ -75,11 +75,11 @@ function Modules() {
 
             <section className="module-cta site-panel">
                 <div>
-                    <p className="site-eyebrow">CONFIGURATION PAR SERVEUR</p>
-                    <h2>Réglez Azim depuis une seule console.</h2>
-                    <p>Bienvenue, IA, journaux, notifications et progression restent indépendants d’un serveur à l’autre.</p>
+                    <p className="site-eyebrow">RÉGLAGES</p>
+                    <h2>Chaque serveur a ses propres réglages.</h2>
+                    <p>Choisissez une langue pour l’IA, un salon de bienvenue ou les alertes qui vous intéressent.</p>
                 </div>
-                <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-primary">Ouvrir le panel <span aria-hidden="true">→</span></Link>
+                <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-primary">{isAuthenticated ? 'Ouvrir le panel' : 'Se connecter avec Discord'} <span aria-hidden="true">→</span></Link>
             </section>
         </main>
     );

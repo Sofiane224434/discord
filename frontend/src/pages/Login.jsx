@@ -52,15 +52,15 @@ function Login() {
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-10">
-            <div className="bg-white/90 border border-white shadow-xl p-8 rounded-2xl w-full max-w-md">
+            <div className="auth-card w-full max-w-md">
                 <h1 className="text-2xl font-bold mb-2 text-center">{t('login.title')}</h1>
-                <p className="text-sm text-slate-500 text-center mb-6 mono">AZIM-CONTROL/ACCESS</p>
+                <p className="auth-card-note text-sm text-center mb-6">Pour gérer vos serveurs, connectez-vous avec Discord.</p>
 
                 {error && <p className="text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4 text-center">{error}</p>}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-slate-700">{t('login.email')}</label>
+                        <label className="auth-card-label block text-sm font-medium mb-1">{t('login.email')}</label>
                         <input
                             type="email"
                             value={email}
@@ -71,7 +71,7 @@ function Login() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-1 text-slate-700">{t('login.password')}</label>
+                        <label className="auth-card-label block text-sm font-medium mb-1">{t('login.password')}</label>
                         <input
                             type="password"
                             value={password}
@@ -92,7 +92,7 @@ function Login() {
 
                 <div className="my-4 flex items-center gap-3">
                     <div className="h-px bg-slate-200 flex-1" />
-                    <span className="text-xs text-slate-500 mono">OR</span>
+                    <span className="auth-card-note text-xs">ou</span>
                     <div className="h-px bg-slate-200 flex-1" />
                 </div>
 
@@ -104,8 +104,8 @@ function Login() {
                     {t('login.discord_button')}
                 </button>
 
-                <p className="text-center mt-4 text-sm text-slate-600">
-                    {t('login.no_account')} <Link to="/register" className="text-teal-700 hover:underline">{t('login.register_link')}</Link>
+                <p className="auth-card-note text-center mt-4 text-sm">
+                    {t('login.no_account')} <Link to="/register" className="auth-card-link">{t('login.register_link')}</Link>
                 </p>
             </div>
         </div>

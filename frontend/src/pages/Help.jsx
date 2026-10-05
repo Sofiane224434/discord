@@ -31,9 +31,9 @@ function Help() {
     return (
         <main className="site-page site-section-page">
             <header className="site-page-heading">
-                <p className="site-eyebrow">CENTRE D’AIDE / SUPPORT</p>
-                <h1>Besoin d’un coup de main ?</h1>
-                <p>Réponses rapides sur les accès, les commandes et le paramétrage d’Azim.</p>
+                 <p className="site-eyebrow">AIDE</p>
+                 <h1>Une question sur Azim ?</h1>
+                 <p>Voici les réponses aux questions les plus courantes.</p>
             </header>
 
             <section className="faq-list" aria-label="Questions fréquentes">
@@ -47,11 +47,11 @@ function Help() {
 
             <section className="module-cta site-panel">
                 <div>
-                    <p className="site-eyebrow">ASSISTANCE COMMUNAUTAIRE</p>
-                    <h2>Une question qui n’est pas ici ?</h2>
-                    <p>Rejoignez le serveur de support pour signaler un problème ou poser votre question.</p>
+                    <p className="site-eyebrow">SUPPORT DISCORD</p>
+                    <h2>Vous n’avez pas trouvé la réponse ?</h2>
+                    <p>Venez poser votre question sur le serveur de support.</p>
                 </div>
-                <a href="https://discord.gg/xy3NpkjYsF" target="_blank" rel="noreferrer" className="btn btn-primary">Ouvrir le support Discord <span aria-hidden="true">↗</span></a>
+                <a href="https://discord.gg/xy3NpkjYsF" target="_blank" rel="noreferrer" className="btn btn-primary">Rejoindre le support <span aria-hidden="true">↗</span></a>
             </section>
 
             <div className="help-quick-links">

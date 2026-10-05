@@ -17,13 +17,14 @@ function Header() {
 
     const [menuOpen, setMenuOpen] = useState(false);
     const categoryLinks = [
-        { label: 'Dashboard', to: isAuthenticated ? '/dashboard' : '/login' },
+        { label: 'Accueil', to: '/' },
         { label: 'Bots', to: '/public-servers' },
         { label: 'Modules', to: '/modules' },
-        { label: 'Documentation', to: '/commands' },
-        { label: 'Analytics', to: isAuthenticated ? '/command-history' : '/login' },
+        { label: 'Commandes', to: '/commands' },
+        ...(isAuthenticated ? [{ label: 'Utilisation', to: '/command-history' }] : []),
         { label: 'Statut', to: '/status' },
-        { label: 'Support', to: '/help' },
+        { label: 'Aide', to: '/help' },
+        ...(isAuthenticated ? [{ label: 'Panel', to: '/dashboard' }] : []),
     ];
 
     const addToServerUrl = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';

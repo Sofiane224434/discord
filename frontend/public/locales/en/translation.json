@@ -173,7 +173,7 @@
     }
   },
   "command_history": {
-    "title": "Command History",
+    "title": "Command usage",
     "total": "{{count}} total uses",
     "unique": "{{count}} distinct commands",
     "search_placeholder": "Search a command...",
@@ -190,7 +190,7 @@
   },
   "email": {
     "title": "Send a message",
-    "subtitle": "Transactional sending workspace inside Azim Control Center.",
+    "subtitle": "Send a test message.",
     "to": "Recipient",
     "name": "Name (optional)",
     "subject": "Subject",
@@ -207,6 +207,6 @@
     "register_error": "Registration failed"
   },
   "footer": {
-    "copyright": "© {{year}} Azim Control Center"
+    "copyright": "© {{year}} Azim"
   }
 }

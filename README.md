@@ -237,8 +237,10 @@ Le starter inclut un pont backend pour afficher des donnees de ton bot sur la pa
 
 - Endpoint frontend consomme: `GET /api/bot/overview` (route protegee JWT)
 - Le backend proxy vers: `GET BOT_API_URL/dashboard/overview`
-- Header optionnel envoye au bot: `x-dashboard-token: BOT_API_TOKEN`
+- Header partage obligatoire entre backend et bot: `x-dashboard-token` (`BOT_API_TOKEN` doit correspondre a `DASHBOARD_TOKEN`)
 - En production sur le meme hote Docker que le bot: `BOT_API_URL=http://azim-bot:3005`
+- Les reglages par serveur sont disponibles depuis la console pour les administrateurs et les membres ayant `Gerer le serveur`.
+- Apres OAuth Discord, reconnecte-toi pour obtenir un JWT contenant la liste signee des serveurs que tu peux administrer.
 
 ### Contrat attendu de l API bot
 

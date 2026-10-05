@@ -158,7 +158,7 @@ function splitDisplayName(raw = '') {
 
 function hasManageGuildPermission(permissions) {
     try {
-        return (BigInt(permissions || '0') & 0x20n) === 0x20n;
+        return (BigInt(permissions || '0') & (0x20n | 0x8n)) !== 0n;
     } catch {
         return false;
     }
@@ -203,10 +203,10 @@ export const exchangeCode = async (req, res) => {
             };
         }
 
-        const token = generateToken(localUser);
         const manageableGuilds = Array.isArray(guilds)
             ? guilds.filter((guild) => hasManageGuildPermission(guild.permissions))
             : [];
+        const token = generateToken(localUser, manageableGuilds.map((guild) => String(guild.id)));
 
         return res.json({
             token,

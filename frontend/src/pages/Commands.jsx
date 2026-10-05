@@ -1,45 +1,106 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
 
-function Commands() {
-    const { t } = useTranslation();
-    const { isAuthenticated } = useAuth();
+const commandGroups = [
+    {
+        name: 'Assistant & outils',
+        commands: [
+            ['/ask', 'Pose une question à l’assistant IA du serveur.'],
+            ['/help', 'Affiche les commandes actives et leur usage.'],
+            ['/ping', 'Mesure la latence Discord et WebSocket.'],
+            ['/remindme', 'Programme un rappel personnel dans un délai donné.'],
+            ['/salon', 'Propose un nom et une description de salon.'],
+            ['/version', 'Affiche la version et l’historique du bot.'],
+            ['/serverinfo', 'Consulte les informations et statistiques du serveur.'],
+            ['/userinfo', 'Affiche le profil Discord d’un membre.'],
+        ],
+    },
+    {
+        name: 'Administration & accueil',
+        commands: [
+            ['/config', 'Règle la langue IA, le prompt, les journaux et le profil du bot.'],
+            ['/welcome', 'Configure les messages d’arrivée et les règles par rôle.'],
+            ['/code', 'Active ou désactive les commandes conditionnelles du mode Islam.'],
+            ['/permissions', 'Consulte les accès requis pour les commandes.'],
+        ],
+    },
+    {
+        name: 'Modération & progression',
+        commands: [
+            ['/purge', 'Supprime un ensemble de messages selon des filtres.'],
+            ['/zzzz', 'Suspend les réponses automatiques dans un salon.'],
+            ['/rank', 'Gère les niveaux, le classement et les récompenses.'],
+        ],
+    },
+    {
+        name: 'Automatisation & communauté',
+        commands: [
+            ['/youtube', 'Surveille des chaînes et annonce leurs nouvelles vidéos.'],
+            ['/tiktok', 'Configure et contrôle les alertes TikTok Live.'],
+            ['/pubtimer', 'Suit le temps consacré aux publications de l’équipe.'],
+            ['/rappelbump', 'Envoie le rappel de bump du serveur.'],
+        ],
+    },
+    {
+        name: 'Mode Islam · activable par serveur',
+        commands: [
+            ['/coran', 'Consulte les sourates et versets disponibles.'],
+            ['/quiz', 'Lance un quiz et consulte les classements.'],
+        ],
+    },
+];
 
-    const commands = [
-        { name: '/help', description: t('categories.commands.list.help') },
-        { name: '/version', description: t('categories.commands.list.version') },
-        { name: '/versions', description: t('categories.commands.list.versions') },
-        { name: '/setup', description: t('categories.commands.list.setup') },
-        { name: '/logs', description: t('categories.commands.list.logs') },
-        { name: '/moderation', description: t('categories.commands.list.moderation') },
-    ];
+function Commands() {
+    const { isAuthenticated } = useAuth();
+    const [search, setSearch] = useState('');
+    const query = search.trim().toLocaleLowerCase('fr');
+    const filteredGroups = useMemo(() => commandGroups.map((group) => ({
+        ...group,
+        commands: group.commands.filter(([name, description]) => `${name} ${description}`.toLocaleLowerCase('fr').includes(query)),
+    })).filter((group) => group.commands.length), [query]);
+    const commandCount = filteredGroups.reduce((total, group) => total + group.commands.length, 0);
 
     return (
-        <div className="min-h-screen px-4 py-16 md:py-24 flex items-center justify-center">
-            <div className="max-w-4xl w-full bg-white/85 border border-white rounded-3xl shadow-xl backdrop-blur p-8 md:p-12">
-                <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4">{t('categories.commands.title')}</h1>
-                <p className="text-base md:text-lg text-slate-600 mb-8">{t('categories.commands.description')}</p>
+        <main className="site-page site-section-page">
+            <header className="site-page-heading">
+                <p className="site-eyebrow">DOCUMENTATION · SLASH COMMANDS</p>
+                <h1>Le catalogue des commandes.</h1>
+                <p>Parcourez les outils réellement disponibles dans Azim et trouvez rapidement leur fonction.</p>
+            </header>
 
-                <div className="grid md:grid-cols-2 gap-3 mb-8">
-                    {commands.map((command) => (
-                        <article key={command.name} className="rounded-xl border border-slate-200 p-4 bg-white">
-                            <p className="mono text-sm font-semibold text-teal-700 mb-1">{command.name}</p>
-                            <p className="text-slate-600 text-sm">{command.description}</p>
-                        </article>
-                    ))}
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                    <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-primary">
-                        {t('categories.commands.cta_dashboard')}
-                    </Link>
-                    <Link to="/" className="btn btn-soft">
-                        {t('categories.back_home')}
-                    </Link>
-                </div>
+            <div className="command-search-row">
+                <label className="command-search-label" htmlFor="command-search">Rechercher une commande</label>
+                <input id="command-search" className="form-input command-search-input" type="search" placeholder="Ex. langue, rôle, YouTube…" value={search} onChange={(event) => setSearch(event.target.value)} />
+                <span className="command-total">{commandCount} commande{commandCount === 1 ? '' : 's'}</span>
             </div>
-        </div>
+
+            <div className="command-groups">
+                {filteredGroups.map((group) => (
+                    <section className="command-group" key={group.name}>
+                        <h2>{group.name}</h2>
+                        <div className="command-list">
+                            {group.commands.map(([name, description]) => (
+                                <article className="command-row" key={name}>
+                                    <code>{name}</code>
+                                    <p>{description}</p>
+                                </article>
+                            ))}
+                        </div>
+                    </section>
+                ))}
+                {!filteredGroups.length ? <p className="site-empty-state">Aucune commande ne correspond à cette recherche.</p> : null}
+            </div>
+
+            <aside className="module-cta site-panel">
+                <div>
+                    <p className="site-eyebrow">VOTRE SERVEUR</p>
+                    <h2>Chaque module se règle selon vos besoins.</h2>
+                    <p>Connectez votre compte Discord pour ouvrir la configuration des serveurs où Azim est installé.</p>
+                </div>
+                <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-primary">Accéder au panel <span aria-hidden="true">→</span></Link>
+            </aside>
+        </main>
     );
 }
 

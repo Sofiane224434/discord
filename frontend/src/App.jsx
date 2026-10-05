@@ -15,6 +15,8 @@ import Commands from './pages/Commands.jsx';
 import Help from './pages/Help.jsx';
 import Status from './pages/Status.jsx';
 import CommandHistory from './pages/CommandHistory.jsx';
+import GuildConfig from './pages/GuildConfig.jsx';
+import Modules from './pages/Modules.jsx';
 function App() {
   const { loading } = useAuth();
   if (loading) return <div><p>Chargement...</p></div>;
@@ -24,11 +26,18 @@ function App() {
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/public-servers" element={<PublicServers />} />
+        <Route path="/bots" element={<PublicServers />} />
+        <Route path="/modules" element={<Modules />} />
         <Route path="/commands" element={<Commands />} />
+        <Route path="/docs" element={<Commands />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/faq" element={<Help />} />
         <Route path="/status" element={<Status />} />
         <Route path="/dashboard" element={
           <PrivateRoute><Dashboard /></PrivateRoute>
+        } />
+        <Route path="/dashboard/servers/:guildId/config" element={
+          <PrivateRoute><GuildConfig /></PrivateRoute>
         } />
         <Route path="/email" element={
           <PrivateRoute><EmailPage /></PrivateRoute>

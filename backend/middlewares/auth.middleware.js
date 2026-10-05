@@ -13,6 +13,7 @@ const user = await User.findById(decoded.id);
 if (!user) {
 return res.status(401).json({ error: 'Utilisateur non trouvé' });
 }
+user.discord_guild_ids = Array.isArray(decoded.discordGuildIds) ? decoded.discordGuildIds : [];
 req.user = user;
 next();
 } catch (error) {

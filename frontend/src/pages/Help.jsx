@@ -1,45 +1,65 @@
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+
+const questions = [
+    {
+        question: 'Comment configurer Azim sur mon serveur ?',
+        answer: 'Connectez-vous avec Discord, ouvrez le panel, puis choisissez un serveur où le bot est présent. Le bouton Configurer le bot donne accès aux réglages propres à ce serveur.',
+    },
+    {
+        question: 'Pourquoi aucun serveur n’apparaît dans le panel ?',
+        answer: 'Reconnectez Discord et autorisez la lecture de vos serveurs. Votre compte doit disposer de la permission Gérer le serveur ou Administrateur. Si le bot n’est pas encore invité, le panel vous proposera son ajout.',
+    },
+    {
+        question: 'Comment forcer l’IA à répondre dans une langue ?',
+        answer: 'Dans le panel, ouvrez le serveur puis Intelligence artificielle et choisissez la langue des réponses. La même option est disponible avec /config ia_langue langue:français. Laisser le champ vide rétablit le choix contextuel.',
+    },
+    {
+        question: 'Les réglages d’un serveur affectent-ils les autres ?',
+        answer: 'Non. Les réglages IA, bienvenue, journaux, profil local, notifications et niveaux sont isolés par serveur. Le nom et l’activité du compte bot restent globaux.',
+    },
+    {
+        question: 'Comment activer /coran et /quiz ?',
+        answer: 'Activez le mode Islam dans la configuration du serveur. Azim synchronise ensuite les commandes slash disponibles pour ce serveur.',
+    },
+    {
+        question: 'Où trouver la liste complète des commandes ?',
+        answer: 'La documentation présente le catalogue réel d’Azim, organisé par usage et filtrable. Certaines commandes sont limitées à la modération ou aux administrateurs.',
+    },
+];
 
 function Help() {
-    const { t } = useTranslation();
-
     return (
-        <div className="min-h-screen px-4 py-16 md:py-24 flex items-center justify-center">
-            <div className="max-w-4xl w-full bg-white/85 border border-white rounded-3xl shadow-xl backdrop-blur p-8 md:p-12">
-                <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4">{t('categories.help.title')}</h1>
-                <p className="text-base md:text-lg text-slate-600 mb-8">{t('categories.help.description')}</p>
+        <main className="site-page site-section-page">
+            <header className="site-page-heading">
+                <p className="site-eyebrow">CENTRE D’AIDE / SUPPORT</p>
+                <h1>Besoin d’un coup de main ?</h1>
+                <p>Réponses rapides sur les accès, les commandes et le paramétrage d’Azim.</p>
+            </header>
 
-                <div className="grid md:grid-cols-3 gap-3 mb-8 text-sm">
-                    <article className="rounded-xl border border-slate-200 p-4 bg-white">
-                        <p className="font-semibold text-slate-800 mb-1">{t('categories.help.cards.docs.label')}</p>
-                        <p className="text-slate-500">{t('categories.help.cards.docs.text')}</p>
-                    </article>
-                    <article className="rounded-xl border border-slate-200 p-4 bg-white">
-                        <p className="font-semibold text-slate-800 mb-1">{t('categories.help.cards.discord.label')}</p>
-                        <p className="text-slate-500">{t('categories.help.cards.discord.text')}</p>
-                    </article>
-                    <article className="rounded-xl border border-slate-200 p-4 bg-white">
-                        <p className="font-semibold text-slate-800 mb-1">{t('categories.help.cards.support.label')}</p>
-                        <p className="text-slate-500">{t('categories.help.cards.support.text')}</p>
-                    </article>
-                </div>
+            <section className="faq-list" aria-label="Questions fréquentes">
+                {questions.map((item, index) => (
+                    <details className="faq-item" key={item.question} open={index === 0}>
+                        <summary><span className="faq-number">{String(index + 1).padStart(2, '0')}</span><span>{item.question}</span><span className="faq-toggle" aria-hidden="true">+</span></summary>
+                        <p>{item.answer}</p>
+                    </details>
+                ))}
+            </section>
 
-                <div className="flex flex-wrap gap-3">
-                    <a
-                        href="https://discord.gg/xy3NpkjYsF"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn btn-primary"
-                    >
-                        {t('categories.help.cta_discord')}
-                    </a>
-                    <Link to="/" className="btn btn-soft">
-                        {t('categories.back_home')}
-                    </Link>
+            <section className="module-cta site-panel">
+                <div>
+                    <p className="site-eyebrow">ASSISTANCE COMMUNAUTAIRE</p>
+                    <h2>Une question qui n’est pas ici ?</h2>
+                    <p>Rejoignez le serveur de support pour signaler un problème ou poser votre question.</p>
                 </div>
+                <a href="https://discord.gg/xy3NpkjYsF" target="_blank" rel="noreferrer" className="btn btn-primary">Ouvrir le support Discord <span aria-hidden="true">↗</span></a>
+            </section>
+
+            <div className="help-quick-links">
+                <Link to="/commands">Documentation des commandes <span>→</span></Link>
+                <Link to="/status">État des services <span>→</span></Link>
+                <Link to="/modules">Découvrir les modules <span>→</span></Link>
             </div>
-        </div>
+        </main>
     );
 }
 

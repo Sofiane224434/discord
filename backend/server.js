@@ -8,6 +8,7 @@ import emailRoutes from './routes/email.routes.js';
 import botRoutes from './routes/bot.routes.js';
 import discordRoutes from './routes/discord.routes.js';
 import systemRoutes from './routes/system.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 // Connexion BDD
@@ -31,6 +32,7 @@ app.use('/api/email', emailRoutes);
 app.use('/api/bot', botRoutes);
 app.use('/api/discord', discordRoutes);
 app.use('/api/system', systemRoutes);
+app.use('/api/admin', adminRoutes);
 // 404
 app.use((req, res) => res.status(404).json({ error: 'Route non trouvée' }));
 // Démarrage

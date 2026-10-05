@@ -52,6 +52,14 @@ export const botService = {
     getGuildStats: (id) => fetchAPI(`/bot/guilds/${encodeURIComponent(id)}/stats`),
 }
 
+export const adminService = {
+    getGuildConfig: (id) => fetchAPI(`/admin/guild/${encodeURIComponent(id)}/config`),
+    updateGuildConfig: (id, config) => fetchAPI(`/admin/guild/${encodeURIComponent(id)}/config`, {
+        method: 'PUT',
+        body: JSON.stringify(config),
+    }),
+}
+
 export const discordService = {
     getAuthUrl: (redirectUri) =>
         fetchAPI(`/discord/url${redirectUri ? `?redirect_uri=${encodeURIComponent(redirectUri)}` : ''}`),

@@ -1,124 +1,86 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { useAuth } from '../hooks/useAuth.js';
 import { systemService } from '../services/api.js';
 
-const STATUS_COLORS = {
-    ok: 'bg-emerald-500',
-    degraded: 'bg-amber-400',
-    error: 'bg-rose-500',
-    unconfigured: 'bg-slate-400',
-};
-
-function StatusBadge({ status }) {
-    const { t } = useTranslation();
-    const color = STATUS_COLORS[status] || STATUS_COLORS.error;
-    const label = t(`status.badge.${status}`, status);
-    return (
-        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium text-white ${color}`}>
-            {label}
-        </span>
-    );
-}
-
-function ServiceCard({ label, description, status }) {
-    return (
-        <article className="rounded-xl border border-slate-200 p-4 bg-white flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-                <p className="font-semibold text-slate-800">{label}</p>
-                <StatusBadge status={status} />
-            </div>
-            <p className="text-slate-500 text-sm">{description}</p>
-        </article>
-    );
-}
+const serviceLabels = [
+    { key: 'db', name: 'Base de données', detail: 'Stockage et historique du dashboard' },
+    { key: 'botApi', name: 'API du bot', detail: 'Connexion au service Discord Azim' },
+    { key: 'oauth', name: 'Connexion Discord', detail: 'Autorisation et récupération des serveurs' },
+];
 
 function Status() {
-    const { t } = useTranslation();
-    const { isAuthenticated } = useAuth();
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [checkedAt, setCheckedAt] = useState(null);
 
     useEffect(() => {
-        let mounted = true;
-        function load() {
-            setLoading(true);
-            systemService.getHealth()
-                .then(data => { if (mounted) setHealth(data); })
-                .catch(() => { if (mounted) setHealth(null); })
-                .finally(() => { if (mounted) setLoading(false); });
-        }
+        let active = true;
+        const load = async () => {
+            try {
+                const result = await systemService.getHealth();
+                if (active) {
+                    setHealth(result);
+                    setCheckedAt(new Date());
+                }
+            } catch {
+                if (active) {
+                    setHealth(null);
+                    setCheckedAt(new Date());
+                }
+            } finally {
+                if (active) setLoading(false);
+            }
+        };
         load();
-        const interval = setInterval(load, 30000);
-        return () => { mounted = false; clearInterval(interval); };
+        const timer = setInterval(load, 30000);
+        return () => {
+            active = false;
+            clearInterval(timer);
+        };
     }, []);
 
     const services = health?.services || {};
-    const db = services.db || {};
-    const botApi = services.botApi || {};
-    const oauth = services.oauth || {};
+    const overall = health?.status || 'error';
+    const label = { ok: 'Tous les systèmes sont opérationnels', degraded: 'Service dégradé', error: 'Vérification indisponible', unconfigured: 'Configuration requise' }[overall] || overall;
 
     return (
-        <div className="min-h-screen px-4 py-16 md:py-24 flex items-center justify-center">
-            <div className="max-w-4xl w-full bg-white/85 border border-white rounded-3xl shadow-xl backdrop-blur p-8 md:p-12">
-                <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-3xl md:text-5xl font-bold text-slate-900">{t('categories.status.title')}</h1>
-                    {!loading && health && (
-                        <StatusBadge status={health.status} />
-                    )}
-                </div>
-                <p className="text-base md:text-lg text-slate-600 mb-8">{t('categories.status.description')}</p>
+        <main className="site-page site-section-page">
+            <header className="site-page-heading">
+                <p className="site-eyebrow">AZIM SYSTEMS / DISPONIBILITÉ</p>
+                <h1>État des services.</h1>
+                <p>Surveillance de la console, de la connexion au bot et de l’authentification Discord.</p>
+            </header>
 
-                {loading && (
-                    <p className="text-slate-500 mb-6 text-sm">{t('status.loading')}</p>
-                )}
+            <section className={`status-overall status-state-${overall} site-panel`}>
+                <span className="status-overall-indicator" />
+                <div><p className="site-eyebrow">ÉTAT GLOBAL</p><h2>{loading ? 'Vérification en cours…' : label}</h2></div>
+                <span className="status-auto-refresh">ACTUALISATION · 30 S</span>
+            </section>
 
-                {!loading && (
-                    <>
-                        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-3 mb-6 text-sm">
-                            <ServiceCard
-                                label={t('categories.status.cards.database.label')}
-                                description={t('categories.status.cards.database.text')}
-                                status={db.status || 'error'}
-                            />
-                            <ServiceCard
-                                label={t('categories.status.cards.api.label')}
-                                description={t('categories.status.cards.api.text')}
-                                status={botApi.status || 'unconfigured'}
-                            />
-                            <ServiceCard
-                                label={t('categories.status.cards.bot.label')}
-                                description={t('categories.status.cards.bot.text')}
-                                status={botApi.status || 'unconfigured'}
-                            />
-                            <ServiceCard
-                                label={t('status.oauth_label')}
-                                description={t('status.oauth_desc')}
-                                status={oauth.status || 'unconfigured'}
-                            />
-                        </div>
-                        {health && (
-                            <p className="text-xs text-slate-400 mb-6">
-                                {t('status.checked_at')} {new Date(health.timestamp).toLocaleTimeString()}
-                            </p>
-                        )}
-                        {!health && (
-                            <p className="text-sm text-rose-600 mb-6">{t('status.fetch_error')}</p>
-                        )}
-                    </>
-                )}
+            <section className="status-service-list" aria-label="État détaillé">
+                {serviceLabels.map((service) => {
+                    const state = services[service.key]?.status || 'unconfigured';
+                    return (
+                        <article className="status-service-row" key={service.key}>
+                            <span className={`status-service-indicator status-indicator-${state}`} />
+                            <div className="status-service-name"><h2>{service.name}</h2><p>{service.detail}</p></div>
+                            <span className={`status-service-label status-label-${state}`}>{loading ? 'Contrôle…' : state === 'ok' ? 'Opérationnel' : state === 'degraded' ? 'Dégradé' : state === 'unconfigured' ? 'Non configuré' : 'Indisponible'}</span>
+                        </article>
+                    );
+                })}
+            </section>
 
-                <div className="flex flex-wrap gap-3">
-                    <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-primary">
-                        {t('categories.status.cta_dashboard')}
-                    </Link>
-                    <Link to="/" className="btn btn-soft">
-                        {t('categories.back_home')}
-                    </Link>
-                </div>
+            <div className="status-last-check">
+                <span>Dernière vérification : {checkedAt ? checkedAt.toLocaleTimeString() : '—'}</span>
+                <span>Source : endpoint santé du dashboard</span>
             </div>
-        </div>
+
+            <div className="help-quick-links">
+                <Link to="/dashboard">Ouvrir la console <span>→</span></Link>
+                <Link to="/help">Centre d’aide <span>→</span></Link>
+                <a href="https://discord.gg/xy3NpkjYsF" target="_blank" rel="noreferrer">Support Discord <span>↗</span></a>
+            </div>
+        </main>
     );
 }
 

@@ -2,9 +2,9 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 // Génère un token JWT
-export const generateToken = (user) => {
+export const generateToken = (user, discordGuildIds = []) => {
     return jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, discordGuildIds },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );

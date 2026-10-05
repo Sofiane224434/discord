@@ -72,35 +72,37 @@ npm run dev
 ## 🛠️ Technologies
 
 <!-- AUTO:technologies -->
+
 **Backend**
 
-| Technologie | Version |
-|-------------|----------|
-| Node.js | 22+ |
-| express | 5.2.1 |
-| mysql2 | 3.16.3 |
-| jsonwebtoken | 9.0.3 |
-| bcrypt | 6.0.0 |
-| zod | 4.3.6 |
-| @getbrevo/brevo | 5.0.1 |
+| Technologie     | Version |
+| --------------- | ------- |
+| Node.js         | 22+     |
+| express         | 5.2.1   |
+| mysql2          | 3.16.3  |
+| jsonwebtoken    | 9.0.3   |
+| bcrypt          | 6.0.0   |
+| zod             | 4.3.6   |
+| @getbrevo/brevo | 5.0.1   |
 
 **Frontend**
 
-| Technologie | Version |
-|-------------|----------|
-| react | 19.2.0 |
-| vite | 7.3.1 |
-| tailwindcss | 4.1.18 |
-| react-router-dom | 7.13.0 |
-| i18next | 25.8.18 |
-| zod | 4.3.6 |
+| Technologie      | Version |
+| ---------------- | ------- |
+| react            | 19.2.0  |
+| vite             | 7.3.1   |
+| tailwindcss      | 4.1.18  |
+| react-router-dom | 7.13.0  |
+| i18next          | 25.8.18 |
+| zod              | 4.3.6   |
 
 **Outils Racine**
 
-| Outil | Version |
-|-------|----------|
-| concurrently | 9.2.1 |
-| deepl-node | 1.24.0 |
+| Outil        | Version |
+| ------------ | ------- |
+| concurrently | 9.2.1   |
+| deepl-node   | 1.24.0  |
+
 <!-- /AUTO:technologies -->
 
 ---
@@ -108,6 +110,7 @@ npm run dev
 ## 🏗️ Architecture
 
 <!-- AUTO:structure -->
+
 ```
 starter-kit/
 ├── backend/
@@ -164,6 +167,7 @@ starter-kit/
 └── shared/
     └── schemas.js
 ```
+
 <!-- /AUTO:structure -->
 
 ---
@@ -355,13 +359,13 @@ La page `/email` (protégée) permet d'envoyer un email via Brevo.
 ### Réutiliser `sendCustomEmail`
 
 ```js
-import { sendCustomEmail } from '../services/email.service.js';
+import { sendCustomEmail } from "../services/email.service.js";
 
 await sendCustomEmail({
-  to: 'destinataire@example.com',
-  name: 'Prénom Nom',   // optionnel
-  subject: 'Sujet',
-  message: 'Corps du message',
+  to: "destinataire@example.com",
+  name: "Prénom Nom", // optionnel
+  subject: "Sujet",
+  message: "Corps du message",
 });
 ```
 
@@ -371,12 +375,12 @@ await sendCustomEmail({
 
 **Flow :** `POST /register` ou `/login` → JWT retourné → stocké en `localStorage` → joint dans `Authorization: Bearer <token>` sur chaque requête protégée.
 
-| Mesure | Description |
-|--------|-------------|
-| bcrypt (cost 10) | Mots de passe jamais stockés en clair |
-| JWT signé | Secret configurable, expiration paramétrable |
-| CORS strict | Seul `http://localhost:5173` autorisé en dev |
-| Validation Zod | Données validées côté serveur sur chaque route |
+| Mesure           | Description                                    |
+| ---------------- | ---------------------------------------------- |
+| bcrypt (cost 10) | Mots de passe jamais stockés en clair          |
+| JWT signé        | Secret configurable, expiration paramétrable   |
+| CORS strict      | Seul `http://localhost:5173` autorisé en dev   |
+| Validation Zod   | Données validées côté serveur sur chaque route |
 
 ---
 
@@ -384,58 +388,60 @@ await sendCustomEmail({
 
 ### Auth
 
-| Méthode | Endpoint | Protection | Body |
-|---------|----------|------------|------|
-| POST | `/api/auth/register` | Public | `{ email, password, firstname?, lastname? }` |
-| POST | `/api/auth/login` | Public | `{ email, password }` |
-| GET | `/api/auth/me` | 🔒 JWT | — |
+| Méthode | Endpoint             | Protection | Body                                         |
+| ------- | -------------------- | ---------- | -------------------------------------------- |
+| POST    | `/api/auth/register` | Public     | `{ email, password, firstname?, lastname? }` |
+| POST    | `/api/auth/login`    | Public     | `{ email, password }`                        |
+| GET     | `/api/auth/me`       | 🔒 JWT     | —                                            |
 
 ### Email
 
-| Méthode | Endpoint | Protection | Body |
-|---------|----------|------------|------|
-| POST | `/api/email/send` | 🔒 JWT | `{ to, subject, message, name? }` |
+| Méthode | Endpoint          | Protection | Body                              |
+| ------- | ----------------- | ---------- | --------------------------------- |
+| POST    | `/api/email/send` | 🔒 JWT     | `{ to, subject, message, name? }` |
 
 ### Bot Dashboard
 
-| Méthode | Endpoint | Protection | Body |
-|---------|----------|------------|------|
-| GET | `/api/bot/overview` | 🔒 JWT | — |
+| Méthode | Endpoint            | Protection | Body |
+| ------- | ------------------- | ---------- | ---- |
+| GET     | `/api/bot/overview` | 🔒 JWT     | —    |
 
 ---
 
 ## 🛠️ Scripts Disponibles
 
 <!-- AUTO:scripts -->
+
 ### Racine
 
-| Commande | Rôle |
-|----------|------|
-| `npm run sync` | `sync-studio` |
-| `npm run dev` | `concurrently "npm run dev:backend" "npm run dev:frontend" "n…` |
-| `npm run dev:backend` | `cd backend && npm run dev` |
-| `npm run dev:frontend` | `cd frontend && npm run dev` |
-| `npm run translate` | `node scripts/translate.js` |
-| `npm run translate:watch` | `node scripts/translate.js --watch` |
-| `npm run readme` | `node scripts/readme.js` |
-| `npm run readme:check` | `node scripts/readme.js --check` |
-| `npm run readme:watch` | `node scripts/readme.js --watch` |
+| Commande                  | Rôle                                                            |
+| ------------------------- | --------------------------------------------------------------- |
+| `npm run sync`            | `sync-studio`                                                   |
+| `npm run dev`             | `concurrently "npm run dev:backend" "npm run dev:frontend" "n…` |
+| `npm run dev:backend`     | `cd backend && npm run dev`                                     |
+| `npm run dev:frontend`    | `cd frontend && npm run dev`                                    |
+| `npm run translate`       | `node scripts/translate.js`                                     |
+| `npm run translate:watch` | `node scripts/translate.js --watch`                             |
+| `npm run readme`          | `node scripts/readme.js`                                        |
+| `npm run readme:check`    | `node scripts/readme.js --check`                                |
+| `npm run readme:watch`    | `node scripts/readme.js --watch`                                |
 
 ### Backend (`cd backend`)
 
-| Commande | Rôle |
-|----------|------|
-| `npm run start` | `node server.js` |
-| `npm run dev` | `node --watch server.js` |
+| Commande        | Rôle                     |
+| --------------- | ------------------------ |
+| `npm run start` | `node server.js`         |
+| `npm run dev`   | `node --watch server.js` |
 
 ### Frontend (`cd frontend`)
 
-| Commande | Rôle |
-|----------|------|
-| `npm run dev` | `vite` |
-| `npm run build` | `vite build` |
-| `npm run lint` | `eslint .` |
+| Commande          | Rôle           |
+| ----------------- | -------------- |
+| `npm run dev`     | `vite`         |
+| `npm run build`   | `vite build`   |
+| `npm run lint`    | `eslint .`     |
 | `npm run preview` | `vite preview` |
+
 <!-- /AUTO:scripts -->
 
 ---
@@ -448,8 +454,8 @@ shared/schemas.js   # Schémas Zod partagés frontend + backend
 
 ```js
 // Backend
-import { loginSchema } from '../../shared/schemas.js';
+import { loginSchema } from "../../shared/schemas.js";
 
 // Frontend
-import { loginSchema } from '../../../shared/schemas.js';
+import { loginSchema } from "../../../shared/schemas.js";
 ```

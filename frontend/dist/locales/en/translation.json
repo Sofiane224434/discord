@@ -130,6 +130,7 @@
     "discord_servers_empty": "Sign in with Discord to load your manageable servers.",
     "discord_server_connected": "Bot is present on this server",
     "discord_server_not_connected": "Bot is not present on this server",
+    "add_bot_btn": "Add Azim",
     "guild_members": "{{count}} members",
     "source_api": "Source: live API",
     "source_cache": "Source: SQL cache",
@@ -140,6 +141,12 @@
     "top_commands_empty": "No command has been executed yet.",
     "errors_breakdown_title": "Error breakdown",
     "errors_breakdown_empty": "No typed errors available.",
+    "guild_history_title": "Snapshot history",
+    "guild_history_empty": "No history available for this server.",
+    "back": "← Back to dashboard",
+    "oauth_test_btn": "Test Discord OAuth",
+    "oauth_testing": "Testing...",
+    "oauth_missing_client_id": "Client ID missing",
     "status": {
       "online": "Bot online",
       "offline": "Bot offline"
@@ -152,6 +159,28 @@
       "errors_total": "Errors (total)"
     }
   },
+  "status": {
+    "loading": "Loading service status...",
+    "fetch_error": "Unable to fetch service health.",
+    "checked_at": "Checked at",
+    "oauth_label": "Discord OAuth",
+    "oauth_desc": "Discord OAuth credentials configuration (client_id / client_secret).",
+    "badge": {
+      "ok": "Operational",
+      "degraded": "Degraded",
+      "error": "Error",
+      "unconfigured": "Not configured"
+    }
+  },
+  "command_history": {
+    "title": "Command usage",
+    "total": "{{count}} total uses",
+    "unique": "{{count}} distinct commands",
+    "search_placeholder": "Search a command...",
+    "sort_count": "Sort by usage",
+    "sort_name": "Sort by name",
+    "no_results": "No command found."
+  },
   "oauth": {
     "title": "Discord sign in",
     "processing": "Signing in...",
@@ -161,7 +190,7 @@
   },
   "email": {
     "title": "Send a message",
-    "subtitle": "Transactional sending workspace inside Azim Control Center.",
+    "subtitle": "Send a test message.",
     "to": "Recipient",
     "name": "Name (optional)",
     "subject": "Subject",
@@ -178,6 +207,6 @@
     "register_error": "Registration failed"
   },
   "footer": {
-    "copyright": "© {{year}} Azim Control Center"
+    "copyright": "© {{year}} Azim"
   }
 }

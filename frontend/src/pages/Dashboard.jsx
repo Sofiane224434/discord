@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { botService, discordService } from '../services/api.js';
@@ -34,24 +34,25 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [inviteLoading, setInviteLoading] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const loadData = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            const data = await botService.getOverview();
+            setOverview(data);
+            setError('');
+        } catch (apiError) {
+            setError(apiError.message || 'Impossible de charger les données du bot.');
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, []);
 
     useEffect(() => {
-        let active = true;
-        botService.getOverview()
-            .then((data) => {
-                if (active) {
-                    setOverview(data);
-                    setError('');
-                }
-            })
-            .catch((apiError) => {
-                if (active) setError(apiError.message || 'Impossible de charger les données du bot.');
-            })
-            .finally(() => {
-                if (active) setLoading(false);
-            });
-        return () => { active = false; };
-    }, []);
+        loadData();
+    }, [loadData]);
 
     const discordGuilds = useMemo(() => {
         try {
@@ -71,8 +72,42 @@ function Dashboard() {
     const recentErrors = Array.isArray(observability.recentErrors) ? observability.recentErrors.slice(0, 5) : [];
     const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
 
+    // Fusionne les serveurs de session avec les serveurs connectés au bot
+    const displayGuilds = useMemo(() => {
+        const map = new Map();
+        for (const g of discordGuilds) {
+            map.set(String(g.id), { ...g, canManage: hasManageGuildPermission(g) });
+        }
+        if (Array.isArray(overview?.guilds)) {
+            for (const bg of overview.guilds) {
+                const id = String(bg.id);
+                if (map.has(id)) {
+                    const existing = map.get(id);
+                    if (!existing.iconUrl && bg.iconUrl) existing.iconUrl = bg.iconUrl;
+                    if (!existing.memberCount && bg.memberCount) existing.memberCount = bg.memberCount;
+                } else {
+                    map.set(id, {
+                        id,
+                        name: bg.name,
+                        iconUrl: bg.iconUrl,
+                        memberCount: bg.memberCount,
+                        canManage: true,
+                        fromBotList: true,
+                    });
+                }
+            }
+        }
+        return Array.from(map.values());
+    }, [discordGuilds, overview]);
+
+    const totalConnectedCount = Math.max(
+        Number(stats.guildCount || 0),
+        overview?.guilds?.length || 0,
+        connectedGuildIds.size
+    );
+
     const cards = [
-        { label: 'Serveurs', value: Number(stats.guildCount || 0).toLocaleString(), detail: 'connectés au bot', marker: '01' },
+        { label: 'Serveurs', value: totalConnectedCount.toLocaleString(), detail: 'connectés au bot', marker: '01' },
         { label: 'Membres', value: Number(stats.memberCount || 0).toLocaleString(), detail: 'sur les serveurs', marker: '02' },
         { label: 'Commandes · 24 h', value: Number(stats.commandCount24h || 0).toLocaleString(), detail: 'exécutées', marker: '03' },
         { label: 'Disponibilité', value: bot.status === 'online' ? 'En ligne' : 'Hors ligne', detail: `latence ${Math.max(0, Number(bot.latency || 0))} ms`, marker: '04' },
@@ -100,7 +135,9 @@ function Dashboard() {
                 </div>
                 <div className="ops-heading-actions">
                     <Link to="/login" className="ops-action-button">Actualiser Discord</Link>
-                    <button type="button" onClick={() => window.location.reload()} className="ops-action-button">Actualiser</button>
+                    <button type="button" onClick={loadData} disabled={refreshing} className="ops-action-button">
+                        {refreshing ? 'Actualisation…' : 'Actualiser'}
+                    </button>
                     <span className={`ops-status-chip ${bot.status === 'online' ? 'ops-status-online' : 'ops-status-offline'}`}>
                         <span /> {bot.status === 'online' ? 'Bot actif' : loading ? 'Connexion…' : 'Bot indisponible'}
                     </span>
@@ -123,21 +160,26 @@ function Dashboard() {
             <div className="ops-main-grid">
                 <section className="ops-panel site-panel">
                     <div className="ops-panel-heading">
-                        <div><p className="site-eyebrow">VOS SERVEURS</p><h2>Serveurs à gérer</h2></div>
-                        <span className="ops-count">{discordGuilds.length} serveur(s) Discord</span>
+                        <div>
+                            <p className="site-eyebrow">VOS SERVEURS</p>
+                            <h2>Serveurs à gérer</h2>
+                        </div>
+                        <span className="ops-count">
+                            {totalConnectedCount} connecté(s) au bot · {displayGuilds.length} serveur(s)
+                        </span>
                     </div>
-                    {discordGuilds.length ? (
+                    {displayGuilds.length ? (
                         <>
                             <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Actions rapides</span></div>
                             <div className="ops-server-list">
-                                {discordGuilds.map((guild) => {
+                                {displayGuilds.map((guild) => {
                                     const connected = connectedGuildIds.has(String(guild.id));
-                                    const canManage = hasManageGuildPermission(guild);
+                                    const canManage = guild.canManage ?? hasManageGuildPermission(guild);
                                     const statusLabel = connected
-                                        ? guildListIsFresh ? 'Installé' : 'Vu récemment · à vérifier'
+                                        ? 'Installé'
                                         : guildListIsFresh
                                             ? 'Non ajouté'
-                                            : 'À vérifier';
+                                            : 'Non détecté';
                                     const icon = getDiscordGuildIcon(guild);
                                     const serverStats = (overview?.guilds || []).find((item) => String(item.id) === String(guild.id));
                                     return (
@@ -146,21 +188,20 @@ function Dashboard() {
                                                 {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
                                                 <span>{guild.name}</span>
                                             </div>
-                                            <span className={`ops-server-status ${connected ? 'is-connected' : guildListIsFresh ? 'is-disconnected' : 'is-unknown'}`}><i />{statusLabel}</span>
+                                            <span className={`ops-server-status ${connected ? 'is-connected' : 'is-disconnected'}`}><i />{statusLabel}</span>
                                             <span className="ops-server-members">{serverStats ? Number(serverStats.memberCount || 0).toLocaleString() : '—'}</span>
                                             <div className="ops-server-actions">
-                                                {connected && !guildListIsFresh ? (
-                                                    <span className="ops-action-hint">Actualisez l’état</span>
-                                                ) : connected ? (
+                                                {connected ? (
                                                     canManage ? (
                                                         <Link to={`/dashboard/servers/${guild.id}/config`} className="ops-action-button">Configurer <span aria-hidden="true">↗</span></Link>
                                                     ) : <span className="ops-action-hint">Gérer le serveur requis</span>
-                                                ) : guildListIsFresh && canManage ? (
-                                                    <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="ops-action-button">{inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter le bot'}</button>
-                                                ) : !canManage ? (
-                                                    <span className="ops-action-hint">Gérer le serveur requis</span>
+                                                ) : canManage ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="ops-action-button">{inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter le bot'}</button>
+                                                        <Link to={`/dashboard/servers/${guild.id}/config`} className="text-xs text-slate-500 hover:text-teal-700 hover:underline" title="Forcer la configuration si le bot vient d’arriver">Configurer</Link>
+                                                    </div>
                                                 ) : (
-                                                    <span className="ops-action-hint">Actualisez pour vérifier</span>
+                                                    <span className="ops-action-hint">Gérer le serveur requis</span>
                                                 )}
                                             </div>
                                         </article>

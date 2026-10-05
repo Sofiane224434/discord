@@ -97,7 +97,7 @@
     "cta_dashboard": "Ouvrir la console"
   },
   "login": {
-    "title": "Connexion a la console",
+    "title": "Connexion",
     "email": "Email",
     "password": "Mot de passe",
     "submit": "Se connecter",
@@ -107,7 +107,7 @@
     "register_link": "S'inscrire"
   },
   "register": {
-    "title": "Creer un acces dashboard",
+    "title": "Créer un compte",
     "email": "Email",
     "password": "Mot de passe",
     "confirm_password": "Confirmer le mot de passe",
@@ -130,6 +130,7 @@
     "discord_servers_empty": "Connecte-toi avec Discord pour voir tes serveurs gerables.",
     "discord_server_connected": "Bot present sur ce serveur",
     "discord_server_not_connected": "Bot absent de ce serveur",
+    "add_bot_btn": "Ajouter Azim",
     "guild_members": "{{count}} membres",
     "source_api": "Source: API live",
     "source_cache": "Source: cache SQL",
@@ -140,6 +141,12 @@
     "top_commands_empty": "Aucune commande executee pour le moment.",
     "errors_breakdown_title": "Repartition des erreurs",
     "errors_breakdown_empty": "Aucune erreur typee disponible.",
+    "guild_history_title": "Historique des snapshots",
+    "guild_history_empty": "Aucun historique disponible pour ce serveur.",
+    "back": "← Retour au dashboard",
+    "oauth_test_btn": "Tester OAuth Discord",
+    "oauth_testing": "Test en cours...",
+    "oauth_missing_client_id": "Client ID manquant",
     "status": {
       "online": "Bot en ligne",
       "offline": "Bot hors ligne"
@@ -152,8 +159,30 @@
       "errors_total": "Erreurs (total)"
     }
   },
+  "status": {
+    "loading": "Chargement des statuts...",
+    "fetch_error": "Impossible de recuperer l'etat des services.",
+    "checked_at": "Verifie a",
+    "oauth_label": "OAuth Discord",
+    "oauth_desc": "Configuration des identifiants OAuth Discord (client_id / client_secret).",
+    "badge": {
+      "ok": "Operationnel",
+      "degraded": "Degrade",
+      "error": "Erreur",
+      "unconfigured": "Non configure"
+    }
+  },
+  "command_history": {
+    "title": "Utilisation des commandes",
+    "total": "{{count}} utilisations au total",
+    "unique": "{{count}} commandes distinctes",
+    "search_placeholder": "Rechercher une commande...",
+    "sort_count": "Trier par usage",
+    "sort_name": "Trier par nom",
+    "no_results": "Aucune commande trouvee."
+  },
   "oauth": {
-    "title": "Connexion Discord",
+    "title": "Connexion à Discord",
     "processing": "Connexion en cours...",
     "error_no_code": "Code OAuth Discord introuvable dans l'URL.",
     "error_exchange": "Impossible de terminer la connexion Discord",
@@ -161,7 +190,7 @@
   },
   "email": {
     "title": "Envoyer un message",
-    "subtitle": "Espace de test d'envoi transactionnel depuis Azim Control Center.",
+    "subtitle": "Envoyez un message de test.",
     "to": "Destinataire",
     "name": "Nom (optionnel)",
     "subject": "Sujet",
@@ -178,6 +207,6 @@
     "register_error": "Erreur lors de l'inscription"
   },
   "footer": {
-    "copyright": "© {{year}} Azim Control Center"
+    "copyright": "© {{year}} Azim"
   }
 }

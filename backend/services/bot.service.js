@@ -150,7 +150,11 @@ export async function getBotOverview() {
         const payload = await response.json();
         const overview = normalizeOverview(payload);
 
-        await DashboardModel.saveOverview(overview, 'api');
+        try {
+            await DashboardModel.saveOverview(overview, 'api');
+        } catch (dbError) {
+            console.warn('Impossible de sauvegarder le snapshot en base (MySQL désactivé ou erreur):', dbError.message);
+        }
 
         return {
             configured: true,

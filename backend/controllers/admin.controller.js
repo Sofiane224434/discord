@@ -161,14 +161,14 @@ export const activateIslamMode = async (req, res) => {
         const response = await fetch(`${baseUrl}/guild/${encodeURIComponent(guildId)}/islam-code`, {
             method: 'POST',
             headers: getBotHeaders(),
-            body: JSON.stringify({ code: req.body?.code }),
+            body: JSON.stringify({ code: req.body?.code, action: req.body?.action }),
             signal: controller.signal,
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
             const status = [400, 404, 503].includes(response.status) ? response.status : 502;
             return res.status(status).json({
-                error: data.error || 'Impossible d’activer le mode Islam',
+                error: data.error || 'Code invalide ou impossible de modifier le mode',
                 hint: data.hint,
                 details: process.env.NODE_ENV === 'production' ? undefined : data.details,
             });
@@ -176,7 +176,7 @@ export const activateIslamMode = async (req, res) => {
         return res.json(data);
     } catch (error) {
         return res.status(502).json({
-            error: 'Le bot ne répond pas. Réessayez dans quelques instants.',
+            error: 'Le bot Discord ne répond pas. Vérifiez qu’il est bien démarré.',
             details: process.env.NODE_ENV === 'production' ? undefined : error.message,
         });
     } finally {

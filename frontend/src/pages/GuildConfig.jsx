@@ -135,7 +135,7 @@ function GuildConfig() {
         }
     };
 
-    const activateIslam = async () => {
+    const activateSecretCode = async () => {
         setActivatingIslam(true);
         setError('');
         setNotice('');
@@ -143,13 +143,31 @@ function GuildConfig() {
             const result = await adminService.activateIslamMode(guildId, islamCode);
             await refresh();
             setIslamCode('');
-            setNotice(result.commandSync === false
-                ? 'Mode activé. Les commandes sont enregistrées, mais Discord n’a pas encore confirmé leur synchronisation.'
-                : result.alreadyEnabled
-                    ? 'Le mode Islam est déjà activé sur ce serveur.'
-                    : 'Mode Islam activé. /coran et /quiz sont disponibles sur ce serveur.');
+            if (result.islamModeEnabled || result.alreadyEnabled) {
+                setNotice(result.commandSync === false
+                    ? 'Mode Islam débloqué. Les commandes sont enregistrées mais en cours de synchronisation Discord.'
+                    : 'Code secret validé : le mode Islam et ses commandes sont désormais visibles et actifs sur ce serveur.');
+            } else {
+                setNotice('Code appliqué avec succès.');
+            }
         } catch (apiError) {
-            setError(apiError.message || 'Impossible de vérifier ce code. Réessayez.');
+            setError(apiError.message || 'Code secret invalide.');
+        } finally {
+            setActivatingIslam(false);
+        }
+    };
+
+    const disableIslamMode = async () => {
+        if (!window.confirm('Voulez-vous vraiment désactiver le mode Islam pour ce serveur ?')) return;
+        setActivatingIslam(true);
+        setError('');
+        setNotice('');
+        try {
+            await adminService.activateIslamMode(guildId, { action: 'disable' });
+            await refresh();
+            setNotice('Le mode Islam a été désactivé pour ce serveur.');
+        } catch (apiError) {
+            setError(apiError.message || 'Impossible de désactiver le mode.');
         } finally {
             setActivatingIslam(false);
         }
@@ -409,31 +427,60 @@ function GuildConfig() {
                 </section>
 
                 <section className="border-t border-slate-200 pt-6 pb-4">
-                    <h2 className="mb-2 text-xl font-bold text-slate-900">Commandes supplémentaires</h2>
                     {form.features.islamModeEnabled ? (
-                        <div className="islam-enabled-panel">
-                            <p className="islam-enabled-status"><span aria-hidden="true">●</span> Mode Islam activé sur ce serveur</p>
-                            <p className="mt-2 text-sm text-slate-600">Les commandes suivantes sont disponibles ici :</p>
-                            <div className="module-command-list mt-3">
-                                <code>/coran</code>
-                                <code>/quiz</code>
+                        <div>
+                            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900">Mode Islam</h2>
+                                    <p className="mt-1 text-sm text-slate-600">Commandes spirituelles et quiz islamique activés pour ce serveur.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={disableIslamMode}
+                                    disabled={activatingIslam}
+                                    className="btn btn-soft text-xs text-rose-700 hover:bg-rose-50 hover:text-rose-800 disabled:opacity-50"
+                                >
+                                    {activatingIslam ? 'Désactivation…' : 'Désactiver le mode Islam'}
+                                </button>
+                            </div>
+                            <div className="islam-enabled-panel">
+                                <p className="islam-enabled-status"><span aria-hidden="true">●</span> Mode Islam actif sur ce serveur</p>
+                                <p className="mt-3 text-sm text-slate-600">Les commandes suivantes sont disponibles pour vos membres :</p>
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                    <div className="flex items-center gap-2 rounded bg-slate-50 p-2.5 text-sm text-slate-800 border border-slate-200">
+                                        <code className="font-bold text-teal-800">/coran</code>
+                                        <span className="text-xs text-slate-600">Lecture et écoute (sourate, verset, aléatoire)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 rounded bg-slate-50 p-2.5 text-sm text-slate-800 border border-slate-200">
+                                        <code className="font-bold text-teal-800">/quiz</code>
+                                        <span className="text-xs text-slate-600">Quiz thématique avec scores et classement</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="islam-code-form">
-                            <p className="mb-4 text-sm text-slate-600">Entrez le code d’accès pour activer /coran et /quiz sur ce serveur.</p>
-                            <div className="flex flex-wrap gap-3">
-                                <TextInput
-                                    value={islamCode}
-                                    onChange={(event) => setIslamCode(event.target.value)}
-                                    placeholder="Code d’accès"
-                                    autoComplete="off"
-                                    maxLength={64}
-                                    aria-label="Code d’accès du mode Islam"
-                                />
-                                <button type="button" onClick={activateIslam} disabled={activatingIslam || !islamCode.trim()} className="btn btn-primary disabled:opacity-60">
-                                    {activatingIslam ? 'Vérification…' : 'Vérifier le code'}
-                                </button>
+                        <div>
+                            <h2 className="mb-1 text-xl font-bold text-slate-900">Code secret</h2>
+                            <p className="mb-4 text-sm text-slate-600">Vous possédez un code d’activation ? Saisissez-le pour débloquer des fonctionnalités supplémentaires sur ce serveur.</p>
+                            <div className="islam-code-form">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <TextInput
+                                        value={islamCode}
+                                        onChange={(event) => setIslamCode(event.target.value)}
+                                        placeholder="Entrez un code secret…"
+                                        autoComplete="off"
+                                        maxLength={64}
+                                        aria-label="Code secret d'activation"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={activateSecretCode}
+                                        disabled={activatingIslam || !islamCode.trim()}
+                                        className="btn btn-primary disabled:opacity-60"
+                                    >
+                                        {activatingIslam ? 'Vérification…' : 'Valider'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

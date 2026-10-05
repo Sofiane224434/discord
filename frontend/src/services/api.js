@@ -59,9 +59,9 @@ export const botService = {
 
 export const adminService = {
     getGuildConfig: (id) => fetchAPI(`/admin/guild/${encodeURIComponent(id)}/config`),
-    activateIslamMode: (id, code) => fetchAPI(`/admin/guild/${encodeURIComponent(id)}/islam-mode`, {
+    activateIslamMode: (id, payload) => fetchAPI(`/admin/guild/${encodeURIComponent(id)}/islam-mode`, {
         method: 'POST',
-        body: JSON.stringify({ code }),
+        body: JSON.stringify(typeof payload === 'string' ? { code: payload } : payload),
     }),
     updateGuildConfig: (id, config) => fetchAPI(`/admin/guild/${encodeURIComponent(id)}/config`, {
         method: 'PUT',

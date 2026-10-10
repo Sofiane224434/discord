@@ -67,6 +67,22 @@ export const adminService = {
         method: 'PUT',
         body: JSON.stringify(config),
     }),
+    downloadAvatar: async (id, fallbackName = 'bot-avatar.png') => {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/admin/guild/${encodeURIComponent(id)}/avatar/download`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) throw new Error('Impossible de télécharger l’avatar');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fallbackName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
 }
 
 export const discordService = {

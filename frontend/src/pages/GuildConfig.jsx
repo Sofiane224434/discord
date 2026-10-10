@@ -21,7 +21,17 @@ const EMPTY_CONFIG = {
         defaultDmMessage: '',
         rules: [],
     },
-    profile: { bio: '', avatarUrl: '', avatarUpdatedAt: null },
+    profile: {
+        bio: '',
+        avatarUrl: '',
+        avatarUpdatedAt: null,
+        currentAvatarUrl: '',
+        globalAvatarUrl: '',
+        hasServerAvatar: false,
+        botDisplayName: 'Azim',
+        botUsername: 'Azim',
+        botTag: 'Azim',
+    },
     youtube: { channels: [], targetChannelId: '' },
     tiktok: { enabled: false, username: '', targetChannelId: '' },
     rank: { enabled: false, announceChannelId: '', silent: false, rewards: [] },
@@ -129,11 +139,31 @@ function GuildConfig() {
     const [islamCode, setIslamCode] = useState('');
     const [activatingIslam, setActivatingIslam] = useState(false);
     const [commandSearch, setCommandSearch] = useState('');
+    const [downloadingAvatar, setDownloadingAvatar] = useState(false);
 
     const refresh = useCallback(async () => {
         const data = await adminService.getGuildConfig(guildId);
         setForm(mergeConfig(data));
     }, [guildId]);
+
+    const handleDownloadAvatar = async () => {
+        setDownloadingAvatar(true);
+        setError('');
+        try {
+            const fileName = `${form.profile.botDisplayName || 'azim'}-avatar.png`;
+            await adminService.downloadAvatar(guildId, fileName);
+            setNotice('Photo de profil téléchargée avec succès.');
+        } catch (downloadErr) {
+            if (form.profile.currentAvatarUrl) {
+                window.open(form.profile.currentAvatarUrl, '_blank');
+                setNotice('Ouverture de la photo de profil dans un nouvel onglet.');
+            } else {
+                setError('Impossible de télécharger la photo de profil.');
+            }
+        } finally {
+            setDownloadingAvatar(false);
+        }
+    };
 
     useEffect(() => {
         let active = true;
@@ -187,6 +217,7 @@ function GuildConfig() {
             const commandsPayload = form.commands.reduce((acc, cmd) => {
                 acc[cmd.name.toLowerCase()] = {
                     enabled: cmd.enabled,
+                    adminOnly: Boolean(cmd.adminOnly),
                     allowedRoleIds: cmd.allowedRoleIds || [],
                     deniedRoleIds: cmd.deniedRoleIds || [],
                 };
@@ -503,10 +534,17 @@ function GuildConfig() {
                         </Field>
 
                         {/* Clés Groq */}
-                        <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-4">
-                            <div className="mb-3 flex items-center justify-between">
+                        <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-4 space-y-3">
+                            <div className="flex items-center justify-between">
                                 <h3 className="font-semibold text-white">Clés API Groq du serveur</h3>
                                 <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{form.ai.keysCount} active(s)</span>
+                            </div>
+
+                            <div className="flex items-start gap-2.5 rounded-md border border-emerald-800/40 bg-emerald-950/20 p-2.5 text-xs text-emerald-300">
+                                <span className="text-sm shrink-0">🛡️</span>
+                                <div>
+                                    <strong>Isolation stricte :</strong> Les clés API configurées ici sont hermétiques et utilisées exclusivement pour ce serveur ({getGuildName(guildId)}). Aucun autre serveur ne peut utiliser ou partager vos clés ou quotas.
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 {form.ai.keysPreviews.map((key) => (
@@ -598,8 +636,22 @@ function GuildConfig() {
                                                 <p className="mt-1 text-xs text-slate-400">{cmd.description || 'Aucune description'}</p>
                                             </div>
 
-                                            {/* Enable / Disable Switch */}
-                                            <div className="flex items-center gap-3">
+                                            {/* Switches: Admin Only & Enable/Disable */}
+                                            <div className="flex flex-wrap items-center gap-2.5">
+                                                <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-all ${
+                                                    cmd.adminOnly
+                                                        ? 'border-amber-500/60 bg-amber-950/40 text-amber-200 shadow-sm'
+                                                        : 'border-slate-700/60 bg-slate-800/40 text-slate-400 hover:border-slate-600'
+                                                }`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={Boolean(cmd.adminOnly)}
+                                                        onChange={(e) => updateCommand(cmd.name, 'adminOnly', e.target.checked)}
+                                                        className="size-3.5 accent-amber-500"
+                                                    />
+                                                    <span>🔒 Admin seulement</span>
+                                                </label>
+
                                                 <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-300">
                                                     <input
                                                         type="checkbox"
@@ -614,50 +666,61 @@ function GuildConfig() {
 
                                         {isEnabled ? (
                                             <div className="mt-4 border-t border-slate-800/80 pt-3">
-                                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <span className="text-xs font-semibold text-slate-300">Rôles autorisés :</span>
-                                                    <div className="max-w-xs">
-                                                        <SelectInput
-                                                            value=""
-                                                            onChange={(e) => {
-                                                                if (e.target.value) {
-                                                                    toggleCommandRole(cmd.name, e.target.value);
-                                                                    e.target.value = '';
-                                                                }
-                                                            }}
-                                                            options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
-                                                            emptyLabel="+ Ajouter un rôle autorisé…"
-                                                            className="text-xs py-1"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                    {allowedRoles.length === 0 ? (
-                                                        <span className="text-xs italic text-slate-500">
-                                                            {cmd.defaultLevel === 'admin'
-                                                                ? 'Réservée aux administrateurs du serveur (ou ajoutez des rôles pour autoriser des membres)'
-                                                                : 'Accessible à tous les membres (@everyone)'}
+                                                {cmd.adminOnly ? (
+                                                    <div className="flex items-center gap-2.5 rounded-md bg-amber-950/20 border border-amber-600/30 px-3 py-2 text-xs text-amber-300">
+                                                        <span className="text-sm shrink-0">🛡️</span>
+                                                        <span>
+                                                            <strong>Mode Administrateur uniquement actif :</strong> seuls les membres ayant les permissions Administrateur ou Propriétaire du serveur Discord peuvent exécuter cette commande.
                                                         </span>
-                                                    ) : (
-                                                        allowedRoles.map((roleId) => {
-                                                            const roleName = form.roles.find((r) => r.id === roleId)?.name || roleId;
-                                                            return (
-                                                                <span key={roleId} className="role-badge">
-                                                                    <span>@{roleName}</span>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => toggleCommandRole(cmd.name, roleId)}
-                                                                        className="role-badge-remove"
-                                                                        title="Retirer ce rôle"
-                                                                    >
-                                                                        ×
-                                                                    </button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                                            <span className="text-xs font-semibold text-slate-300">Rôles autorisés :</span>
+                                                            <div className="max-w-xs">
+                                                                <SelectInput
+                                                                    value=""
+                                                                    onChange={(e) => {
+                                                                        if (e.target.value) {
+                                                                            toggleCommandRole(cmd.name, e.target.value);
+                                                                            e.target.value = '';
+                                                                        }
+                                                                    }}
+                                                                    options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
+                                                                    emptyLabel="+ Ajouter un rôle autorisé…"
+                                                                    className="text-xs py-1"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                            {allowedRoles.length === 0 ? (
+                                                                <span className="text-xs italic text-slate-500">
+                                                                    {cmd.defaultLevel === 'admin'
+                                                                        ? 'Réservée aux administrateurs du serveur (ou ajoutez des rôles pour autoriser des membres)'
+                                                                        : 'Accessible à tous les membres (@everyone)'}
                                                                 </span>
-                                                            );
-                                                        })
-                                                    )}
-                                                </div>
+                                                            ) : (
+                                                                allowedRoles.map((roleId) => {
+                                                                    const roleName = form.roles.find((r) => r.id === roleId)?.name || roleId;
+                                                                    return (
+                                                                        <span key={roleId} className="role-badge">
+                                                                            <span>@{roleName}</span>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => toggleCommandRole(cmd.name, roleId)}
+                                                                                className="role-badge-remove"
+                                                                                title="Retirer ce rôle"
+                                                                            >
+                                                                                ×
+                                                                            </button>
+                                                                        </span>
+                                                                    );
+                                                                })
+                                                            )}
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         ) : null}
                                     </div>
@@ -902,8 +965,94 @@ function GuildConfig() {
                             </div>
                         </div>
 
-                        <div className="border-t border-slate-700/60 pt-5">
-                            <h3 className="mb-4 font-semibold text-white">Profil local d'Azim sur ce serveur</h3>
+                        <div className="border-t border-slate-700/60 pt-5 space-y-6">
+                            <div>
+                                <h3 className="font-semibold text-white text-base">Photo de profil & Identité locale du bot</h3>
+                                <p className="text-xs text-slate-400 mt-0.5">
+                                    Visualisez l'avatar actuellement actif sur ce serveur, téléchargez-le ou personnalisez son apparence.
+                                </p>
+                            </div>
+
+                            {/* Carte Photo de profil actuelle du bot actif */}
+                            <div className="rounded-xl border border-slate-700/60 bg-gradient-to-br from-slate-900/90 via-slate-900/50 to-slate-950 p-5 shadow-lg">
+                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                                    <div className="relative group shrink-0">
+                                        {form.profile.currentAvatarUrl ? (
+                                            <img
+                                                src={form.profile.currentAvatarUrl}
+                                                alt={form.profile.botDisplayName || 'Avatar du bot'}
+                                                className="size-24 sm:size-28 rounded-2xl object-cover ring-2 ring-cyan-500/40 shadow-cyan-950/40 shadow-xl transition-transform duration-200 group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            <div className="size-24 sm:size-28 rounded-2xl bg-slate-800 ring-2 ring-slate-700 flex items-center justify-center text-3xl">
+                                                🤖
+                                            </div>
+                                        )}
+                                        {form.profile.hasServerAvatar ? (
+                                            <span className="absolute -bottom-2 -right-2 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
+                                                Serveur
+                                            </span>
+                                        ) : (
+                                            <span className="absolute -bottom-2 -right-2 rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-medium text-slate-300 shadow-md">
+                                                Global
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex-1 text-center sm:text-left space-y-2">
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                            <h4 className="text-lg font-bold text-white">
+                                                {form.profile.botDisplayName || 'Azim'}
+                                            </h4>
+                                            <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-400 font-mono">
+                                                {form.profile.botTag || 'Bot Discord'}
+                                            </span>
+                                            {form.profile.hasServerAvatar ? (
+                                                <span className="rounded-full bg-emerald-950/70 border border-emerald-600/50 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
+                                                    ✨ Avatar personnalisé à ce serveur
+                                                </span>
+                                            ) : (
+                                                <span className="rounded-full bg-slate-800 border border-slate-700 px-2 py-0.5 text-[11px] text-slate-400">
+                                                    🌐 Avatar par défaut du bot
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <p className="text-xs text-slate-400 max-w-xl">
+                                            Voici la photo de profil du bot telle qu'elle est affichée aux membres de ce serveur Discord. Vous pouvez la retélécharger en un clic ou définir un avatar spécifique ci-dessous.
+                                        </p>
+
+                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                disabled={downloadingAvatar || !form.profile.currentAvatarUrl}
+                                                onClick={handleDownloadAvatar}
+                                                className="btn btn-primary text-xs flex items-center gap-2 shadow-cyan-900/30 shadow-md disabled:opacity-50"
+                                            >
+                                                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                </svg>
+                                                {downloadingAvatar ? 'Téléchargement…' : 'Télécharger la photo de profil'}
+                                            </button>
+
+                                            {form.profile.currentAvatarUrl ? (
+                                                <a
+                                                    href={form.profile.currentAvatarUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="btn btn-soft text-xs flex items-center gap-1.5"
+                                                >
+                                                    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                    Voir en grand
+                                                </a>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid gap-5 md:grid-cols-2">
                                 <Field label="Bio personnalisée du bot" hint="Maximum 190 caractères.">
                                     <TextInput
@@ -914,7 +1063,7 @@ function GuildConfig() {
                                     />
                                 </Field>
                                 <div>
-                                    <Field label="Avatar spécifique au serveur" hint="URL HTTPS hébergée sur cdn.discordapp.com ou media.discordapp.net">
+                                    <Field label="Changer l'avatar du serveur" hint="URL HTTPS hébergée sur cdn.discordapp.com ou media.discordapp.net">
                                         <TextInput
                                             type="url"
                                             placeholder="https://cdn.discordapp.com/…"

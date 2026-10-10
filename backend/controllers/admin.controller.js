@@ -183,3 +183,64 @@ export const activateIslamMode = async (req, res) => {
         clearTimeout(timeout);
     }
 };
+
+export const downloadGuildBotAvatar = async (req, res) => {
+    const { guildId } = req.params;
+    if (!guildId) return res.status(400).json({ error: 'Guild ID requis' });
+
+    const userGuilds = req.user?.discord_guild_ids || [];
+    if (!hasManageGuildPermission(userGuilds, guildId)) {
+        return res.status(403).json({
+            error: 'Permission insuffisante',
+            hint: 'Vous devez avoir la permission "Gérer le serveur" sur ce serveur Discord.',
+        });
+    }
+
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) return res.status(503).json({ error: 'Bot API non configurée' });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), BOT_TIMEOUT_MS);
+
+    try {
+        const response = await fetch(`${baseUrl}/guild/${encodeURIComponent(guildId)}/config`, {
+            method: 'GET',
+            headers: getBotHeaders(),
+            signal: controller.signal,
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            return res.status(response.status).json({
+                error: data.error || 'Impossible de récupérer les informations du serveur',
+            });
+        }
+
+        const avatarUrl = data.profile?.currentAvatarUrl || data.profile?.globalAvatarUrl;
+        if (!avatarUrl) {
+            return res.status(404).json({ error: 'Avatar introuvable pour ce bot' });
+        }
+
+        const imageRes = await fetch(avatarUrl);
+        if (!imageRes.ok) {
+            return res.status(502).json({ error: 'Impossible de télécharger l\'image depuis le CDN Discord' });
+        }
+
+        const contentType = imageRes.headers.get('content-type') || 'image/png';
+        const rawName = data.profile?.botDisplayName || data.profile?.botUsername || 'bot';
+        const safeName = rawName.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Content-Disposition', `attachment; filename="${safeName}-avatar.png"`);
+
+        const arrayBuffer = await imageRes.arrayBuffer();
+        return res.send(Buffer.from(arrayBuffer));
+    } catch (error) {
+        return res.status(502).json({
+            error: 'Impossible de télécharger l\'avatar',
+            details: process.env.NODE_ENV === 'production' ? undefined : error.message,
+        });
+    } finally {
+        clearTimeout(timeout);
+    }
+};

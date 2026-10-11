@@ -42,6 +42,14 @@ const commandGroups = [
             ['/rappelbump', 'Envoie le rappel de bump du serveur.'],
         ],
     },
+    {
+        name: 'Spiritualité & Radio Coran 24/7 (Mode Islam)',
+        commands: [
+            ['/radio', 'Lance ou contrôle la radio Coran 24/7 en continu dans un salon vocal avec choix de stations.'],
+            ['/coran', 'Recherche et récite un verset ou une sourate du Saint Coran avec traduction audio et texte.'],
+            ['/quiz', 'Lance un quiz thématique islamique interactif avec classement des joueurs en direct.'],
+        ],
+    },
 ];
 
 function Commands() {

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 const EMPTY_CONFIG = {
     ai: {
@@ -373,11 +374,35 @@ function GuildConfig() {
         update('rank', 'rewards', rewards);
     };
 
+    const currentGuildIcon = useMemo(() => {
+        try {
+            const guilds = JSON.parse(localStorage.getItem('discord_guilds') || '[]');
+            const g = guilds.find((guild) => String(guild.id) === String(guildId));
+            if (!g) return null;
+            if (g.icon) {
+                return `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=256`;
+            }
+            return g.iconUrl || null;
+        } catch {
+            return null;
+        }
+    }, [guildId]);
+
+    const isIslamActive = Boolean(form.features?.islamModeEnabled);
+
+    useEffect(() => {
+        if (activeTab === 'islam' && !isIslamActive) {
+            setActiveTab('ai');
+        }
+    }, [activeTab, isIslamActive]);
+
     if (loading) {
         return (
-            <main className="mx-auto max-w-5xl px-5 py-16 text-center text-slate-400">
-                <div className="inline-block size-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent mb-4" />
-                <p>Chargement du panneau d'administration…</p>
+            <main className="site-page site-section-page max-w-5xl py-12">
+                <LoadingScreen
+                    label="Chargement du panneau d'administration…"
+                    subtext={`Configuration en cours pour ${getGuildName(guildId)}`}
+                />
             </main>
         );
     }
@@ -397,23 +422,36 @@ function GuildConfig() {
         { id: 'welcome', label: 'Bienvenue & Rôles', icon: '👋', count: form.welcome.rules?.length || 0 },
         { id: 'logs', label: 'Logs & Profil', icon: '📋' },
         { id: 'social', label: 'Réseaux & Niveaux', icon: '📢' },
-        { id: 'islam', label: form.features.islamModeEnabled ? 'Mode Islam' : 'Code Secret', icon: '🔒' },
+        ...(isIslamActive ? [{ id: 'islam', label: 'Mode Islam', icon: '🌙' }] : []),
     ];
 
     return (
         <main className="site-page site-section-page guild-config-page max-w-5xl pb-16">
             {/* Top Bar Header */}
-            <div className="sticky top-0 z-20 mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/60 bg-[#081625]/90 py-4 backdrop-blur-md">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <Link to="/dashboard" className="text-xs font-semibold text-cyan-400 hover:underline">← Console</Link>
-                        <span className="text-xs text-slate-600">/</span>
-                        <span className="site-eyebrow text-[10px]">Administration</span>
+            <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/60 bg-[#081625]/95 py-3 backdrop-blur-md">
+                <div className="flex items-center gap-3.5">
+                    {currentGuildIcon ? (
+                        <img
+                            src={currentGuildIcon}
+                            alt=""
+                            className="size-14 rounded-2xl border-2 border-cyan-500/50 object-cover shadow-lg shadow-cyan-950/60"
+                        />
+                    ) : (
+                        <div className="flex size-14 items-center justify-center rounded-2xl border-2 border-cyan-500/50 bg-slate-800 text-xl font-bold text-cyan-300 shadow-lg shadow-cyan-950/60">
+                            {getGuildName(guildId).slice(0, 2).toUpperCase()}
+                        </div>
+                    )}
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <Link to="/dashboard" className="text-xs font-semibold text-cyan-400 hover:underline">← Console</Link>
+                            <span className="text-xs text-slate-600">/</span>
+                            <span className="site-eyebrow text-[10px]">Administration</span>
+                        </div>
+                        <h1 className="mt-0.5 text-2xl font-bold text-white flex items-center gap-2">
+                            {getGuildName(guildId)}
+                            <span className="rounded bg-slate-800/80 px-2 py-0.5 font-mono text-xs font-normal text-slate-400">{guildId}</span>
+                        </h1>
                     </div>
-                    <h1 className="mt-1 text-2xl font-bold text-white flex items-center gap-2">
-                        {getGuildName(guildId)}
-                        <span className="rounded bg-slate-800/80 px-2 py-0.5 font-mono text-xs font-normal text-slate-400">{guildId}</span>
-                    </h1>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -667,60 +705,62 @@ function GuildConfig() {
                                         {isEnabled ? (
                                             <div className="mt-4 border-t border-slate-800/80 pt-3">
                                                 {cmd.adminOnly ? (
-                                                    <div className="flex items-center gap-2.5 rounded-md bg-amber-950/20 border border-amber-600/30 px-3 py-2 text-xs text-amber-300">
+                                                    <div className="mb-3 flex items-center gap-2.5 rounded-md bg-amber-950/20 border border-amber-600/30 px-3 py-2 text-xs text-amber-300">
                                                         <span className="text-sm shrink-0">🛡️</span>
                                                         <span>
-                                                            <strong>Mode Administrateur uniquement actif :</strong> seuls les membres ayant les permissions Administrateur ou Propriétaire du serveur Discord peuvent exécuter cette commande.
+                                                            <strong>Mode Administrateur actif :</strong> les administrateurs et le propriétaire ont accès d'office. Vous pouvez également autoriser des rôles spécifiques supplémentaires ci-dessous.
                                                         </span>
                                                     </div>
-                                                ) : (
-                                                    <>
-                                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                                            <span className="text-xs font-semibold text-slate-300">Rôles autorisés :</span>
-                                                            <div className="max-w-xs">
-                                                                <SelectInput
-                                                                    value=""
-                                                                    onChange={(e) => {
-                                                                        if (e.target.value) {
-                                                                            toggleCommandRole(cmd.name, e.target.value);
-                                                                            e.target.value = '';
-                                                                        }
-                                                                    }}
-                                                                    options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
-                                                                    emptyLabel="+ Ajouter un rôle autorisé…"
-                                                                    className="text-xs py-1"
-                                                                />
-                                                            </div>
-                                                        </div>
+                                                ) : null}
 
-                                                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                            {allowedRoles.length === 0 ? (
-                                                                <span className="text-xs italic text-slate-500">
-                                                                    {cmd.defaultLevel === 'admin'
-                                                                        ? 'Réservée aux administrateurs du serveur (ou ajoutez des rôles pour autoriser des membres)'
-                                                                        : 'Accessible à tous les membres (@everyone)'}
+                                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                                    <span className="text-xs font-semibold text-slate-300">
+                                                        {cmd.adminOnly ? 'Rôles autorisés additionnels :' : 'Rôles autorisés :'}
+                                                    </span>
+                                                    <div className="max-w-xs">
+                                                        <SelectInput
+                                                            value=""
+                                                            onChange={(e) => {
+                                                                if (e.target.value) {
+                                                                    toggleCommandRole(cmd.name, e.target.value);
+                                                                    e.target.value = '';
+                                                                }
+                                                            }}
+                                                            options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
+                                                            emptyLabel="+ Ajouter un rôle autorisé…"
+                                                            className="text-xs py-1"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                    {allowedRoles.length === 0 ? (
+                                                        <span className="text-xs italic text-slate-500">
+                                                            {cmd.adminOnly
+                                                                ? 'Réservée aux administrateurs du serveur (ajoutez des rôles pour étendre l’accès).'
+                                                                : (cmd.defaultLevel === 'admin'
+                                                                    ? 'Réservée aux administrateurs du serveur (ou ajoutez des rôles pour autoriser des membres)'
+                                                                    : 'Accessible à tous les membres (@everyone)')}
+                                                        </span>
+                                                    ) : (
+                                                        allowedRoles.map((roleId) => {
+                                                            const roleName = form.roles.find((r) => r.id === roleId)?.name || roleId;
+                                                            return (
+                                                                <span key={roleId} className="role-badge">
+                                                                    <span>@{roleName}</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => toggleCommandRole(cmd.name, roleId)}
+                                                                        className="role-badge-remove"
+                                                                        title="Retirer ce rôle"
+                                                                    >
+                                                                        ×
+                                                                    </button>
                                                                 </span>
-                                                            ) : (
-                                                                allowedRoles.map((roleId) => {
-                                                                    const roleName = form.roles.find((r) => r.id === roleId)?.name || roleId;
-                                                                    return (
-                                                                        <span key={roleId} className="role-badge">
-                                                                            <span>@{roleName}</span>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => toggleCommandRole(cmd.name, roleId)}
-                                                                                className="role-badge-remove"
-                                                                                title="Retirer ce rôle"
-                                                                            >
-                                                                                ×
-                                                                            </button>
-                                                                        </span>
-                                                                    );
-                                                                })
-                                                            )}
-                                                        </div>
-                                                    </>
-                                                )}
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
                                             </div>
                                         ) : null}
                                     </div>
@@ -1265,7 +1305,11 @@ function GuildConfig() {
                                     </button>
                                 </div>
                                 <p className="text-sm text-slate-300">Les commandes suivantes sont actives et visibles par vos membres :</p>
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                    <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
+                                        <code className="text-sm font-bold text-emerald-400">/radio</code>
+                                        <p className="mt-1 text-xs text-slate-400">Diffusion 24/7 en direct du Saint Coran en salon vocal avec choix de stations.</p>
+                                    </div>
                                     <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
                                         <code className="text-sm font-bold text-emerald-400">/coran</code>
                                         <p className="mt-1 text-xs text-slate-400">Lecture et écoute complète du Saint Coran (sourate, verset, traduction française).</p>

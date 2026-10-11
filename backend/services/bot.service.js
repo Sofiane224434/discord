@@ -52,6 +52,7 @@ function normalizeOverview(payload = {}) {
                 name: guild.name || 'Serveur inconnu',
                 memberCount: Number(guild.memberCount || 0),
                 iconUrl: guild.iconUrl || null,
+                islamModeEnabled: Boolean(guild.islamModeEnabled),
             }))
             : [],
     };

@@ -72,37 +72,35 @@ npm run dev
 ## 🛠️ Technologies
 
 <!-- AUTO:technologies -->
-
 **Backend**
 
-| Technologie     | Version |
-| --------------- | ------- |
-| Node.js         | 22+     |
-| express         | 5.2.1   |
-| mysql2          | 3.16.3  |
-| jsonwebtoken    | 9.0.3   |
-| bcrypt          | 6.0.0   |
-| zod             | 4.3.6   |
-| @getbrevo/brevo | 5.0.1   |
+| Technologie | Version |
+|-------------|----------|
+| Node.js | 22+ |
+| express | 5.2.1 |
+| mysql2 | 3.16.3 |
+| jsonwebtoken | 9.0.3 |
+| bcrypt | 6.0.0 |
+| zod | 4.3.6 |
+| @getbrevo/brevo | 5.0.1 |
 
 **Frontend**
 
-| Technologie      | Version |
-| ---------------- | ------- |
-| react            | 19.2.0  |
-| vite             | 7.3.1   |
-| tailwindcss      | 4.1.18  |
-| react-router-dom | 7.13.0  |
-| i18next          | 25.8.18 |
-| zod              | 4.3.6   |
+| Technologie | Version |
+|-------------|----------|
+| react | 19.2.0 |
+| vite | 7.3.1 |
+| tailwindcss | 4.1.18 |
+| react-router-dom | 7.13.0 |
+| i18next | 25.8.18 |
+| zod | 4.3.6 |
 
 **Outils Racine**
 
-| Outil        | Version |
-| ------------ | ------- |
-| concurrently | 9.2.1   |
-| deepl-node   | 1.24.0  |
-
+| Outil | Version |
+|-------|----------|
+| concurrently | 9.2.1 |
+| deepl-node | 1.24.0 |
 <!-- /AUTO:technologies -->
 
 ---
@@ -110,17 +108,25 @@ npm run dev
 ## 🏗️ Architecture
 
 <!-- AUTO:structure -->
-
 ```
 starter-kit/
+├── agent/
+│   ├── rules-ai.md
+│   └── session/
+├── ai-context/
+│   ├── AGENTS.md
+│   └── project-context.md
 ├── backend/
 │   ├── config/
 │   │   └── db.js
 │   ├── controllers/
+│   │   ├── admin.controller.js
 │   │   ├── auth.controller.js
 │   │   ├── bot.controller.js
 │   │   ├── discord.controller.js
-│   │   └── email.controller.js
+│   │   ├── email.controller.js
+│   │   └── system.controller.js
+│   ├── Dockerfile
 │   ├── middlewares/
 │   │   └── auth.middleware.js
 │   ├── models/
@@ -129,22 +135,32 @@ starter-kit/
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── routes/
+│   │   ├── admin.routes.js
 │   │   ├── auth.routes.js
 │   │   ├── bot.routes.js
 │   │   ├── discord.routes.js
-│   │   └── email.routes.js
+│   │   ├── email.routes.js
+│   │   └── system.routes.js
 │   ├── schema.sql
 │   ├── server.js
 │   └── services/
 │       ├── bot.service.js
 │       └── email.service.js
+├── deploy/
+│   └── nginx/
+├── docker-compose.yml
 ├── frontend/
+│   ├── deploy/
+│   │   └── nginx/
+│   ├── Dockerfile
 │   ├── eslint.config.js
 │   ├── index.html
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── public/
 │   │   ├── assets/
+│   │   ├── favicon.png
+│   │   ├── icon.png
 │   │   └── locales/
 │   ├── src/
 │   │   ├── App.jsx
@@ -167,7 +183,6 @@ starter-kit/
 └── shared/
     └── schemas.js
 ```
-
 <!-- /AUTO:structure -->
 
 ---
@@ -411,37 +426,35 @@ await sendCustomEmail({
 ## 🛠️ Scripts Disponibles
 
 <!-- AUTO:scripts -->
-
 ### Racine
 
-| Commande                  | Rôle                                                            |
-| ------------------------- | --------------------------------------------------------------- |
-| `npm run sync`            | `sync-studio`                                                   |
-| `npm run dev`             | `concurrently "npm run dev:backend" "npm run dev:frontend" "n…` |
-| `npm run dev:backend`     | `cd backend && npm run dev`                                     |
-| `npm run dev:frontend`    | `cd frontend && npm run dev`                                    |
-| `npm run translate`       | `node scripts/translate.js`                                     |
-| `npm run translate:watch` | `node scripts/translate.js --watch`                             |
-| `npm run readme`          | `node scripts/readme.js`                                        |
-| `npm run readme:check`    | `node scripts/readme.js --check`                                |
-| `npm run readme:watch`    | `node scripts/readme.js --watch`                                |
+| Commande | Rôle |
+|----------|------|
+| `npm run sync` | `sync-studio` |
+| `npm run dev` | `concurrently "npm run dev:backend" "npm run dev:frontend" "n…` |
+| `npm run dev:backend` | `cd backend && npm run dev` |
+| `npm run dev:frontend` | `cd frontend && npm run dev` |
+| `npm run translate` | `node scripts/translate.js` |
+| `npm run translate:watch` | `node scripts/translate.js --watch` |
+| `npm run readme` | `node scripts/readme.js` |
+| `npm run readme:check` | `node scripts/readme.js --check` |
+| `npm run readme:watch` | `node scripts/readme.js --watch` |
 
 ### Backend (`cd backend`)
 
-| Commande        | Rôle                     |
-| --------------- | ------------------------ |
-| `npm run start` | `node server.js`         |
-| `npm run dev`   | `node --watch server.js` |
+| Commande | Rôle |
+|----------|------|
+| `npm run start` | `node server.js` |
+| `npm run dev` | `node --watch server.js` |
 
 ### Frontend (`cd frontend`)
 
-| Commande          | Rôle           |
-| ----------------- | -------------- |
-| `npm run dev`     | `vite`         |
-| `npm run build`   | `vite build`   |
-| `npm run lint`    | `eslint .`     |
+| Commande | Rôle |
+|----------|------|
+| `npm run dev` | `vite` |
+| `npm run build` | `vite build` |
+| `npm run lint` | `eslint .` |
 | `npm run preview` | `vite preview` |
-
 <!-- /AUTO:scripts -->
 
 ---

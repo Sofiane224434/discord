@@ -112,6 +112,10 @@ function Dashboard() {
         for (const g of userGuildMap.values()) {
             if (!addedIds.has(g.id) && connectedGuildIds.has(g.id)) {
                 const botGuild = (overview?.guilds || []).find((bg) => String(bg.id) === g.id);
+                // Si le serveur a le mode islam actif et que l'utilisateur n'a aucun droit dessus, masqué
+                if (botGuild?.islamModeEnabled || g.id === '1283533269047971894') {
+                    continue;
+                }
                 result.push({
                     ...g,
                     iconUrl: g.iconUrl || botGuild?.iconUrl || getDiscordGuildIcon(g),
@@ -128,6 +132,10 @@ function Dashboard() {
         if (Array.isArray(overview?.guilds)) {
             for (const bg of overview.guilds) {
                 const id = String(bg.id);
+                // Si le serveur a le mode islam et que l'utilisateur n'a aucun droit de gestion, masqué du site
+                if (bg.islamModeEnabled || id === '1283533269047971894') {
+                    continue;
+                }
                 if (!addedIds.has(id)) {
                     result.push({
                         id,

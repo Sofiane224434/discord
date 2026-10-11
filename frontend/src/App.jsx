@@ -17,9 +17,11 @@ import Status from './pages/Status.jsx';
 import CommandHistory from './pages/CommandHistory.jsx';
 import GuildConfig from './pages/GuildConfig.jsx';
 import Modules from './pages/Modules.jsx';
+import LoadingScreen from './components/LoadingScreen.jsx';
+
 function App() {
   const { loading } = useAuth();
-  if (loading) return <div><p>Chargement...</p></div>;
+  if (loading) return <LoadingScreen fullScreen label="Chargement d'Azim…" subtext="Préparation de votre espace" />;
   return (
     <Routes>
       {/* Routes AVEC Header + Footer */}

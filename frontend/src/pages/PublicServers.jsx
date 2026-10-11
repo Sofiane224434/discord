@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { systemService } from '../services/api.js';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 function PublicServers() {
     const [health, setHealth] = useState(null);
@@ -30,7 +31,7 @@ function PublicServers() {
                 <article><span>Connexion Discord</span><strong className={services.oauth?.status === 'ok' ? 'public-server-online' : ''}>{loading ? 'Vérification…' : services.oauth?.status === 'ok' ? 'Prête' : 'Indisponible'}</strong></article>
             </section>
 
-            {loading ? <p className="site-empty-state">Chargement de l’état d’Azim…</p> : null}
+            {loading ? <LoadingScreen label="Chargement de l’état d’Azim…" subtext="Vérification des passerelles et services" /> : null}
             {!loading && !health ? <p className="site-empty-state">L’état d’Azim est momentanément indisponible.</p> : null}
             <section className="public-server-list" aria-label="Bot Azim">
                 <article className="public-server-row">

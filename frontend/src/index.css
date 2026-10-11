@@ -183,9 +183,16 @@ body {
 }
 
 .site-brand-icon {
-	width: 29px;
-	height: 29px;
+	width: 42px;
+	height: 42px;
 	object-fit: contain;
+	filter: drop-shadow(0 0 10px rgba(32, 185, 242, 0.45));
+	transition: transform 0.22s ease, filter 0.22s ease;
+}
+
+.site-brand:hover .site-brand-icon {
+	transform: scale(1.08) rotate(-3deg);
+	filter: drop-shadow(0 0 16px rgba(32, 185, 242, 0.8));
 }
 
 .site-brand-dot {
@@ -1124,11 +1131,11 @@ body {
 }
 
 .ops-server-row {
-	min-height: 57px;
+	min-height: 68px;
 	margin-top: 6px;
-	padding: 7px 10px;
+	padding: 8px 12px;
 	border: 1px solid #1c3d5a;
-	border-radius: 4px;
+	border-radius: 6px;
 	background: #0b1b2c;
 }
 
@@ -1136,9 +1143,9 @@ body {
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 9px;
+	gap: 12px;
 	color: #dceafa;
-	font-size: 12px;
+	font-size: 13px;
 	font-weight: 600;
 }
 
@@ -1150,11 +1157,21 @@ body {
 
 .ops-server-identity img,
 .ops-server-fallback {
-	width: 29px;
-	height: 29px;
-	flex: 0 0 29px;
-	border-radius: 4px;
+	width: 50px;
+	height: 50px;
+	flex: 0 0 50px;
+	border-radius: 12px;
 	object-fit: cover;
+	border: 1.5px solid rgba(40, 189, 243, 0.4);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+	transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ops-server-row:hover .ops-server-identity img,
+.ops-server-row:hover .ops-server-fallback {
+	transform: scale(1.05);
+	border-color: rgba(40, 189, 243, 0.85);
+	box-shadow: 0 6px 18px rgba(32, 185, 242, 0.35);
 }
 
 .ops-server-fallback {
@@ -1163,6 +1180,7 @@ body {
 	background: #173b57;
 	color: #9ce2ff;
 	font-weight: 700;
+	font-size: 18px;
 }
 
 .ops-server-status {
@@ -1748,10 +1766,12 @@ body {
 
 .public-server-row > img,
 .public-server-fallback {
-	width: 34px;
-	height: 34px;
-	border-radius: 5px;
+	width: 50px;
+	height: 50px;
+	border-radius: 12px;
 	object-fit: cover;
+	border: 1.5px solid rgba(40, 189, 243, 0.4);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 .public-server-fallback {
@@ -1967,8 +1987,8 @@ body {
 	}
 
 	.site-brand-icon {
-		width: 25px;
-		height: 25px;
+		width: 34px;
+		height: 34px;
 	}
 
 	.site-header-inner {
@@ -2078,10 +2098,15 @@ body {
 /* ===== ADMIN PANEL REDESIGN ===== */
 .admin-tab-nav {
 	display: flex;
-	gap: 6px;
-	overflow-x: auto;
+	flex-wrap: wrap;
+	gap: 8px;
+	position: sticky;
+	top: 66px;
+	z-index: 15;
+	background: rgba(8, 22, 37, 0.95);
+	backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--azim-line);
-	padding-bottom: 10px;
+	padding: 10px 0 12px;
 	margin-bottom: 24px;
 }
 .admin-tab-btn {

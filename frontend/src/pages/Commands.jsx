@@ -45,8 +45,15 @@ const commandGroups = [
     {
         name: 'Spiritualité & Radio Coran 24/7 (Mode Islam)',
         commands: [
-            ['/radio', 'Lance ou contrôle la radio Coran 24/7 en continu dans un salon vocal avec choix de stations.'],
+            ['/radio', 'Lance ou contrôle la radio Coran 24/7 en continu dans un salon vocal avec choix de 22 récitateurs.'],
             ['/coran', 'Recherche et récite un verset ou une sourate du Saint Coran avec traduction audio et texte.'],
+            ['/priere', 'Horaires des 5 prières quotidiennes (Fajr, Dhuhr, Asr, Maghrib, Isha) et compte à rebours de la prochaine prière.'],
+            ['/doua', 'Invocations authentiques de la Citadelle du Musulman (arabe, phonétique, français et référence).'],
+            ['/hadith', 'Enseignements et sagesses prophétiques authentiques (40 Nawawi, Sahih Bukhari, Muslim) en arabe et français.'],
+            ['/hijri', 'Date hégirienne du jour, mois lunaire islamique et rappel / statut des Jours Blancs (13, 14, 15).'],
+            ['/qibla', 'Direction de la Kaaba (La Mecque), cap en degrés, orientation boussole et distance en kilomètres.'],
+            ['/asma', 'Les 99 Noms d’Allah (Asma ul-Husna) avec calligraphie arabe, translittération, sens en français et méditation.'],
+            ['/ramadan', 'Compagnon spécial Ramadan : horaires d’Imsak et d’Iftar du jour, compte à rebours et invocations de rupture.'],
             ['/quiz', 'Lance un quiz thématique islamique interactif avec classement des joueurs en direct.'],
         ],
     },

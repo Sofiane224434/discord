@@ -3,6 +3,31 @@ import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 
+const PRAYER_METHODS = [
+    { value: 12, label: 'UOIF - Union des Organisations Islamiques de France (12°)' },
+    { value: 3, label: 'MWL - Ligue Islamique Mondiale (18°)' },
+    { value: 2, label: 'ISNA - Islamic Society of North America (15°)' },
+    { value: 4, label: 'Umm al-Qura University, Makkah' },
+    { value: 5, label: 'Egyptian General Authority of Survey' },
+    { value: 1, label: 'University of Islamic Sciences, Karachi' },
+    { value: 13, label: 'Diyanet İşleri Başkanlığı, Turquie' },
+];
+
+const ISLAMIC_RECITERS = [
+    { value: 'mishary', label: 'Mishary Rashid Alafasy (العفاسي)' },
+    { value: 'sudais', label: 'Abdul Rahman Al-Sudais (السديس)' },
+    { value: 'shuraim', label: 'Saud Al-Shuraim (الشريم)' },
+    { value: 'maher', label: 'Maher Al-Muaiqly (المعيقلي)' },
+    { value: 'yasser', label: 'Yasser Al-Dosari (الدوسري)' },
+    { value: 'ghamdi', label: 'Saad Al-Ghamdi (الغامدي)' },
+    { value: 'ajmy', label: 'Ahmed Al-Ajmy (العجمي)' },
+    { value: 'basit_murattal', label: 'Abdulbasit Abdulsamad - Murattal (عبد الباسط)' },
+    { value: 'basit_mujawwad', label: 'Abdulbasit Abdulsamad - Mujawwad (عبد الباسط)' },
+    { value: 'minshawi_murattal', label: 'Mohamed Siddiq Al-Minshawi - Murattal (المنشاوي)' },
+    { value: 'minshawi_mujawwad', label: 'Mohamed Siddiq Al-Minshawi - Mujawwad (المنشاوي)' },
+    { value: 'hussary_murattal', label: 'Mahmoud Khalil Al-Hussary - Murattal (الحصري)' },
+];
+
 const EMPTY_CONFIG = {
     ai: {
         systemPrompt: '',
@@ -37,6 +62,17 @@ const EMPTY_CONFIG = {
     tiktok: { enabled: false, username: '', targetChannelId: '' },
     rank: { enabled: false, announceChannelId: '', silent: false, rewards: [] },
     features: { islamModeEnabled: false },
+    islam: {
+        prayerCity: 'Paris',
+        prayerMethod: 12,
+        prayerNotificationEnabled: false,
+        prayerChannelId: '',
+        prayerRoleId: '',
+        whiteDaysNotificationEnabled: false,
+        whiteDaysChannelId: '',
+        radioDefaultReciter: 'mishary',
+        radioAutoReconnect: true,
+    },
     channels: [],
     roles: [],
     commands: [],
@@ -87,6 +123,19 @@ function mergeConfig(data) {
         tiktok: { ...EMPTY_CONFIG.tiktok, ...data?.tiktok },
         rank: { ...EMPTY_CONFIG.rank, ...data?.rank },
         features: { ...EMPTY_CONFIG.features, ...data?.features },
+        islam: {
+            ...EMPTY_CONFIG.islam,
+            ...(data?.islam || {}),
+            prayerCity: data?.islam?.prayerCity || 'Paris',
+            prayerMethod: Number(data?.islam?.prayerMethod) || 12,
+            prayerNotificationEnabled: Boolean(data?.islam?.prayerNotificationEnabled),
+            prayerChannelId: data?.islam?.prayerChannelId || '',
+            prayerRoleId: data?.islam?.prayerRoleId || '',
+            whiteDaysNotificationEnabled: Boolean(data?.islam?.whiteDaysNotificationEnabled),
+            whiteDaysChannelId: data?.islam?.whiteDaysChannelId || '',
+            radioDefaultReciter: data?.islam?.radioDefaultReciter || 'mishary',
+            radioAutoReconnect: data?.islam?.radioAutoReconnect !== false,
+        },
         channels: Array.isArray(data?.channels) ? data.channels : [],
         roles: Array.isArray(data?.roles) ? data.roles : [],
         commands: Array.isArray(data?.commands) ? data.commands : [],
@@ -249,6 +298,7 @@ function GuildConfig() {
                 youtube: form.youtube,
                 tiktok: form.tiktok,
                 rank: form.rank,
+                islam: form.islam,
                 commands: commandsPayload,
             });
             await refresh();
@@ -1284,16 +1334,19 @@ function GuildConfig() {
                     <section className="admin-card space-y-6">
                         <div className="admin-card-header">
                             <div>
-                                <h2 className="text-xl font-bold text-white">Mode Islam & Fonctionnalités Spéciales</h2>
-                                <p className="text-sm text-slate-400">Déverrouillage et gestion des commandes spirituelles.</p>
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <span>🌙</span> Mode Islam & Spiritualité
+                                </h2>
+                                <p className="text-sm text-slate-400">Configuration des rappels de prière (Adhan), jeûne des Jours Blancs, radio 24/7 et commandes islamiques.</p>
                             </div>
                         </div>
 
                         {form.features.islamModeEnabled ? (
-                            <div className="rounded-lg border border-emerald-700/60 bg-emerald-950/20 p-5 space-y-4">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="space-y-6">
+                                {/* Statut du mode */}
+                                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-700/60 bg-emerald-950/25 p-4">
                                     <div className="islam-enabled-status">
-                                        <span>●</span> Mode Islam actuellement ACTIF sur ce serveur
+                                        <span>●</span> Mode Islam actuellement ACTIF sur ce serveur (100% gratuit & sans limitation)
                                     </div>
                                     <button
                                         type="button"
@@ -1304,19 +1357,229 @@ function GuildConfig() {
                                         {activatingIslam ? 'Désactivation…' : 'Désactiver le mode Islam'}
                                     </button>
                                 </div>
-                                <p className="text-sm text-slate-300">Les commandes suivantes sont actives et visibles par vos membres :</p>
-                                <div className="grid gap-3 sm:grid-cols-3">
-                                    <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
-                                        <code className="text-sm font-bold text-emerald-400">/radio</code>
-                                        <p className="mt-1 text-xs text-slate-400">Diffusion 24/7 en direct du Saint Coran en salon vocal avec choix de stations.</p>
+
+                                {/* 1. Horaires de Prière & Rappels Adhan Automatiques */}
+                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">🕌</span>
+                                        <div>
+                                            <h3 className="font-semibold text-white">Horaires des Prières & Rappels Adhan</h3>
+                                            <p className="text-xs text-slate-400">Calcul automatique des 5 prières quotidiennes (Fajr, Dhuhr, Asr, Maghrib, Isha) et alertes en direct.</p>
+                                        </div>
                                     </div>
-                                    <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
-                                        <code className="text-sm font-bold text-emerald-400">/coran</code>
-                                        <p className="mt-1 text-xs text-slate-400">Lecture et écoute complète du Saint Coran (sourate, verset, traduction française).</p>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <Field label="Ville de référence" hint="Ex: Paris, Lyon, Marseille, Alger, Casablanca, Bruxelles, Montréal">
+                                            <TextInput
+                                                value={form.islam.prayerCity}
+                                                onChange={(e) => update('islam', 'prayerCity', e.target.value)}
+                                                placeholder="Paris"
+                                            />
+                                        </Field>
+                                        <Field label="Méthode de calcul" hint="Angle astronomique pour Fajr et Isha">
+                                            <SelectInput
+                                                value={form.islam.prayerMethod}
+                                                onChange={(e) => update('islam', 'prayerMethod', Number(e.target.value))}
+                                                options={PRAYER_METHODS}
+                                            />
+                                        </Field>
                                     </div>
-                                    <div className="rounded border border-emerald-800/60 bg-slate-900/60 p-3">
-                                        <code className="text-sm font-bold text-emerald-400">/quiz</code>
-                                        <p className="mt-1 text-xs text-slate-400">Quiz thématique islamique avec suivi des scores et classements en direct.</p>
+
+                                    <div className="border-t border-slate-800/80 pt-4 space-y-3">
+                                        <label className="flex items-center gap-3 text-sm font-semibold text-white cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={form.islam.prayerNotificationEnabled}
+                                                onChange={(e) => update('islam', 'prayerNotificationEnabled', e.target.checked)}
+                                                className="size-4 accent-emerald-500 rounded"
+                                            />
+                                            <span>Activer les notifications automatiques à l'heure de chaque prière (Appel Adhan)</span>
+                                        </label>
+
+                                        {form.islam.prayerNotificationEnabled ? (
+                                            <div className="grid gap-4 md:grid-cols-2 pt-2">
+                                                <Field label="Salon Discord pour l'Adhan" hint="Le bot y publiera un embed à l'heure exacte de chaque prière">
+                                                    <SelectInput
+                                                        value={form.islam.prayerChannelId}
+                                                        onChange={(e) => update('islam', 'prayerChannelId', e.target.value)}
+                                                        options={channelOptions}
+                                                        emptyLabel="Choisir un salon textuel"
+                                                    />
+                                                </Field>
+                                                <Field label="Rôle à mentionner (optionnel)" hint="Ex: @Prière ou @Musulmans (laisser vide pour aucune mention)">
+                                                    <SelectInput
+                                                        value={form.islam.prayerRoleId}
+                                                        onChange={(e) => update('islam', 'prayerRoleId', e.target.value)}
+                                                        options={roleOptions}
+                                                        emptyLabel="Aucune mention de rôle"
+                                                    />
+                                                </Field>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </div>
+
+                                {/* 2. Rappel des Jours Blancs (Jeûne Sunnah) */}
+                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">🤍</span>
+                                        <div>
+                                            <h3 className="font-semibold text-white">Jeûne des Jours Blancs (Ayyam al-Bid)</h3>
+                                            <p className="text-xs text-slate-400">Rappel automatique de la Sunnah la veille des 13, 14 et 15 de chaque mois hégirien (à 18h00).</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="flex items-center gap-3 text-sm font-semibold text-white cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={form.islam.whiteDaysNotificationEnabled}
+                                                onChange={(e) => update('islam', 'whiteDaysNotificationEnabled', e.target.checked)}
+                                                className="size-4 accent-emerald-500 rounded"
+                                            />
+                                            <span>Activer le rappel automatique la veille du jeûne des Jours Blancs</span>
+                                        </label>
+
+                                        {form.islam.whiteDaysNotificationEnabled ? (
+                                            <div className="max-w-md pt-2">
+                                                <Field label="Salon Discord pour le rappel" hint="Salon où sera publiée l'annonce la veille du 13ème jour">
+                                                    <SelectInput
+                                                        value={form.islam.whiteDaysChannelId}
+                                                        onChange={(e) => update('islam', 'whiteDaysChannelId', e.target.value)}
+                                                        options={channelOptions}
+                                                        emptyLabel="Choisir un salon textuel"
+                                                    />
+                                                </Field>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </div>
+
+                                {/* 3. Radio Coran 24/7 & Récitateurs */}
+                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xl">🎙️</span>
+                                        <div>
+                                            <h3 className="font-semibold text-white">Radio Coranique 24/7 & Audio Vocal</h3>
+                                            <p className="text-xs text-slate-400">Diffusion continue en salon vocal sans interruption ni déconnexion.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <Field label="Récitateur favori par défaut" hint="Utilisé au lancement de la commande /radio">
+                                            <SelectInput
+                                                value={form.islam.radioDefaultReciter}
+                                                onChange={(e) => update('islam', 'radioDefaultReciter', e.target.value)}
+                                                options={ISLAMIC_RECITERS}
+                                            />
+                                        </Field>
+                                        <div className="flex flex-col justify-center">
+                                            <label className="flex items-center gap-3 text-sm font-semibold text-white cursor-pointer pt-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={form.islam.radioAutoReconnect}
+                                                    onChange={(e) => update('islam', 'radioAutoReconnect', e.target.checked)}
+                                                    className="size-4 accent-emerald-500 rounded"
+                                                />
+                                                <span>Reconnexion automatique du flux en cas de micro-coupure réseau</span>
+                                            </label>
+                                            <span className="text-xs text-slate-400 mt-1">Garantit une diffusion 24/7 ininterrompue.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 4. Catalogue des 10 Commandes Spirituelles Actives */}
+                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="font-semibold text-white">Catalogue des 10 Commandes Spirituelles Actives</h3>
+                                            <p className="text-xs text-slate-400">Toutes ces fonctionnalités sont disponibles gratuitement sur votre serveur Discord :</p>
+                                        </div>
+                                        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                                            10 Commandes Débloquées
+                                        </span>
+                                    </div>
+
+                                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/priere</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Horaires</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Horaires des 5 prières du jour pour toute ville avec décompte temps réel.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/doua</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Invocations</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Citadelle du Musulman (matin, soir, sommeil, repas, épreuves) avec arabe et phonétique.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/hadith</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Sunnah</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">40 Hadiths Nawawi, Sahih Bukhari & Muslim avec références et leçons éthiques.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/hijri</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Calendrier</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Date lunaire du jour, mois islamique et rappel des 3 Jours Blancs (13, 14, 15).</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/qibla</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Direction</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Cap précis en degrés et distance en km vers la Kaaba sacrée à La Mecque.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/asma</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">99 Noms</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Les 99 Plus Beaux Noms d'Allah avec calligraphie arabe, sens et méditation.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/ramadan</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Jeûne</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Compagnon de jeûne : heures d'Imsak et d'Iftar (Maghrib) et doua de rupture.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/radio</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Audio 24/7</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Diffusion 24/7 en salon vocal avec 22 récitateurs et stations sélectionnables.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/coran</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Lecture</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Lecture et écoute verset par verset du Saint Coran avec traduction en français.</p>
+                                        </div>
+
+                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
+                                            <div className="flex items-center gap-2">
+                                                <code className="text-sm font-bold text-emerald-400">/quiz</code>
+                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Quiz</span>
+                                            </div>
+                                            <p className="mt-1 text-xs text-slate-300">Quiz islamique interactif avec classement des meilleurs joueurs en direct.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

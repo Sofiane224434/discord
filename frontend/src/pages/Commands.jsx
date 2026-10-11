@@ -8,6 +8,7 @@ const commandGroups = [
         commands: [
             ['/ask', 'Pose une question à l’assistant IA du serveur.'],
             ['/help', 'Affiche les commandes actives et leur usage.'],
+            ['/botavatar', 'Affiche et permet de télécharger la photo de profil (avatar) officielle d’AzimBot en HD/4K.'],
             ['/ping', 'Mesure la latence Discord et WebSocket.'],
             ['/remindme', 'Programme un rappel personnel dans un délai donné.'],
             ['/salon', 'Propose un nom et une description de salon.'],

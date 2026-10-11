@@ -33,7 +33,7 @@ const EMPTY_CONFIG = {
         systemPrompt: '',
         language: '',
         triggerName: 'azim',
-        triggerNames: ['azim'],
+        triggerNames: ['azim', 'azimbot'],
         keysCount: 0,
         keysPreviews: [],
     },
@@ -54,9 +54,9 @@ const EMPTY_CONFIG = {
         currentAvatarUrl: '',
         globalAvatarUrl: '',
         hasServerAvatar: false,
-        botDisplayName: 'Azim',
-        botUsername: 'Azim',
-        botTag: 'Azim',
+        botDisplayName: 'AzimBot',
+        botUsername: 'AzimBot',
+        botTag: 'AzimBot',
     },
     youtube: { channels: [], targetChannelId: '' },
     tiktok: { enabled: false, username: '', targetChannelId: '' },
@@ -82,9 +82,10 @@ function mergeConfig(data) {
     const aiData = data?.ai || {};
     const rawTriggers = Array.isArray(aiData.triggerNames) && aiData.triggerNames.length > 0
         ? aiData.triggerNames
-        : [aiData.triggerName || 'azim'];
-    const triggerNames = rawTriggers.map((t) => String(t || '').trim().toLowerCase()).filter(Boolean);
-    if (triggerNames.length === 0) triggerNames.push('azim');
+        : [aiData.triggerName || 'azim', 'azimbot'];
+    const triggerNames = [...new Set(rawTriggers.map((t) => String(t || '').trim().toLowerCase()).filter(Boolean))];
+    if (!triggerNames.includes('azim')) triggerNames.unshift('azim');
+    if (!triggerNames.includes('azimbot')) triggerNames.push('azimbot');
 
     const welcomeData = data?.welcome || {};
     const normalizedRules = (welcomeData.rules || []).map((rule) => {

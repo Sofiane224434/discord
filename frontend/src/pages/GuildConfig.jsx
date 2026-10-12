@@ -1207,24 +1207,32 @@ function GuildConfig() {
                             <div className="rounded-xl border border-slate-700/60 bg-gradient-to-br from-slate-900/90 via-slate-900/50 to-slate-950 p-5 shadow-lg">
                                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                                     <div className="relative group shrink-0">
-                                        {form.profile.currentAvatarUrl ? (
+                                        {form.profile.hasServerAvatar && form.profile.currentAvatarUrl ? (
                                             <img
                                                 src={form.profile.currentAvatarUrl}
                                                 alt={form.profile.botDisplayName || 'Avatar du bot'}
                                                 className="size-24 sm:size-28 rounded-2xl object-cover ring-2 ring-cyan-500/40 shadow-cyan-950/40 shadow-xl transition-transform duration-200 group-hover:scale-105"
                                             />
                                         ) : (
-                                            <div className="size-24 sm:size-28 rounded-2xl bg-slate-800 ring-2 ring-slate-700 flex items-center justify-center text-3xl">
-                                                🤖
-                                            </div>
+                                            <img
+                                                src={isIslamActive ? '/icon-islam.png' : (form.profile.globalAvatarUrl || '/icon.png')}
+                                                alt={form.profile.botDisplayName || 'Avatar du bot'}
+                                                className={`size-24 sm:size-28 rounded-2xl object-contain p-2 bg-slate-900/90 ring-2 shadow-xl transition-transform duration-200 group-hover:scale-105 ${
+                                                    isIslamActive
+                                                        ? 'ring-emerald-500/50 shadow-emerald-950/50'
+                                                        : 'ring-cyan-500/40 shadow-cyan-950/40'
+                                                }`}
+                                            />
                                         )}
                                         {form.profile.hasServerAvatar ? (
                                             <span className="absolute -bottom-2 -right-2 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
                                                 Serveur
                                             </span>
                                         ) : (
-                                            <span className="absolute -bottom-2 -right-2 rounded-full bg-slate-700 px-2 py-0.5 text-[10px] font-medium text-slate-300 shadow-md">
-                                                Global
+                                            <span className={`absolute -bottom-2 -right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white shadow-md ${
+                                                isIslamActive ? 'bg-emerald-600' : 'bg-slate-700'
+                                            }`}>
+                                                {isIslamActive ? 'Islam' : 'Global'}
                                             </span>
                                         )}
                                     </div>
@@ -1242,8 +1250,14 @@ function GuildConfig() {
                                                     ✨ Avatar personnalisé à ce serveur
                                                 </span>
                                             ) : (
-                                                <span className="rounded-full bg-slate-800 border border-slate-700 px-2 py-0.5 text-[11px] text-slate-400">
-                                                    🌐 Avatar par défaut du bot
+                                                <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
+                                                    isIslamActive
+                                                        ? 'bg-emerald-950/70 border-emerald-600/50 text-emerald-300'
+                                                        : 'bg-slate-800 border-slate-700 text-slate-400'
+                                                }`}>
+                                                    {isIslamActive
+                                                        ? '🕌 Photo officielle Islamique (active par défaut)'
+                                                        : '🌐 Photo officielle de base (processeur bleu)'}
                                                 </span>
                                             )}
                                         </div>

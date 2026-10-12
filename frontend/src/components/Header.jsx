@@ -20,6 +20,7 @@ function Header() {
     const categoryLinks = [
         { label: 'Accueil', to: '/' },
         { label: 'Modules', to: '/modules' },
+        { label: 'Documentation', to: '/docs/accueil' },
         { label: 'Commandes', to: '/commands' },
         { label: 'Aide', to: '/help' },
         { label: 'Retours', to: '/feedback' },

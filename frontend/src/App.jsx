@@ -19,6 +19,7 @@ import GuildConfig from './pages/GuildConfig.jsx';
 import Modules from './pages/Modules.jsx';
 import Feedback from './pages/Feedback.jsx';
 import Settings from './pages/Settings.jsx';
+import Docs from './pages/Docs.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 
 function App() {
@@ -33,7 +34,9 @@ function App() {
         <Route path="/bots" element={<PublicServers />} />
         <Route path="/modules" element={<Modules />} />
         <Route path="/commands" element={<Commands />} />
-        <Route path="/docs" element={<Commands />} />
+        <Route path="/docs" element={<Docs />} />
+        <Route path="/docs/accueil" element={<Docs />} />
+        <Route path="/docs/:slug" element={<Docs />} />
         <Route path="/help" element={<Help />} />
         <Route path="/faq" element={<Help />} />
         <Route path="/status" element={<Status />} />

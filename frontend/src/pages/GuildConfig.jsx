@@ -191,6 +191,22 @@ function GuildConfig() {
     const [activatingIslam, setActivatingIslam] = useState(false);
     const [commandSearch, setCommandSearch] = useState('');
     const [downloadingAvatar, setDownloadingAvatar] = useState(false);
+    const [showAllKeys, setShowAllKeys] = useState(true);
+    const [revealedKeys, setRevealedKeys] = useState({});
+    const [copiedKeyIndex, setCopiedKeyIndex] = useState(null);
+
+    const toggleKeyVisibility = (index) => {
+        setRevealedKeys((prev) => ({
+            ...prev,
+            [index]: !(prev[index] !== undefined ? prev[index] : showAllKeys),
+        }));
+    };
+
+    const copyKeyToClipboard = (keyString, index) => {
+        navigator.clipboard.writeText(keyString);
+        setCopiedKeyIndex(index);
+        setTimeout(() => setCopiedKeyIndex(null), 2000);
+    };
 
     const refresh = useCallback(async () => {
         const data = await adminService.getGuildConfig(guildId);
@@ -625,9 +641,25 @@ function GuildConfig() {
 
                         {/* Clés Groq */}
                         <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-4 space-y-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                                 <h3 className="font-semibold text-white">Clés API Groq du serveur</h3>
-                                <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{form.ai.keysCount} active(s)</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{form.ai.keysCount} active(s)</span>
+                                    {form.ai.keysPreviews.length > 0 ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const nextState = !showAllKeys;
+                                                setShowAllKeys(nextState);
+                                                setRevealedKeys({});
+                                            }}
+                                            className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1.5"
+                                        >
+                                            <span>{showAllKeys ? '🔒' : '👁️'}</span>
+                                            <span>{showAllKeys ? 'Tout masquer' : 'Tout afficher'}</span>
+                                        </button>
+                                    ) : null}
+                                </div>
                             </div>
 
                             <div className="flex items-start gap-2.5 rounded-md border border-emerald-800/40 bg-emerald-950/20 p-2.5 text-xs text-emerald-300">
@@ -636,20 +668,61 @@ function GuildConfig() {
                                     <strong>Isolation stricte :</strong> Les clés API configurées ici sont hermétiques et utilisées exclusivement pour ce serveur ({getGuildName(guildId)}). Aucun autre serveur ne peut utiliser ou partager vos clés ou quotas.
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                {form.ai.keysPreviews.map((key) => (
-                                    <div key={key.index} className="flex items-center justify-between rounded border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm">
-                                        <span className="font-mono text-cyan-300">{key.preview}</span>
-                                        <button
-                                            type="button"
-                                            disabled={form.ai.keysCount <= 1}
-                                            onClick={() => manageKey({ removeKeyIndex: key.index })}
-                                            className="text-xs text-rose-400 hover:underline disabled:opacity-40"
+                            <div className="space-y-2.5">
+                                {form.ai.keysPreviews.map((key) => {
+                                    const fullKey = key.key || key.preview || '';
+                                    const maskedPreview = key.masked || (fullKey.length > 12 ? `${fullKey.slice(0, 8)}...${fullKey.slice(-4)}` : fullKey);
+                                    const isRevealed = revealedKeys[key.index] !== undefined ? revealedKeys[key.index] : showAllKeys;
+                                    const displayValue = isRevealed ? fullKey : maskedPreview;
+
+                                    return (
+                                        <div
+                                            key={key.index}
+                                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-lg border border-slate-800 bg-[#071727] p-3 text-sm shadow-sm"
                                         >
-                                            Supprimer
-                                        </button>
-                                    </div>
-                                ))}
+                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-xs text-slate-400 shrink-0">
+                                                    #{key.index}
+                                                </span>
+                                                <code className="font-mono text-cyan-300 break-all select-all text-xs sm:text-sm bg-[#050e18] px-2.5 py-1 rounded border border-cyan-950/60 flex-1">
+                                                    {displayValue}
+                                                </code>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleKeyVisibility(key.index)}
+                                                    className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1 text-slate-300 hover:text-white"
+                                                    title={isRevealed ? 'Masquer cette clé' : 'Afficher la clé entière'}
+                                                >
+                                                    <span>{isRevealed ? '🔒' : '👁️'}</span>
+                                                    <span className="hidden sm:inline">{isRevealed ? 'Masquer' : 'Révéler'}</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => copyKeyToClipboard(fullKey, key.index)}
+                                                    className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1 text-cyan-300 hover:text-cyan-200"
+                                                    title="Copier la clé complète dans le presse-papiers"
+                                                >
+                                                    <span>{copiedKeyIndex === key.index ? '✓' : '📋'}</span>
+                                                    <span>{copiedKeyIndex === key.index ? 'Copié !' : 'Copier'}</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={form.ai.keysCount <= 1}
+                                                    onClick={() => manageKey({ removeKeyIndex: key.index })}
+                                                    className="btn btn-soft text-xs py-1 px-2.5 text-rose-400 hover:text-rose-300 disabled:opacity-40"
+                                                    title="Supprimer cette clé de la configuration"
+                                                >
+                                                    Supprimer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                             <div className="mt-3 flex flex-wrap gap-2">
                                 <TextInput

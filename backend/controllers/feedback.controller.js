@@ -83,7 +83,7 @@ export const getFeedbacks = async (req, res) => {
 };
 
 export const createFeedback = async (req, res) => {
-    const { type, title, description, authorName, authorEmail, guildId, guildName } = req.body || {};
+    const { type, title, description, authorName, authorEmail, guildId, guildName, images } = req.body || {};
 
     if (!title?.trim() || !description?.trim()) {
         return res.status(400).json({ error: 'Le titre et la description sont obligatoires' });
@@ -97,6 +97,7 @@ export const createFeedback = async (req, res) => {
         authorEmail: authorEmail?.trim() || req.user?.email || null,
         guildId: guildId || null,
         guildName: guildName || null,
+        images: Array.isArray(images) ? images.slice(0, 5) : [],
         source: 'web',
     };
 

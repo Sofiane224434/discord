@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 
 function LoadingScreen({
@@ -7,6 +8,10 @@ function LoadingScreen({
 }) {
     const { theme } = useTheme();
     const isIslam = theme === 'islam';
+    const [imgLoaded, setImgLoaded] = useState(false);
+    const [imgError, setImgError] = useState(false);
+
+    const imgSrc = isIslam ? '/icon-islam.png' : '/icon.png';
 
     const containerClasses = fullScreen
         ? `fixed inset-0 z-50 flex flex-col items-center justify-center ${
@@ -52,37 +57,53 @@ function LoadingScreen({
                             : 'border-cyan-400/60 bg-[#081625] shadow-xl shadow-cyan-950/70'
                     }`}
                 >
-                    <img
-                        src={isIslam ? '/icon-islam.png' : '/icon.png'}
-                        alt="AzimBot"
-                        className="size-16 object-contain transition-transform duration-300 hover:scale-105"
-                    />
+                    {!imgError && (
+                        <img
+                            src={imgSrc}
+                            alt="AzimBot"
+                            onLoad={() => setImgLoaded(true)}
+                            onError={() => setImgError(true)}
+                            className={`size-16 object-contain transition-opacity duration-300 ${
+                                imgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                            }`}
+                        />
+                    )}
+                    {(!imgLoaded || imgError) && (
+                        <span
+                            className="absolute text-3xl select-none animate-pulse"
+                            aria-hidden="true"
+                        >
+                            {isIslam ? '🕌' : '🤖'}
+                        </span>
+                    )}
                 </div>
             </div>
 
-            {/* Title & Animated Subtext */}
-            <div className="space-y-1.5 max-w-sm">
-                <p className="text-base font-bold tracking-wide text-white drop-shadow-sm">
-                    {label}
-                </p>
-                {subtext ? (
-                    <p
-                        className={`text-xs font-medium ${
-                            isIslam ? 'text-emerald-200/80' : 'text-cyan-200/70'
-                        }`}
-                    >
-                        {subtext}
-                    </p>
-                ) : null}
-            </div>
+            {/* Label principal avec effet de brillance subtile */}
+            <h3
+                className={`text-lg font-bold tracking-tight ${
+                    isIslam
+                        ? 'bg-gradient-to-r from-emerald-200 via-emerald-100 to-amber-200 bg-clip-text text-transparent'
+                        : 'bg-gradient-to-r from-cyan-200 via-white to-sky-200 bg-clip-text text-transparent'
+                }`}
+            >
+                {label}
+            </h3>
 
-            {/* Subtle loading bar indicator */}
-            <div className="mt-5 h-1 w-32 overflow-hidden rounded-full bg-slate-800/80">
+            {/* Sous-titre informatif */}
+            {subtext && (
+                <p className="mt-1.5 max-w-sm text-xs text-slate-400 leading-relaxed">
+                    {subtext}
+                </p>
+            )}
+
+            {/* Barre de progression indéterminée moderne */}
+            <div className="mt-5 h-1 w-48 overflow-hidden rounded-full bg-slate-800/80">
                 <div
-                    className={`h-full w-full origin-left animate-pulse bg-gradient-to-r ${
+                    className={`h-full w-1/3 rounded-full animate-indeterminate ${
                         isIslam
-                            ? 'from-emerald-500 via-emerald-400 to-amber-400'
-                            : 'from-cyan-500 to-sky-400'
+                            ? 'bg-gradient-to-r from-emerald-500 via-teal-400 to-amber-400'
+                            : 'bg-gradient-to-r from-cyan-500 via-sky-400 to-blue-500'
                     }`}
                 />
             </div>

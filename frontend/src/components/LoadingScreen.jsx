@@ -23,7 +23,7 @@ function LoadingScreen({
                 <div className="relative flex size-14 items-center justify-center overflow-hidden rounded-2xl border border-cyan-400/50 bg-[#081625] shadow-lg shadow-cyan-950/60">
                     <img
                         src="/icon.png"
-                        alt="Azim"
+                        alt="AzimBot"
                         className="size-11 object-contain transition-transform duration-300 hover:scale-105"
                     />
                 </div>

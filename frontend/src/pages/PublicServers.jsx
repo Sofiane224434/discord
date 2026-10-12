@@ -31,12 +31,12 @@ function PublicServers() {
                 <article><span>Connexion Discord</span><strong className={services.oauth?.status === 'ok' ? 'public-server-online' : ''}>{loading ? 'Vérification…' : services.oauth?.status === 'ok' ? 'Prête' : 'Indisponible'}</strong></article>
             </section>
 
-            {loading ? <LoadingScreen label="Chargement de l’état d’Azim…" subtext="Vérification des passerelles et services" /> : null}
-            {!loading && !health ? <p className="site-empty-state">L’état d’Azim est momentanément indisponible.</p> : null}
-            <section className="public-server-list" aria-label="Bot Azim">
+            {loading ? <LoadingScreen label="Chargement de l’état d’AzimBot…" subtext="Vérification des passerelles et services" /> : null}
+            {!loading && !health ? <p className="site-empty-state">L’état d’AzimBot est momentanément indisponible.</p> : null}
+            <section className="public-server-list" aria-label="Bot AzimBot">
                 <article className="public-server-row">
-                    <img src="/icon.png" alt="" />
-                    <div><h2>Azim</h2><p>Accueil des membres, niveaux, commandes et alertes.</p></div>
+                    <img src="/icon.png" alt="AzimBot" />
+                    <div><h2>AzimBot</h2><p>Accueil des membres, niveaux, commandes et alertes.</p></div>
                     <span className={`public-server-tag ${services.botApi?.status === 'ok' ? 'is-online' : 'is-offline'}`}><i />{loading ? 'Vérification…' : services.botApi?.status === 'ok' ? 'En ligne' : 'Indisponible'}</span>
                 </article>
             </section>

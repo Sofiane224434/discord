@@ -195,6 +195,20 @@ body {
 	filter: drop-shadow(0 0 16px rgba(32, 185, 242, 0.8));
 }
 
+.site-brand-logo {
+	height: 32px;
+	width: auto;
+	max-width: 130px;
+	object-fit: contain;
+	filter: drop-shadow(0 2px 8px rgba(32, 185, 242, 0.4));
+	transition: transform 0.22s ease, filter 0.22s ease;
+}
+
+.site-brand:hover .site-brand-logo {
+	transform: scale(1.04);
+	filter: drop-shadow(0 4px 14px rgba(32, 185, 242, 0.75));
+}
+
 .site-brand-dot {
 	color: var(--azim-accent-strong);
 }

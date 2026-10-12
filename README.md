@@ -161,7 +161,8 @@ starter-kit/
 │   │   ├── assets/
 │   │   ├── favicon.png
 │   │   ├── icon.png
-│   │   └── locales/
+│   │   ├── locales/
+│   │   └── logo.png
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── assets/

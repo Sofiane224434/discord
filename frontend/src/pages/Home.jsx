@@ -57,8 +57,8 @@ function Home() {
         <main className="site-page home-dashboard">
             <header className="home-dashboard-heading">
                 <div>
-                    <p className="site-eyebrow">BOT DISCORD · AZIM</p>
-                    <h1>Azim Bot</h1>
+                    <p className="site-eyebrow">BOT DISCORD · AZIMBOT</p>
+                    <h1>AzimBot</h1>
                     <p>Accueil, niveaux, alertes et commandes pour votre serveur.</p>
                 </div>
                 <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-soft">{isAuthenticated ? 'Ouvrir le panel' : 'Connexion Discord'} <span aria-hidden="true">→</span></Link>
@@ -79,19 +79,19 @@ function Home() {
                 <article className="home-dashboard-metric home-metric-commands">
                     <span className="home-metric-mark" aria-hidden="true" />
                     <span>Commandes</span>
-                    <strong>19</strong>
+                    <strong>30</strong>
                 </article>
             </section>
 
             <div className="home-dashboard-grid">
                 <section className="home-dashboard-panel site-panel">
                     <div className="home-panel-heading">
-                        <div><p className="site-eyebrow">BOT</p><h2>Azim</h2></div>
+                        <div><p className="site-eyebrow">BOT</p><h2>AzimBot</h2></div>
                         <span className={`home-bot-state ${botApiStatus === 'ok' ? 'is-online' : 'is-offline'}`}><i />{health ? serviceLabel(botApiStatus) : apiChecked ? 'Indisponible' : 'Vérification…'}</span>
                     </div>
                     <div className="home-bot-identity">
-                        <img src="/icon.png" alt="" />
-                        <div><strong>Azim</strong><span>Accueil · niveaux · alertes · modération</span></div>
+                        <img src="/icon.png" alt="AzimBot" className="size-11 object-contain" />
+                        <div><strong>AzimBot</strong><span>Accueil · niveaux · alertes · modération · spiritualité</span></div>
                     </div>
                     <div className="home-quick-actions">
                         <Link to="/commands" className="home-quick-action"><span aria-hidden="true">⌘</span>Commandes</Link>

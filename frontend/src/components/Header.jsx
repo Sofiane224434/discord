@@ -39,9 +39,10 @@ function Header() {
     return (
         <header className="site-header sticky top-0 z-40 text-white">
             <div className="site-header-inner">
-                <Link to="/" className="site-brand" aria-label="Azim, accueil">
-                    <img src="/icon.png" alt="" className="site-brand-icon" />
-                    <span>AZIM<span className="site-brand-dot">.</span></span>
+                <Link to="/" className="site-brand" aria-label="AzimBot, accueil">
+                    <img src="/icon.png" alt="AzimBot" className="site-brand-icon" />
+                    <img src="/logo.png" alt="AzimBot" className="site-brand-logo hidden sm:inline-block" />
+                    <span className="sm:hidden font-bold tracking-wider text-base text-cyan-200">AzimBot</span>
                 </Link>
 
                 <button

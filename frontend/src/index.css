@@ -119,9 +119,11 @@
 /* Panneaux et cartes : contraste supérieur */
 [data-theme="islam"] .site-panel,
 [data-theme="islam"] .admin-card {
-	background: rgba(5, 26, 18, 0.96) !important;
-	border: 1px solid rgba(52, 211, 153, 0.22) !important;
-	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+	background: rgba(13, 31, 51, 0.92);
+	border: 1px solid var(--azim-line);
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
 [data-theme="islam"] .site-panel-glow {
@@ -2331,23 +2333,26 @@ body {
 /* ===== ADMIN PANEL REDESIGN ===== */
 .admin-tab-nav {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	scrollbar-width: thin;
 	gap: 8px;
 	position: sticky;
-	top: 66px;
-	z-index: 15;
+	top: 64px;
+	z-index: 20;
 	background: rgba(8, 22, 37, 0.95);
 	backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--azim-line);
-	padding: 10px 0 12px;
+	padding: 10px 4px 12px;
 	margin-bottom: 24px;
+	-webkit-overflow-scrolling: touch;
 }
 .admin-tab-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
 	padding: 9px 16px;
-	font-size: 14px;
+	font-size: 13.5px;
 	font-weight: 600;
 	color: var(--azim-ink-soft);
 	background: rgba(16, 34, 57, 0.6);
@@ -2355,6 +2360,7 @@ body {
 	border-radius: 8px;
 	cursor: pointer;
 	white-space: nowrap;
+	flex-shrink: 0;
 	transition: all 0.18s ease;
 }
 .admin-tab-btn:hover {

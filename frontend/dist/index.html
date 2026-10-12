@@ -6,8 +6,43 @@
     <link rel="apple-touch-icon" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AzimBot</title>
-    <script type="module" crossorigin src="/assets/index-pXPSdbgg.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-kyMoFRU3.css">
+    <script>
+      (function() {
+        function isSuppressed(msg, src) {
+          var str = String(msg || '');
+          var source = String(src || '');
+          return (
+            str.indexOf('s is not a function') !== -1 ||
+            str.indexOf('unsafe-eval') !== -1 ||
+            str.indexOf('chrome-extension://') !== -1 ||
+            source.indexOf('chrome-extension://') !== -1 ||
+            source.indexOf('content.js') !== -1
+          );
+        }
+        window.addEventListener('error', function(e) {
+          if (isSuppressed(e.message, e.filename)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            return true;
+          }
+        }, true);
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e.reason ? (e.reason.message || String(e.reason)) : '';
+          if (isSuppressed(reason, '')) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        }, true);
+        var origError = console.error;
+        console.error = function() {
+          var combined = Array.prototype.slice.call(arguments).map(function(a) { return String(a || ''); }).join(' ');
+          if (isSuppressed(combined, '')) return;
+          origError.apply(console, arguments);
+        };
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-BKsfm35S.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DJsth3ii.css">
   </head>
   <body>
     <div id="root"></div>

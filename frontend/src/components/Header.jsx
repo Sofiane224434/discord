@@ -44,7 +44,6 @@ function Header() {
         ...(isAuthenticated ? [{ label: 'PANEL', to: '/dashboard' }] : [{ label: 'FONCTIONNALITÉS', to: '/#features' }]),
         { label: 'STATUTS', to: '/status' },
         { label: 'RETOURS & IDÉES', to: '/feedback' },
-        { label: 'PARAMÈTRES', to: '/settings' },
     ];
 
     return (
@@ -129,15 +128,6 @@ function Header() {
                                     </div>
                                     <div className="draft-user-dropdown__divider" />
                                     <Link
-                                        to="/dashboard"
-                                        onClick={() => setUserMenuOpen(false)}
-                                        className="draft-user-dropdown__item"
-                                        role="menuitem"
-                                    >
-                                        <span>📊</span>
-                                        <span>Mes serveurs</span>
-                                    </Link>
-                                    <Link
                                         to="/settings"
                                         onClick={() => setUserMenuOpen(false)}
                                         className="draft-user-dropdown__item"
@@ -145,15 +135,6 @@ function Header() {
                                     >
                                         <span>⚙️</span>
                                         <span>Paramètres</span>
-                                    </Link>
-                                    <Link
-                                        to="/feedback"
-                                        onClick={() => setUserMenuOpen(false)}
-                                        className="draft-user-dropdown__item"
-                                        role="menuitem"
-                                    >
-                                        <span>💬</span>
-                                        <span>Retours & Idées</span>
                                     </Link>
                                     <div className="draft-user-dropdown__divider" />
                                     <button

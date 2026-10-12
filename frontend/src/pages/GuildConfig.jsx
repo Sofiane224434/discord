@@ -519,39 +519,39 @@ function GuildConfig() {
     ];
 
     return (
-        <main className="site-page site-section-page guild-config-page max-w-5xl pb-16">
-            {/* Top Bar Header */}
-            <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/60 bg-[#081625]/95 py-3 backdrop-blur-md">
-                <div className="flex items-center gap-3.5">
+        <main className="site-page site-section-page guild-config-page max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+            {/* Top Bar Hero Header */}
+            <div className="guild-config-hero mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-700/60 bg-slate-900/60 p-4 sm:p-5 backdrop-blur-md">
+                <div className="flex items-center gap-4 min-w-0">
                     {currentGuildIcon ? (
                         <img
                             src={currentGuildIcon}
                             alt=""
-                            className="size-14 rounded-2xl border-2 border-cyan-500/50 object-cover shadow-lg shadow-cyan-950/60"
+                            className="size-14 sm:size-16 rounded-2xl border-2 border-cyan-500/50 object-cover shadow-lg shadow-cyan-950/60 shrink-0"
                         />
                     ) : (
-                        <div className="flex size-14 items-center justify-center rounded-2xl border-2 border-cyan-500/50 bg-slate-800 text-xl font-bold text-cyan-300 shadow-lg shadow-cyan-950/60">
+                        <div className="flex size-14 sm:size-16 items-center justify-center rounded-2xl border-2 border-cyan-500/50 bg-slate-800 text-xl font-bold text-cyan-300 shadow-lg shadow-cyan-950/60 shrink-0">
                             {getGuildName(guildId).slice(0, 2).toUpperCase()}
                         </div>
                     )}
-                    <div>
+                    <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <Link to="/dashboard" className="text-xs font-semibold text-cyan-400 hover:underline">← Console</Link>
                             <span className="text-xs text-slate-600">/</span>
                             <span className="site-eyebrow text-[10px]">Administration</span>
                         </div>
-                        <h1 className="mt-0.5 text-2xl font-bold text-white flex items-center gap-2">
-                            {getGuildName(guildId)}
-                            <span className="rounded bg-slate-800/80 px-2 py-0.5 font-mono text-xs font-normal text-slate-400">{guildId}</span>
+                        <h1 className="mt-1 text-xl sm:text-2xl font-bold text-white flex flex-wrap items-center gap-2.5">
+                            <span>{getGuildName(guildId)}</span>
+                            <span className="rounded bg-slate-800/90 border border-slate-700/60 px-2 py-0.5 font-mono text-xs font-normal text-slate-400">{guildId}</span>
                         </h1>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                     <button
                         type="button"
                         onClick={save}
                         disabled={saving}
-                        className="btn btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
+                        className="btn btn-primary flex items-center gap-2 text-sm shadow-md disabled:opacity-60"
                     >
                         {saving ? (
                             <>
@@ -567,7 +567,7 @@ function GuildConfig() {
             {notice ? <div role="status" className="mb-6 rounded border-l-4 border-emerald-500 bg-emerald-950/40 p-4 text-sm text-emerald-200">{notice}</div> : null}
 
             {/* Navigation par Onglets */}
-            <nav className="admin-tab-nav" aria-label="Sections de configuration">
+            <nav className="admin-tab-nav scrollbar-none" aria-label="Sections de configuration">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}

@@ -6,9 +6,9 @@ function Footer() {
     return (
         <footer className="site-footer">
             <div className="site-footer-inner">
-                <div className="site-footer-brand flex items-center gap-2">
-                    <img src="/icon.png" alt="" className="size-8 object-contain" />
-                    <img src="/logo.png" alt="AzimBot" className="h-6 w-auto object-contain" />
+                <div className="site-footer-brand flex items-center gap-3.5">
+                    <img src="/icon.png" alt="AzimBot" className="size-14 object-contain drop-shadow-md" />
+                    <img src="/logo.png" alt="AzimBot" className="h-10 w-auto object-contain" />
                     <small>Bot Discord et commandes</small>
                 </div>
                 <nav className="site-footer-links" aria-label="Liens du site">

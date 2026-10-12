@@ -11,20 +11,20 @@ function LoadingScreen({
         <div className={containerClasses} role="status" aria-live="polite">
             <div className="relative mb-6 flex items-center justify-center">
                 {/* Outer rotating glowing cyan gradient ring */}
-                <div className="absolute size-20 animate-spin rounded-full border-2 border-transparent border-t-cyan-400 border-r-cyan-500/40" style={{ animationDuration: '1.2s' }} />
+                <div className="absolute size-28 animate-spin rounded-full border-2 border-transparent border-t-cyan-400 border-r-cyan-500/40" style={{ animationDuration: '1.2s' }} />
 
                 {/* Counter-rotating subtle blue ring */}
-                <div className="absolute size-24 animate-spin rounded-full border border-transparent border-b-sky-400/60 border-l-blue-600/30" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
+                <div className="absolute size-32 animate-spin rounded-full border border-transparent border-b-sky-400/60 border-l-blue-600/30" style={{ animationDirection: 'reverse', animationDuration: '2s' }} />
 
                 {/* Soft pulse glow backdrop */}
-                <div className="absolute size-16 animate-pulse rounded-full bg-cyan-500/20 blur-md" />
+                <div className="absolute size-24 animate-pulse rounded-full bg-cyan-500/25 blur-md" />
 
                 {/* Bot Icon with glowing border */}
-                <div className="relative flex size-14 items-center justify-center overflow-hidden rounded-2xl border border-cyan-400/50 bg-[#081625] shadow-lg shadow-cyan-950/60">
+                <div className="relative flex size-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-cyan-400/60 bg-[#081625] shadow-xl shadow-cyan-950/70">
                     <img
                         src="/icon.png"
                         alt="AzimBot"
-                        className="size-11 object-contain transition-transform duration-300 hover:scale-105"
+                        className="size-16 object-contain transition-transform duration-300 hover:scale-105"
                     />
                 </div>
             </div>

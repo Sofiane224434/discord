@@ -368,7 +368,8 @@ function GuildConfig() {
         try {
             await adminService.updateGuildConfig(guildId, { profile: { avatarUrl } });
             update('profile', 'avatarUrl', '');
-            setNotice(avatarUrl ? 'Avatar local modifié.' : 'Avatar local retiré.');
+            await refresh();
+            setNotice(avatarUrl ? 'Avatar local modifié avec succès.' : 'Photo de profil de base du bot rétablie avec succès sur ce serveur.');
         } catch (apiError) {
             setError(apiError.message || 'Impossible de modifier l’avatar.');
         }
@@ -1126,6 +1127,18 @@ function GuildConfig() {
                                                 {downloadingAvatar ? 'Téléchargement…' : 'Télécharger la photo de profil'}
                                             </button>
 
+                                            {form.profile.hasServerAvatar ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => updateAvatar('')}
+                                                    className="btn bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs flex items-center gap-2 font-semibold shadow-md shadow-rose-950/30 transition-all hover:scale-[1.02]"
+                                                    title="Supprimer la photo spécifique à ce serveur et réutiliser la photo de profil de base du bot"
+                                                >
+                                                    <span className="text-sm">🔄</span>
+                                                    Rétablir la photo de profil de base
+                                                </button>
+                                            ) : null}
+
                                             {form.profile.currentAvatarUrl ? (
                                                 <a
                                                     href={form.profile.currentAvatarUrl}
@@ -1140,6 +1153,16 @@ function GuildConfig() {
                                                 </a>
                                             ) : null}
                                         </div>
+
+                                        {form.profile.hasServerAvatar ? (
+                                            <div className="mt-2.5 flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-200">
+                                                <span className="text-base leading-none">💡</span>
+                                                <div>
+                                                    <strong>Une photo personnalisée est actuellement active sur ce serveur.</strong>
+                                                    <p className="mt-0.5 text-slate-300 text-[11px]">Pour réutiliser la photo officielle du bot (le petit processeur bleu), cliquez simplement sur <em>« Rétablir la photo de profil de base »</em> ci-dessus.</p>
+                                                </div>
+                                            </div>
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>
@@ -1174,9 +1197,11 @@ function GuildConfig() {
                                         <button
                                             type="button"
                                             onClick={() => updateAvatar('')}
-                                            className="btn btn-soft text-xs text-rose-300"
+                                            className="btn btn-soft text-xs text-rose-300 hover:text-rose-200 flex items-center gap-1.5"
+                                            title="Effacer la photo custom pour revenir à la photo de base"
                                         >
-                                            Rétablir avatar par défaut
+                                            <span>🔄</span>
+                                            Rétablir photo de profil de base
                                         </button>
                                     </div>
                                 </div>

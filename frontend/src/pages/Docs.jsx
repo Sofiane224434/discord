@@ -371,21 +371,28 @@ const DOCS_DATA = [
                             id: 'youtube',
                             title: 'Surveillance YouTube',
                             paragraphs: [
-                                'Ajoutez l’identifiant d’une chaîne YouTube pour recevoir un message riche avec miniature, titre et lien direct dès qu’une vidéo est mise en ligne.'
+                                'Ajoutez vos chaînes favorites directement par leur @pseudo (ex: @Inoxtag, @MrBeast), lien complet ou ID UC... pour recevoir un message riche avec miniature, titre et lien direct dès qu’une vidéo est mise en ligne.'
                             ],
                             codeList: [
-                                { cmd: '/youtube channel:UC...', desc: 'Configure la surveillance d’une chaîne YouTube.' }
+                                { cmd: '/youtube add chaine:@pseudo', desc: 'Ajoute une chaîne à surveiller via son @handle, lien ou ID UC...' },
+                                { cmd: '/youtube remove chaine:@pseudo', desc: 'Retire une chaîne de la liste de surveillance.' },
+                                { cmd: '/youtube list', desc: 'Affiche toutes les chaînes YouTube suivies sur le serveur.' },
+                                { cmd: '/youtube config salon:#salon', desc: 'Définit le salon textuel de réception des alertes vidéo.' }
                             ]
                         },
                         {
                             type: 'section',
                             id: 'tiktok',
-                            title: 'Surveillance TikTok',
+                            title: 'Surveillance TikTok (Multi-comptes)',
                             paragraphs: [
-                                'Détectez le passage en live de vos créateurs préférés et prévenez instantanément votre communauté.'
+                                'Suivez plusieurs créateurs TikTok en simultané ! Le bot vérifie régulièrement le statut et alerte instantanément votre communauté avec une annonce et un embed dynamique lors d’un passage en direct.'
                             ],
                             codeList: [
-                                { cmd: '/tiktok username:@creator', desc: 'Alerte dès le démarrage d’un live TikTok.' }
+                                { cmd: '/tiktok add compte:@pseudo', desc: 'Ajoute un compte TikTok à surveiller (@pseudo ou lien).' },
+                                { cmd: '/tiktok remove compte:@pseudo', desc: 'Retire un compte TikTok de la liste.' },
+                                { cmd: '/tiktok list', desc: 'Affiche toutes les chaînes TikTok surveillées et leur statut.' },
+                                { cmd: '/tiktok config salon:#salon', desc: 'Configure le salon textuel pour les alertes de live.' },
+                                { cmd: '/tiktok statut [compte]', desc: 'Vérifie en direct le statut live d’un compte ou de tous les comptes.' }
                             ]
                         }
                     ]
@@ -541,8 +548,8 @@ const DOCS_DATA = [
                             id: 'alertes-reseaux',
                             title: 'Alertes & Réseaux sociaux',
                             codeList: [
-                                { cmd: '/youtube channel:[ID/URL]', desc: 'Surveille une chaîne YouTube et annonce ses nouvelles vidéos.' },
-                                { cmd: '/tiktok username:[compte]', desc: 'Alerte instantanément lors du passage en live TikTok.' },
+                                { cmd: '/youtube add chaine:[@pseudo/URL]', desc: 'Surveille une chaîne YouTube et annonce ses nouvelles vidéos.' },
+                                { cmd: '/tiktok add compte:[@pseudo/URL]', desc: 'Alerte instantanément lors du passage en live TikTok (multi-comptes).' },
                                 { cmd: '/pubtimer', desc: 'Suit le temps consacré aux publications de l’équipe.' },
                                 { cmd: '/rappelbump', desc: 'Envoie le rappel de bump du serveur Discord.' }
                             ]

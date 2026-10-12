@@ -40,8 +40,8 @@ const commandGroups = [
     {
         name: 'Alertes & rappels',
         commands: [
-            ['/youtube', 'Surveille des chaînes et annonce leurs nouvelles vidéos.'],
-            ['/tiktok', 'Configure et contrôle les alertes TikTok Live.'],
+            ['/youtube', 'Surveille des chaînes YouTube (par @pseudo, nom ou ID UC...) et annonce leurs nouvelles vidéos.'],
+            ['/tiktok', 'Suivi multi-comptes TikTok (add, remove, list) et alertes en direct lors des passages en Live.'],
             ['/pubtimer', 'Suit le temps consacré aux publications de l’équipe.'],
             ['/rappelbump', 'Envoie le rappel de bump du serveur.'],
         ],

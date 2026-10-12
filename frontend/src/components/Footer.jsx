@@ -1,14 +1,25 @@
-// components/Footer.jsx
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext.jsx';
+
 function Footer() {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+
     return (
         <footer className="site-footer">
             <div className="site-footer-inner">
                 <div className="site-footer-brand flex items-center gap-3.5">
-                    <img src="/icon.png" alt="AzimBot" className="size-14 object-contain drop-shadow-md" />
-                    <img src="/logo.png" alt="AzimBot" className="h-10 w-auto object-contain" />
+                    <img
+                        src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
+                        alt="AzimBot"
+                        className="size-14 object-contain drop-shadow-md"
+                    />
+                    <img
+                        src={theme === 'islam' ? '/logo-islam.png' : '/logo.png'}
+                        alt="AzimBot"
+                        className="h-10 w-auto object-contain"
+                    />
                     <small>Bot Discord et commandes</small>
                 </div>
                 <nav className="site-footer-links" aria-label="Liens du site">

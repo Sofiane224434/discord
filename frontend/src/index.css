@@ -17,6 +17,121 @@
 	--azim-lilac: #b5a0ff;
 }
 
+[data-theme="islam"] {
+	color-scheme: dark;
+	--azim-ink: #f0fdf4;
+	--azim-ink-soft: #a7f3d0;
+	--azim-surface: #02120b;
+	--azim-panel: #052419;
+	--azim-panel-raised: #0b3828;
+	--azim-line: #16563e;
+	--azim-accent: #10b981;
+	--azim-accent-strong: #fbbf24;
+	--azim-warm: #f59e0b;
+	--azim-success: #34d399;
+	--azim-coral: #f87171;
+	--azim-lilac: #d97706;
+}
+
+[data-theme="islam"] body {
+	color: var(--azim-ink);
+	background:
+		linear-gradient(90deg, transparent 0 17%, rgba(16, 185, 129, 0.06) 17.08%, transparent 17.25% 82%, rgba(245, 158, 11, 0.045) 82.08%, transparent 82.25%),
+		linear-gradient(0deg, transparent 0 28%, rgba(16, 185, 129, 0.05) 28.08%, transparent 28.25% 72%, rgba(245, 158, 11, 0.035) 72.08%, transparent 72.25%),
+		linear-gradient(rgba(16, 185, 129, 0.12) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(16, 185, 129, 0.12) 1px, transparent 1px),
+		linear-gradient(120deg, #02120b 0%, #05261b 56%, #03160e 100%);
+	background-size: auto, auto, 48px 48px, 48px 48px, auto;
+	background-attachment: fixed;
+}
+
+[data-theme="islam"] .btn-primary {
+	color: #ffffff;
+	background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+	border: 1px solid #10b981;
+	box-shadow: 0 0 16px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(251, 191, 36, 0.25);
+}
+
+[data-theme="islam"] .btn-primary:hover {
+	filter: brightness(1.12);
+	box-shadow: 0 0 22px rgba(16, 185, 129, 0.45), 0 0 8px rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="islam"] .btn-soft {
+	background: #062319;
+	border-color: var(--azim-line);
+	color: #a7f3d0;
+}
+
+[data-theme="islam"] .btn-soft:hover {
+	background: #0b3828;
+	color: #f0fdf4;
+}
+
+[data-theme="islam"] .form-input {
+	background: #03170e;
+	border-color: var(--azim-line);
+	color: var(--azim-ink);
+	--tw-ring-color: rgba(16, 185, 129, 0.45);
+}
+
+[data-theme="islam"] .site-panel {
+	background: rgba(4, 25, 18, 0.96);
+	border: 1px solid var(--azim-line);
+	box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08), 0 12px 40px rgba(0, 0, 0, 0.32);
+}
+
+[data-theme="islam"] .site-panel-glow {
+	border-color: #10b981;
+	box-shadow: 0 0 18px rgba(16, 185, 129, 0.18), inset 0 0 18px rgba(245, 158, 11, 0.035);
+}
+
+[data-theme="islam"] .site-header {
+	background: rgba(2, 18, 12, 0.95);
+	border-bottom: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+[data-theme="islam"] .site-footer {
+	background: rgba(2, 14, 10, 0.98);
+	border-top: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+[data-theme="islam"] .site-add-button {
+	background: linear-gradient(135deg, #047857 0%, #d97706 140%);
+	border: 1px solid #10b981;
+	box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="islam"] .site-add-button:hover {
+	box-shadow: 0 0 24px rgba(16, 185, 129, 0.5), 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+[data-theme="islam"] .site-nav-link:hover,
+[data-theme="islam"] .site-nav-link-active {
+	color: #34d399;
+}
+
+[data-theme="islam"] .site-nav-link-active::after {
+	background: #10b981;
+	box-shadow: 0 0 10px #10b981;
+}
+
+[data-theme="islam"] .ops-action-button {
+	background: #064e3b;
+	border-color: #10b981;
+	color: #a7f3d0;
+}
+
+[data-theme="islam"] .ops-action-button:hover {
+	background: #047857;
+	color: #ffffff;
+}
+
+[data-theme="islam"] .ops-command-track i {
+	background: linear-gradient(90deg, #10b981 0%, #fbbf24 100%);
+	box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}
+
 * {
 	box-sizing: border-box;
 }

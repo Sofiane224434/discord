@@ -161,14 +161,18 @@ starter-kit/
 │   ├── package.json
 │   ├── public/
 │   │   ├── assets/
+│   │   ├── favicon-islam.png
 │   │   ├── favicon.png
+│   │   ├── icon-islam.png
 │   │   ├── icon.png
 │   │   ├── locales/
+│   │   ├── logo-islam.png
 │   │   └── logo.png
 │   ├── src/
 │   │   ├── App.jsx
 │   │   ├── assets/
 │   │   ├── components/
+│   │   ├── context/
 │   │   ├── contexts/
 │   │   ├── hooks/
 │   │   ├── index.css

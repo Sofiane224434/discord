@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 const PRAYER_METHODS = [
     { value: 12, label: 'UOIF - Union des Organisations Islamiques de France (12°)' },
@@ -181,6 +182,7 @@ function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
 
 function GuildConfig() {
     const { guildId } = useParams();
+    const { setIsIslamUnlocked } = useTheme();
     const [form, setForm] = useState(EMPTY_CONFIG);
     const [activeTab, setActiveTab] = useState('ai');
     const [loading, setLoading] = useState(true);
@@ -243,7 +245,13 @@ function GuildConfig() {
         setLoading(true);
         adminService.getGuildConfig(guildId)
             .then((data) => {
-                if (active) setForm(mergeConfig(data));
+                if (active) {
+                    const merged = mergeConfig(data);
+                    setForm(merged);
+                    if (merged.features?.islamModeEnabled) {
+                        setIsIslamUnlocked(true);
+                    }
+                }
             })
             .catch((apiError) => {
                 if (active) setError(apiError.hint || apiError.message || 'Impossible de charger cette configuration.');
@@ -340,6 +348,7 @@ function GuildConfig() {
         try {
             const result = await adminService.activateIslamMode(guildId, islamCode);
             update('features', 'islamModeEnabled', true);
+            setIsIslamUnlocked(true);
             setIslamCode('');
             if (result.islamModeEnabled || result.alreadyEnabled) {
                 setNotice('Code secret validé : le mode Islam et ses commandes (/coran, /priere, /quiz, etc.) sont débloqués.');

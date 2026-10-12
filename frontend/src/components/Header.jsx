@@ -1,8 +1,9 @@
-// components/Header.jsx
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
+import { useTheme } from '../context/ThemeContext.jsx';
+import ThemeSelector from './ThemeSelector.jsx';
 
 const languages = [
     { code: 'fr', label: 'FR' },
@@ -11,6 +12,7 @@ const languages = [
 
 function Header() {
     const { user, isAuthenticated, logout } = useAuth();
+    const { theme } = useTheme();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const currentLanguage = (i18n.resolvedLanguage || i18n.language || 'fr').slice(0, 2);
@@ -41,9 +43,19 @@ function Header() {
         <header className="site-header sticky top-0 z-40 text-white">
             <div className="site-header-inner">
                 <Link to="/" className="site-brand" aria-label="AzimBot, accueil">
-                    <img src="/icon.png" alt="AzimBot" className="site-brand-icon" />
-                    <img src="/logo.png" alt="AzimBot" className="site-brand-logo hidden sm:inline-block" />
-                    <span className="sm:hidden font-bold tracking-wider text-base text-cyan-200">AzimBot</span>
+                    <img
+                        src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
+                        alt="AzimBot"
+                        className="site-brand-icon"
+                    />
+                    <img
+                        src={theme === 'islam' ? '/logo-islam.png' : '/logo.png'}
+                        alt="AzimBot"
+                        className="site-brand-logo hidden sm:inline-block"
+                    />
+                    <span className={`sm:hidden font-bold tracking-wider text-base ${theme === 'islam' ? 'text-emerald-300' : 'text-cyan-200'}`}>
+                        AzimBot
+                    </span>
                 </Link>
 
                 <button
@@ -71,6 +83,7 @@ function Header() {
                 </nav>
 
                 <div className="site-header-actions">
+                    <ThemeSelector />
                     <label className="site-language-control">
                         <span className="sr-only">Changer de langue</span>
                             <select

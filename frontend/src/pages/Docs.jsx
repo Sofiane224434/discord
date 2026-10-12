@@ -56,6 +56,7 @@ const DOCS_DATA = [
                         {
                             type: 'hint',
                             variant: 'tip',
+                            isIslamic: true,
                             title: 'Mode & Thème Islamique Dédié',
                             text: 'AzimBot intègre un module spirituel complet exclusif (Horaires de prière, Coran audio 24/7 dans les salons vocaux, Invocations de la Citadelle du Musulman et Hadiths authentiques), activable via code secret ou depuis les paramètres de votre serveur.'
                         },
@@ -690,6 +691,9 @@ function Docs() {
                     {/* Contenu principal */}
                     <div className="doc-prose">
                         {currentArticle?.content?.blocks?.map((block, idx) => {
+                            if (block.isIslamic && !isIslamUnlocked) {
+                                return null;
+                            }
                             if (block.type === 'hint') {
                                 return (
                                     <div key={idx} className={`doc-hint doc-hint--${block.variant}`}>

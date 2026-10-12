@@ -81,8 +81,8 @@ function Settings() {
                             </div>
                         </div>
 
-                        {/* Option Islam */}
-                        {isIslamUnlocked ? (
+                        {/* Option Islam (visible UNIQUEMENT si débloquée par un bot ou le code Konami) */}
+                        {isIslamUnlocked && (
                             <div
                                 onClick={() => setTheme('islam')}
                                 className={`cursor-pointer rounded-xl border-2 p-5 transition-all duration-200 flex flex-col justify-between gap-4 ${
@@ -110,41 +110,10 @@ function Settings() {
                                     <span className="text-xs text-emerald-300 font-medium">Logo calligraphique doré & reflets or</span>
                                 </div>
                             </div>
-                        ) : (
-                            <div className="rounded-xl border border-slate-700/60 bg-slate-900/30 p-5 flex flex-col justify-between gap-3 opacity-80">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl">🔒</span>
-                                    <div>
-                                        <h3 className="font-semibold text-slate-300 text-sm">Thème Islam & Spiritualité</h3>
-                                        <p className="text-xs text-slate-400">Verrouillé. Débloquez-le avec le code secret ci-dessous.</p>
-                                    </div>
-                                </div>
-                            </div>
                         )}
                     </div>
 
-                    {/* Formulaire déblocage code secret si pas encore débloqué */}
-                    {!isIslamUnlocked ? (
-                        <form onSubmit={handleUnlockCode} className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
-                            <label className="text-xs font-semibold text-slate-300 block">
-                                Entrer un code d'accès pour débloquer le mode Islam :
-                            </label>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <input
-                                    type="text"
-                                    value={secretCode}
-                                    onChange={(e) => setSecretCode(e.target.value)}
-                                    placeholder="Code secret…"
-                                    className="form-input flex-1 text-sm font-mono"
-                                />
-                                <button type="submit" className="btn btn-primary text-xs whitespace-nowrap">
-                                    Valider le code
-                                </button>
-                            </div>
-                            {secretNotice ? <p className="text-xs text-emerald-400">{secretNotice}</p> : null}
-                            {secretError ? <p className="text-xs text-rose-400">{secretError}</p> : null}
-                        </form>
-                    ) : (
+                    {isIslamUnlocked && (
                         <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-950/30 border border-emerald-800/40 rounded-lg p-3">
                             <span>✨</span>
                             <span>Le mode Islam est actif sur votre profil. Vous pouvez librement basculer entre les deux thèmes ci-dessus à tout moment.</span>

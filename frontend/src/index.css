@@ -3404,4 +3404,96 @@ body {
 .doc-tocs__quick-icon {
 	font-size: 15px;
 }
+
+/* ==========================================================================
+   TRANSITION FLUIDE DE THÈMES & NOTIFICATION KONAMI CODE
+   ========================================================================== */
+
+/* Transition fluide globale activée lors du switch de thème */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+	transition: background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+	            border-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+	            color 0.35s ease,
+	            box-shadow 0.45s ease,
+	            fill 0.45s ease,
+	            stroke 0.45s ease !important;
+}
+
+/* Transition de base sur les conteneurs clés */
+body,
+.site-header,
+.draft-footer,
+.doc-page,
+.doc-nav,
+.doc-content,
+.doc-tocs,
+.site-panel,
+.module-item,
+.home-showcase {
+	transition: background-color 0.4s ease, border-color 0.4s ease, color 0.3s ease;
+}
+
+/* Animation douce d'un halo lumineux lors du changement */
+@keyframes themePulseGlow {
+	0% { opacity: 0; }
+	50% { opacity: 0.25; }
+	100% { opacity: 0; }
+}
+
+html.theme-transitioning::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 99999;
+	background: radial-gradient(circle at center, rgba(16, 185, 129, 0.2), transparent 70%);
+	animation: themePulseGlow 0.5s ease-out forwards;
+}
+
+/* Notification Toast Konami */
+.konami-toast {
+	position: fixed;
+	bottom: 28px;
+	right: 28px;
+	z-index: 100000;
+	animation: konamiSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes konamiSlideIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+.konami-toast__content {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 20px;
+	border-radius: 14px;
+	background: #031c12;
+	border: 1px solid rgba(16, 185, 129, 0.4);
+	color: #ecfdf5;
+	font-size: 14px;
+	font-weight: 600;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(16, 185, 129, 0.25);
+}
+
+.konami-toast__icon {
+	font-size: 20px;
+	line-height: 1;
+}
+
+.konami-toast__message {
+	letter-spacing: -0.01em;
+}
+
 

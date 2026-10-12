@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { useTheme } from '../context/ThemeContext.jsx';
 import { systemService } from '../services/api.js';
 
 function Home() {
     const { isAuthenticated } = useAuth();
+    const { theme, isIslamUnlocked } = useTheme();
     const [health, setHealth] = useState(null);
     const [apiChecked, setApiChecked] = useState(false);
 
@@ -79,7 +81,7 @@ function Home() {
                 <article className="home-dashboard-metric home-metric-commands">
                     <span className="home-metric-mark" aria-hidden="true" />
                     <span>Commandes</span>
-                    <strong>30</strong>
+                    <strong>{isIslamUnlocked ? 31 : 21}</strong>
                 </article>
             </section>
 
@@ -90,8 +92,8 @@ function Home() {
                         <span className={`home-bot-state ${botApiStatus === 'ok' ? 'is-online' : 'is-offline'}`}><i />{health ? serviceLabel(botApiStatus) : apiChecked ? 'Indisponible' : 'Vérification…'}</span>
                     </div>
                     <div className="home-bot-identity">
-                        <img src="/icon.png" alt="AzimBot" className="size-11 object-contain" />
-                        <div><strong>AzimBot</strong><span>Accueil · niveaux · alertes · modération · spiritualité</span></div>
+                        <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="AzimBot" className="size-11 object-contain" />
+                        <div><strong>AzimBot</strong><span>{isIslamUnlocked ? 'Accueil · niveaux · alertes · modération · spiritualité' : 'Accueil · niveaux · alertes · modération'}</span></div>
                     </div>
                     <div className="home-quick-actions">
                         <Link to="/commands" className="home-quick-action"><span aria-hidden="true">⌘</span>Commandes</Link>

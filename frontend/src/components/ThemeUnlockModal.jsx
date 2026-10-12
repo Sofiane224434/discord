@@ -32,25 +32,23 @@ export default function ThemeUnlockModal() {
                     ✕
                 </button>
 
-                {/* Header with Islam Icon preview */}
+                {/* Header with Secret Icon */}
                 <div className="flex items-center gap-3.5 mb-4">
-                    <img
-                        src="/icon-islam.png"
-                        alt="AzimBot Islam"
-                        className="size-12 rounded-xl object-contain ring-2 ring-emerald-500/40 shadow-lg shadow-emerald-950/50"
-                    />
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-slate-800/90 border border-slate-700 text-2xl shadow-lg">
+                        🔑
+                    </div>
                     <div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded-full">
-                            Thème Spécial
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/80 border border-cyan-800/60 px-2 py-0.5 rounded-full">
+                            Extension Secrète
                         </span>
                         <h2 className="text-lg font-bold text-white mt-1">
-                            Débloquer le Thème Islam
+                            Débloquer un Module
                         </h2>
                     </div>
                 </div>
 
                 <p className="text-xs text-slate-300 leading-relaxed mb-5">
-                    Entrez le code secret pour activer la palette <strong>Émeraude & Or</strong>, le logo calligraphié et les icônes spirituelles sur l'ensemble du site.
+                    Entrez votre code d'accès secret pour activer les fonctionnalités et personnalisations correspondantes sur le site.
                 </p>
 
                 {error ? (

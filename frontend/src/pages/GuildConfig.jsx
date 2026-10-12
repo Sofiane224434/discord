@@ -489,6 +489,7 @@ function GuildConfig() {
     const roleOptions = form.roles.map((role) => ({ value: role.id, label: role.name }));
 
     const filteredCommands = form.commands.filter((cmd) => {
+        if (!isIslamActive && cmd.isIslamic) return false;
         if (!commandSearch.trim()) return true;
         const q = commandSearch.toLowerCase().trim();
         return cmd.name.toLowerCase().includes(q) || (cmd.description || '').toLowerCase().includes(q);
@@ -496,11 +497,11 @@ function GuildConfig() {
 
     const tabs = [
         { id: 'ai', label: 'IA & Déclencheurs', icon: '🤖' },
-        { id: 'commands', label: 'Permissions Commandes', icon: '🛡️', count: form.commands.length },
+        { id: 'commands', label: 'Permissions Commandes', icon: '🛡️', count: form.commands.filter((cmd) => isIslamActive || !cmd.isIslamic).length },
         { id: 'welcome', label: 'Bienvenue & Rôles', icon: '👋', count: form.welcome.rules?.length || 0 },
         { id: 'logs', label: 'Logs & Profil', icon: '📋' },
         { id: 'social', label: 'Réseaux & Niveaux', icon: '📢' },
-        { id: 'islam', label: 'Mode Islam', icon: '🌙', status: isIslamActive ? 'Actif' : 'Code requis' },
+        { id: 'islam', label: isIslamActive ? 'Mode Islam' : 'Code secret', icon: isIslamActive ? '🌙' : '🔑', status: isIslamActive ? 'Actif' : 'Verrouillé' },
     ];
 
     return (
@@ -1559,9 +1560,13 @@ function GuildConfig() {
                         <div className="admin-card-header">
                             <div>
                                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <span>🌙</span> Mode Islam & Spiritualité
+                                    <span>{isIslamActive ? '🌙' : '🔑'}</span> {isIslamActive ? 'Mode Islam & Spiritualité' : 'Extensions & Code secret'}
                                 </h2>
-                                <p className="text-sm text-slate-400">Configuration des rappels de prière (Adhan), jeûne des Jours Blancs, radio 24/7 et commandes islamiques.</p>
+                                <p className="text-sm text-slate-400">
+                                    {isIslamActive
+                                        ? 'Configuration des rappels de prière (Adhan), jeûne des Jours Blancs, radio 24/7 et commandes islamiques.'
+                                        : 'Entrez un code d’activation pour débloquer des fonctionnalités supplémentaires sur ce serveur.'}
+                                </p>
                             </div>
                         </div>
 
@@ -1812,7 +1817,7 @@ function GuildConfig() {
                                 <div>
                                     <h3 className="font-semibold text-white">Déverrouillage par Code Secret</h3>
                                     <p className="mt-1 text-sm text-slate-400">
-                                        Entrez le code secret pour débloquer les fonctionnalités et commandes spirituelles sur ce serveur.
+                                        Entrez votre code d'accès pour débloquer les modules et fonctionnalités supplémentaires sur ce serveur.
                                     </p>
                                 </div>
                                 <div className="flex max-w-md items-center gap-3">

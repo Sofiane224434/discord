@@ -1,7 +1,23 @@
 import { useTheme } from '../context/ThemeContext.jsx';
 
 export default function ThemeSelector() {
-    const { theme, isIslamUnlocked, setTheme, toggleTheme, setShowUnlockModal } = useTheme();
+    const { theme, isIslamUnlocked, setTheme, setShowUnlockModal } = useTheme();
+
+    if (!isIslamUnlocked) {
+        return (
+            <div className="inline-flex items-center rounded-xl border border-slate-800 bg-slate-900/70 p-0.5 text-xs">
+                <button
+                    type="button"
+                    onClick={() => setShowUnlockModal(true)}
+                    title="Entrer un code secret"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold text-slate-400 hover:text-cyan-300 transition-all"
+                >
+                    <span>🔑</span>
+                    <span className="hidden sm:inline">Code</span>
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="inline-flex items-center rounded-xl border border-slate-800 bg-slate-900/70 p-0.5 text-xs">
@@ -23,14 +39,8 @@ export default function ThemeSelector() {
             {/* Bouton Islam */}
             <button
                 type="button"
-                onClick={() => {
-                    if (!isIslamUnlocked) {
-                        setShowUnlockModal(true);
-                    } else {
-                        setTheme('islam');
-                    }
-                }}
-                title={isIslamUnlocked ? "Thème Islam & Spiritualité (Émeraude & Or)" : "Code secret requis pour débloquer le thème Islam"}
+                onClick={() => setTheme('islam')}
+                title="Thème Islam & Spiritualité (Émeraude & Or)"
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold transition-all ${
                     theme === 'islam'
                         ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-amber-200 shadow-sm ring-1 ring-emerald-400/50'
@@ -39,9 +49,6 @@ export default function ThemeSelector() {
             >
                 <span>🌙</span>
                 <span className="hidden sm:inline">Islam</span>
-                {!isIslamUnlocked ? (
-                    <span className="text-[10px] text-amber-400/80" title="Code secret requis">🔒</span>
-                ) : null}
             </button>
         </div>
     );

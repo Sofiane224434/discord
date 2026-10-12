@@ -1,12 +1,15 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 const commandGroups = [
     {
         name: 'Questions & outils',
         commands: [
             ['/ask', 'Pose une question à l’assistant IA du serveur.'],
+            ['/site', 'Consulte le site officiel et accède au tableau de bord d’AzimBot.'],
+            ['/report', 'Signale un bug ou soumets une suggestion pour AzimBot.'],
             ['/help', 'Affiche les commandes actives et leur usage.'],
             ['/botavatar', 'Affiche, télécharge en HD ou rétablit la photo de profil de base d’AzimBot.'],
             ['/ping', 'Mesure la latence Discord et WebSocket.'],
@@ -45,6 +48,7 @@ const commandGroups = [
     },
     {
         name: 'Spiritualité & Radio Coran 24/7 (Mode Islam)',
+        isIslamic: true,
         commands: [
             ['/radio', 'Lance ou contrôle la radio Coran 24/7 en continu dans un salon vocal avec choix de 22 récitateurs.'],
             ['/coran', 'Recherche et récite un verset ou une sourate du Saint Coran avec traduction audio et texte.'],
@@ -62,12 +66,16 @@ const commandGroups = [
 
 function Commands() {
     const { isAuthenticated } = useAuth();
+    const { isIslamUnlocked } = useTheme();
     const [search, setSearch] = useState('');
     const query = search.trim().toLocaleLowerCase('fr');
-    const filteredGroups = useMemo(() => commandGroups.map((group) => ({
+    const availableGroups = useMemo(() => {
+        return commandGroups.filter((group) => !group.isIslamic || isIslamUnlocked);
+    }, [isIslamUnlocked]);
+    const filteredGroups = useMemo(() => availableGroups.map((group) => ({
         ...group,
         commands: group.commands.filter(([name, description]) => `${name} ${description}`.toLocaleLowerCase('fr').includes(query)),
-    })).filter((group) => group.commands.length), [query]);
+    })).filter((group) => group.commands.length), [availableGroups, query]);
     const commandCount = filteredGroups.reduce((total, group) => total + group.commands.length, 0);
 
     return (

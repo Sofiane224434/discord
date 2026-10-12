@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 const questions = [
     {
@@ -18,8 +19,9 @@ const questions = [
         answer: 'Non. Les réglages IA, bienvenue, journaux, profil local, notifications et niveaux sont isolés par serveur. Le nom et l’activité du compte bot restent globaux.',
     },
     {
-        question: 'Comment activer /coran et /quiz ?',
-        answer: 'Activez le mode Islam dans la configuration du serveur. Azim synchronise ensuite les commandes slash disponibles pour ce serveur.',
+        question: 'Comment débloquer les fonctionnalités spirituelles et la radio ?',
+        answer: 'Activez le module via le code d’accès dans la configuration de votre serveur Discord. Azim synchronise ensuite les commandes slash correspondantes.',
+        isIslamic: true,
     },
     {
         question: 'Où trouver la liste complète des commandes ?',
@@ -28,6 +30,9 @@ const questions = [
 ];
 
 function Help() {
+    const { isIslamUnlocked } = useTheme();
+    const visibleQuestions = questions.filter((item) => !item.isIslamic || isIslamUnlocked);
+
     return (
         <main className="site-page site-section-page">
             <header className="site-page-heading">
@@ -37,7 +42,7 @@ function Help() {
             </header>
 
             <section className="faq-list" aria-label="Questions fréquentes">
-                {questions.map((item, index) => (
+                {visibleQuestions.map((item, index) => (
                     <details className="faq-item" key={item.question} open={index === 0}>
                         <summary><span className="faq-number">{String(index + 1).padStart(2, '0')}</span><span>{item.question}</span><span className="faq-toggle" aria-hidden="true">+</span></summary>
                         <p>{item.answer}</p>

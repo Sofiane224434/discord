@@ -19,12 +19,12 @@
 
 [data-theme="islam"] {
 	color-scheme: dark;
-	--azim-ink: #f0fdf4;
-	--azim-ink-soft: #a7f3d0;
-	--azim-surface: #02120b;
-	--azim-panel: #052419;
-	--azim-panel-raised: #0b3828;
-	--azim-line: #16563e;
+	--azim-ink: #f8fafc;
+	--azim-ink-soft: #cbd5e1;
+	--azim-surface: #03140e;
+	--azim-panel: #07261a;
+	--azim-panel-raised: #0d3827;
+	--azim-line: #17543d;
 	--azim-accent: #10b981;
 	--azim-accent-strong: #fbbf24;
 	--azim-warm: #f59e0b;
@@ -36,95 +36,172 @@
 [data-theme="islam"] body {
 	color: var(--azim-ink);
 	background:
-		linear-gradient(90deg, transparent 0 17%, rgba(16, 185, 129, 0.06) 17.08%, transparent 17.25% 82%, rgba(245, 158, 11, 0.045) 82.08%, transparent 82.25%),
-		linear-gradient(0deg, transparent 0 28%, rgba(16, 185, 129, 0.05) 28.08%, transparent 28.25% 72%, rgba(245, 158, 11, 0.035) 72.08%, transparent 72.25%),
-		linear-gradient(rgba(16, 185, 129, 0.12) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(16, 185, 129, 0.12) 1px, transparent 1px),
-		linear-gradient(120deg, #02120b 0%, #05261b 56%, #03160e 100%);
-	background-size: auto, auto, 48px 48px, 48px 48px, auto;
+		radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.12), transparent 70%),
+		linear-gradient(rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+		linear-gradient(135deg, #02120b 0%, #062217 60%, #03140d 100%);
+	background-size: auto, 40px 40px, 40px 40px, auto;
 	background-attachment: fixed;
 }
 
+/* Boutons principaux Islam : émeraude vibrant avec reflets lumineux */
 [data-theme="islam"] .btn-primary {
-	color: #ffffff;
-	background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-	border: 1px solid #10b981;
-	box-shadow: 0 0 16px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(251, 191, 36, 0.25);
+	color: #ffffff !important;
+	background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+	border: 1px solid #34d399 !important;
+	box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+	font-weight: 600 !important;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 [data-theme="islam"] .btn-primary:hover {
-	filter: brightness(1.12);
-	box-shadow: 0 0 22px rgba(16, 185, 129, 0.45), 0 0 8px rgba(245, 158, 11, 0.3);
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+	border-color: #6ee7b7 !important;
+	box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+	filter: none !important;
 }
 
+/* Boutons secondaires Islam : fond sombre propre et bordure nette */
 [data-theme="islam"] .btn-soft {
-	background: #062319;
-	border-color: var(--azim-line);
-	color: #a7f3d0;
+	background: #08291e !important;
+	border: 1px solid rgba(52, 211, 153, 0.32) !important;
+	color: #e2e8f0 !important;
+	font-weight: 600 !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 [data-theme="islam"] .btn-soft:hover {
-	background: #0b3828;
-	color: #f0fdf4;
+	background: #0f3d2e !important;
+	border-color: #34d399 !important;
+	color: #ffffff !important;
+	box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-[data-theme="islam"] .form-input {
-	background: #03170e;
-	border-color: var(--azim-line);
-	color: var(--azim-ink);
-	--tw-ring-color: rgba(16, 185, 129, 0.45);
-}
-
-[data-theme="islam"] .site-panel {
-	background: rgba(4, 25, 18, 0.96);
-	border: 1px solid var(--azim-line);
-	box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08), 0 12px 40px rgba(0, 0, 0, 0.32);
-}
-
-[data-theme="islam"] .site-panel-glow {
-	border-color: #10b981;
-	box-shadow: 0 0 18px rgba(16, 185, 129, 0.18), inset 0 0 18px rgba(245, 158, 11, 0.035);
-}
-
-[data-theme="islam"] .site-header {
-	background: rgba(2, 18, 12, 0.95);
-	border-bottom: 1px solid rgba(16, 185, 129, 0.22);
-}
-
-[data-theme="islam"] .site-footer {
-	background: rgba(2, 14, 10, 0.98);
-	border-top: 1px solid rgba(16, 185, 129, 0.18);
-}
-
+/* Bouton d'ajout / CTA Islam : prestige émeraude et cyan-vert */
 [data-theme="islam"] .site-add-button {
-	background: linear-gradient(135deg, #047857 0%, #d97706 140%);
-	border: 1px solid #10b981;
-	box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+	background: linear-gradient(135deg, #059669 0%, #0f766e 100%) !important;
+	border: 1px solid #34d399 !important;
+	color: #ffffff !important;
+	font-weight: 700 !important;
+	box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 
 [data-theme="islam"] .site-add-button:hover {
-	box-shadow: 0 0 24px rgba(16, 185, 129, 0.5), 0 0 12px rgba(245, 158, 11, 0.4);
+	background: linear-gradient(135deg, #10b981 0%, #0d9488 100%) !important;
+	border-color: #6ee7b7 !important;
+	box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+[data-theme="islam"] .site-login-link {
+	border-color: rgba(52, 211, 153, 0.35);
+	color: #e2e8f0;
+}
+
+[data-theme="islam"] .site-login-link:hover {
+	border-color: #34d399;
+	color: #ffffff;
+	background: rgba(6, 44, 30, 0.6);
+}
+
+/* Formulaires et entrées */
+[data-theme="islam"] .form-input {
+	background: #03170e !important;
+	border: 1px solid rgba(52, 211, 153, 0.3) !important;
+	color: #f8fafc !important;
+}
+
+[data-theme="islam"] .form-input:focus {
+	border-color: #34d399 !important;
+	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Panneaux et cartes : contraste supérieur */
+[data-theme="islam"] .site-panel,
+[data-theme="islam"] .admin-card {
+	background: rgba(5, 26, 18, 0.96) !important;
+	border: 1px solid rgba(52, 211, 153, 0.22) !important;
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-theme="islam"] .site-panel-glow {
+	border-color: #34d399 !important;
+	box-shadow: 0 0 20px rgba(16, 185, 129, 0.22), inset 0 0 20px rgba(245, 158, 11, 0.05) !important;
+}
+
+[data-theme="islam"] .site-header {
+	background: rgba(3, 18, 12, 0.96) !important;
+	border-bottom: 1px solid rgba(52, 211, 153, 0.25) !important;
+}
+
+[data-theme="islam"] .site-footer {
+	background: rgba(2, 14, 10, 0.98) !important;
+	border-top: 1px solid rgba(52, 211, 153, 0.2) !important;
+}
+
+[data-theme="islam"] .site-brand-icon {
+	filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.65)) !important;
+}
+
+[data-theme="islam"] .site-brand-logo {
+	filter: drop-shadow(0 2px 10px rgba(245, 158, 11, 0.5)) !important;
+}
+
+[data-theme="islam"] .site-nav-link {
+	color: #94a3b8;
 }
 
 [data-theme="islam"] .site-nav-link:hover,
 [data-theme="islam"] .site-nav-link-active {
-	color: #34d399;
+	color: #34d399 !important;
 }
 
 [data-theme="islam"] .site-nav-link-active::after {
-	background: #10b981;
-	box-shadow: 0 0 10px #10b981;
+	background: #10b981 !important;
+	box-shadow: 0 0 10px #10b981 !important;
+}
+
+[data-theme="islam"] .site-eyebrow {
+	color: #fbbf24 !important;
+}
+
+/* Lisibilité des textes : pas de teintes vertes délavées pour le texte informatif */
+[data-theme="islam"] .text-slate-400 {
+	color: #94a3b8 !important;
+}
+[data-theme="islam"] .text-slate-300 {
+	color: #cbd5e1 !important;
+}
+[data-theme="islam"] .text-slate-200 {
+	color: #e2e8f0 !important;
+}
+[data-theme="islam"] .text-slate-500 {
+	color: #64748b !important;
+}
+
+[data-theme="islam"] .text-cyan-300,
+[data-theme="islam"] .text-cyan-400 {
+	color: #34d399 !important;
+}
+[data-theme="islam"] .text-cyan-200 {
+	color: #a7f3d0 !important;
+}
+
+[data-theme="islam"] .border-cyan-500,
+[data-theme="islam"] .border-cyan-700,
+[data-theme="islam"] .border-cyan-800 {
+	border-color: rgba(52, 211, 153, 0.35) !important;
 }
 
 [data-theme="islam"] .ops-action-button {
-	background: #064e3b;
-	border-color: #10b981;
-	color: #a7f3d0;
+	background: #064e3b !important;
+	border-color: #34d399 !important;
+	color: #e2e8f0 !important;
 }
 
 [data-theme="islam"] .ops-action-button:hover {
-	background: #047857;
-	color: #ffffff;
+	background: #059669 !important;
+	border-color: #6ee7b7 !important;
+	color: #ffffff !important;
 }
 
 [data-theme="islam"] .ops-command-track i {
@@ -271,58 +348,67 @@ body {
 	}
 }
 
+.site-menu-toggle {
+	display: none;
+}
+
 .site-header {
 	border-bottom: 1px solid rgba(63, 130, 174, 0.28);
 	background: rgba(5, 14, 25, 0.94);
 	backdrop-filter: blur(14px);
+	position: sticky;
+	top: 0;
+	z-index: 40;
 }
 
 .site-header-inner {
-	width: min(100% - 36px, 1320px);
-	min-height: 76px;
+	width: min(100% - 32px, 1360px);
+	min-height: 64px;
 	margin-inline: auto;
 	display: flex;
 	align-items: center;
-	gap: 30px;
+	justify-content: space-between;
+	gap: 16px;
 }
 
 .site-brand {
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
-	gap: 14px;
+	gap: 10px;
 	color: #e8f6ff;
-	font-size: 19px;
+	font-size: 18px;
 	font-weight: 700;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.06em;
+	text-decoration: none;
 }
 
 .site-brand-icon {
-	width: 58px;
-	height: 58px;
-	min-width: 58px;
+	width: 40px;
+	height: 40px;
+	min-width: 40px;
 	object-fit: contain;
-	filter: drop-shadow(0 0 14px rgba(32, 185, 242, 0.65));
+	filter: drop-shadow(0 0 10px rgba(32, 185, 242, 0.55));
 	transition: transform 0.22s ease, filter 0.22s ease;
 }
 
 .site-brand:hover .site-brand-icon {
-	transform: scale(1.08) rotate(-3deg);
-	filter: drop-shadow(0 0 20px rgba(32, 185, 242, 0.9));
+	transform: scale(1.06);
+	filter: drop-shadow(0 0 16px rgba(32, 185, 242, 0.85));
 }
 
 .site-brand-logo {
-	height: 48px;
+	height: 32px;
 	width: auto;
-	max-width: 220px;
+	max-width: 160px;
 	object-fit: contain;
-	filter: drop-shadow(0 2px 12px rgba(32, 185, 242, 0.5));
+	filter: drop-shadow(0 2px 8px rgba(32, 185, 242, 0.4));
 	transition: transform 0.22s ease, filter 0.22s ease;
 }
 
 .site-brand:hover .site-brand-logo {
-	transform: scale(1.04);
-	filter: drop-shadow(0 4px 18px rgba(32, 185, 242, 0.85));
+	transform: scale(1.03);
+	filter: drop-shadow(0 4px 14px rgba(32, 185, 242, 0.7));
 }
 
 .site-brand-dot {
@@ -334,17 +420,20 @@ body {
 	flex: 1;
 	display: flex;
 	align-items: center;
-	gap: clamp(12px, 2vw, 27px);
+	justify-content: center;
+	gap: clamp(8px, 1.3vw, 18px);
+	flex-wrap: nowrap;
 }
 
 .site-nav-link {
 	position: relative;
-	padding-block: 22px;
-	color: #a6bad0;
+	padding-block: 16px;
+	color: #9ab0c7;
 	font-size: 13px;
 	font-weight: 600;
 	white-space: nowrap;
 	transition: color 160ms ease;
+	text-decoration: none;
 }
 
 .site-nav-link:hover,
@@ -367,7 +456,7 @@ body {
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 }
 
 .site-language-select {

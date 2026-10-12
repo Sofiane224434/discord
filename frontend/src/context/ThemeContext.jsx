@@ -5,12 +5,15 @@ const ThemeContext = createContext();
 const VALID_ISLAM_CODES = new Set(['islam', 'islam on', 'islam off', 'islammode', 'islam_mode']);
 
 export function ThemeProvider({ children }) {
-    const [theme, setThemeState] = useState(() => {
-        return localStorage.getItem('azim_theme') || 'cyber';
-    });
-
     const [isIslamUnlocked, setIsIslamUnlockedState] = useState(() => {
         return localStorage.getItem('azim_islam_unlocked') === 'true';
+    });
+
+    const [theme, setThemeState] = useState(() => {
+        const unlocked = localStorage.getItem('azim_islam_unlocked') === 'true';
+        if (!unlocked) return 'cyber';
+        const saved = localStorage.getItem('azim_theme');
+        return saved === 'cyber' ? 'cyber' : 'islam'; // islam par défaut quand débloqué
     });
 
     const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -19,11 +22,19 @@ export function ThemeProvider({ children }) {
         const boolVal = Boolean(value);
         setIsIslamUnlockedState(boolVal);
         localStorage.setItem('azim_islam_unlocked', boolVal ? 'true' : 'false');
+        if (boolVal) {
+            // "quand il est en mode islam il doit être mis par défaut"
+            setThemeState('islam');
+            localStorage.setItem('azim_theme', 'islam');
+        } else {
+            setThemeState('cyber');
+            localStorage.setItem('azim_theme', 'cyber');
+        }
     };
 
     useEffect(() => {
         // Appliquer l'attribut data-theme au document
-        const currentTheme = isIslamUnlocked && theme === 'islam' ? 'islam' : 'cyber';
+        const currentTheme = isIslamUnlocked ? theme : 'cyber';
         document.documentElement.setAttribute('data-theme', currentTheme);
         localStorage.setItem('azim_theme', currentTheme);
 
@@ -46,15 +57,11 @@ export function ThemeProvider({ children }) {
     };
 
     const setTheme = (newTheme) => {
-        if (newTheme === 'islam') {
-            if (!isIslamUnlocked) {
-                setShowUnlockModal(true);
-                return;
-            }
-            setThemeState('islam');
-        } else {
+        if (!isIslamUnlocked) {
             setThemeState('cyber');
+            return;
         }
+        setThemeState(newTheme === 'islam' ? 'islam' : 'cyber');
     };
 
     const toggleTheme = () => {

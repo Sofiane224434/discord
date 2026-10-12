@@ -369,12 +369,14 @@ function GuildConfig() {
         setNotice('');
         // Mise à jour optimiste immédiate : l'interface bascule instantanément
         update('features', 'islamModeEnabled', false);
+        setIsIslamUnlocked(false);
         try {
             await adminService.activateIslamMode(guildId, { action: 'disable' });
             setNotice('Le mode Islam a été désactivé pour ce serveur.');
         } catch (apiError) {
             // Rétablissement en cas d'échec
             update('features', 'islamModeEnabled', true);
+            setIsIslamUnlocked(true);
             setError(apiError.message || 'Impossible de désactiver le mode.');
         } finally {
             setActivatingIslam(false);

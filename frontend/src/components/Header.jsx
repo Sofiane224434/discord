@@ -24,6 +24,7 @@ function Header() {
         ...(isAuthenticated ? [{ label: 'Utilisation', to: '/command-history' }] : []),
         { label: 'Statut', to: '/status' },
         { label: 'Aide', to: '/help' },
+        { label: 'Retours', to: '/feedback' },
         ...(isAuthenticated ? [{ label: 'Panel', to: '/dashboard' }] : []),
     ];
 

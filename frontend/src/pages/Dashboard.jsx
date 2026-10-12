@@ -67,11 +67,6 @@ function Dashboard() {
     const stats = overview?.stats || {};
     const observability = overview?.observability || {};
     const connectedGuildIds = useMemo(() => new Set((overview?.guilds || []).map((guild) => String(guild.id))), [overview]);
-    const guildListIsFresh = overview?.source === 'api' && !overview?.isStale;
-    const topCommands = (observability.topCommands || []).slice(0, 6);
-    const recentErrors = Array.isArray(observability.recentErrors) ? observability.recentErrors.slice(0, 5) : [];
-    const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
-
     // Map de tous les serveurs Discord de l'utilisateur (avec ses permissions réelles)
     const userGuildMap = useMemo(() => {
         const map = new Map();
@@ -102,6 +97,47 @@ function Dashboard() {
         }
         return result;
     }, [userGuildMap, connectedGuildIds, overview]);
+
+    // Commandes les plus utilisées (strictement isolées aux serveurs gérés par cet utilisateur)
+    const topCommands = useMemo(() => {
+        const counts = {};
+        for (const g of manageableGuilds) {
+            const bg = (overview?.guilds || []).find((b) => String(b.id) === String(g.id));
+            const cMap = bg?.observability?.commandByName || {};
+            for (const [cmd, count] of Object.entries(cMap)) {
+                counts[cmd] = (counts[cmd] || 0) + Number(count || 0);
+            }
+        }
+        return Object.entries(counts)
+            .map(([name, count]) => ({ name, count }))
+            .filter((c) => c.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 6);
+    }, [manageableGuilds, overview]);
+
+    // Erreurs récentes (strictement isolées aux serveurs gérés par cet utilisateur)
+    const recentErrors = useMemo(() => {
+        const errors = [];
+        for (const g of manageableGuilds) {
+            const bg = (overview?.guilds || []).find((b) => String(b.id) === String(g.id));
+            const list = Array.isArray(bg?.observability?.recentErrors) ? bg.observability.recentErrors : [];
+            errors.push(...list);
+        }
+        return errors
+            .sort((a, b) => new Date(b.ts || 0) - new Date(a.ts || 0))
+            .slice(0, 5);
+    }, [manageableGuilds, overview]);
+
+    const errorTotal = useMemo(() => {
+        let total = 0;
+        for (const g of manageableGuilds) {
+            const bg = (overview?.guilds || []).find((b) => String(b.id) === String(g.id));
+            total += Number(bg?.observability?.errorTotal || 0);
+        }
+        return total;
+    }, [manageableGuilds, overview]);
+
+    const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
 
     // 2. Autres serveurs où le bot est présent : Bot présent mais SANS perm de gestion
     const otherBotGuilds = useMemo(() => {
@@ -376,7 +412,7 @@ function Dashboard() {
                     <section className="ops-panel site-panel ops-activity-panel">
                         <div className="ops-panel-heading">
                             <div><p className="site-eyebrow">JOURNAL</p><h2>Erreurs récentes</h2></div>
-                            <span className="ops-count">{Number(observability.errorTotal || 0)} au total</span>
+                            <span className="ops-count">{Number(errorTotal || 0)} au total</span>
                         </div>
                         {recentErrors.length ? (
                             <ol className="ops-activity-list">
@@ -397,6 +433,7 @@ function Dashboard() {
                 <Link to="/modules"><span>Modules</span><strong>Configurer les fonctions du bot →</strong></Link>
                 <Link to="/commands"><span>Documentation</span><strong>Parcourir les commandes →</strong></Link>
                 <Link to="/help"><span>Support</span><strong>Obtenir de l’aide →</strong></Link>
+                <Link to="/feedback"><span>Retours & Bugs</span><strong>Signaler un bug ou une suggestion →</strong></Link>
             </section>
         </main>
     );

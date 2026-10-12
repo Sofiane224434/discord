@@ -98,4 +98,19 @@ export const discordService = {
 
 export const systemService = {
     getHealth: () => fetchAPI('/system/health'),
-}
+};
+
+export const feedbackService = {
+    getFeedbacks: (params = {}) => {
+        const q = new URLSearchParams(params).toString();
+        return fetchAPI(`/feedback${q ? `?${q}` : ''}`);
+    },
+    createFeedback: (payload) => fetchAPI('/feedback', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    }),
+    updateStatus: (id, status) => fetchAPI(`/feedback/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+    }),
+};

@@ -125,6 +125,7 @@ starter-kit/
 │   │   ├── bot.controller.js
 │   │   ├── discord.controller.js
 │   │   ├── email.controller.js
+│   │   ├── feedback.controller.js
 │   │   └── system.controller.js
 │   ├── Dockerfile
 │   ├── middlewares/
@@ -140,6 +141,7 @@ starter-kit/
 │   │   ├── bot.routes.js
 │   │   ├── discord.routes.js
 │   │   ├── email.routes.js
+│   │   ├── feedback.routes.js
 │   │   └── system.routes.js
 │   ├── schema.sql
 │   ├── server.js

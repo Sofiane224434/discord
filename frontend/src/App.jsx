@@ -17,6 +17,7 @@ import Status from './pages/Status.jsx';
 import CommandHistory from './pages/CommandHistory.jsx';
 import GuildConfig from './pages/GuildConfig.jsx';
 import Modules from './pages/Modules.jsx';
+import Feedback from './pages/Feedback.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 
 function App() {
@@ -35,6 +36,9 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/faq" element={<Help />} />
         <Route path="/status" element={<Status />} />
+        <Route path="/feedback" element={<Feedback />} />
+        <Route path="/report" element={<Feedback />} />
+        <Route path="/suggestions" element={<Feedback />} />
         <Route path="/dashboard" element={
           <PrivateRoute><Dashboard /></PrivateRoute>
         } />

@@ -53,6 +53,7 @@ function normalizeOverview(payload = {}) {
                 memberCount: Number(guild.memberCount || 0),
                 iconUrl: guild.iconUrl || null,
                 islamModeEnabled: Boolean(guild.islamModeEnabled),
+                observability: guild.observability || null,
             }))
             : [],
     };

@@ -16,6 +16,7 @@ function Footer() {
                     <Link to="/commands">Commandes</Link>
                     <Link to="/status">Statut</Link>
                     <Link to="/help">Aide</Link>
+                    <Link to="/feedback">Bugs & Idées</Link>
                     <Link to="/dashboard">Panel</Link>
                 </nav>
                 <p className="site-footer-copy">{t('footer.copyright', { year: new Date().getFullYear() })}</p>

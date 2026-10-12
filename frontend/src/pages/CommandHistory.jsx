@@ -21,9 +21,31 @@ function CommandHistory() {
     }, [t]);
 
     const allCommands = useMemo(() => {
-        const commandByName = overview?.observability?.commandByName;
-        if (!commandByName || typeof commandByName !== 'object') return [];
-        return Object.entries(commandByName)
+        let manageableGuildIds = new Set();
+        try {
+            const stored = JSON.parse(localStorage.getItem('discord_guilds') || '[]');
+            for (const g of stored) {
+                const perms = BigInt(g.permissions || '0');
+                if ((perms & (0x20n | 0x8n)) !== 0n) {
+                    manageableGuildIds.add(String(g.id));
+                }
+            }
+        } catch {
+            manageableGuildIds = new Set();
+        }
+
+        const counts = {};
+        for (const bg of (overview?.guilds || [])) {
+            if (manageableGuildIds.size > 0 && !manageableGuildIds.has(String(bg.id))) {
+                continue;
+            }
+            const cMap = bg?.observability?.commandByName || {};
+            for (const [name, count] of Object.entries(cMap)) {
+                counts[name] = (counts[name] || 0) + Number(count || 0);
+            }
+        }
+
+        return Object.entries(counts)
             .map(([name, count]) => ({ name, count: Number(count || 0) }))
             .filter(c => c.count > 0);
     }, [overview]);

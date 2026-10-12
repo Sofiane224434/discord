@@ -76,6 +76,7 @@ const EMPTY_CONFIG = {
     channels: [],
     roles: [],
     commands: [],
+    observability: { commandByName: {}, recentErrors: [], errorTotal: 0 },
 };
 
 function mergeConfig(data) {
@@ -140,6 +141,7 @@ function mergeConfig(data) {
         channels: Array.isArray(data?.channels) ? data.channels : [],
         roles: Array.isArray(data?.roles) ? data.roles : [],
         commands: Array.isArray(data?.commands) ? data.commands : [],
+        observability: data?.observability || { commandByName: {}, recentErrors: [], errorTotal: 0 },
     };
 }
 
@@ -337,12 +339,10 @@ function GuildConfig() {
         setNotice('');
         try {
             const result = await adminService.activateIslamMode(guildId, islamCode);
-            await refresh();
+            update('features', 'islamModeEnabled', true);
             setIslamCode('');
             if (result.islamModeEnabled || result.alreadyEnabled) {
-                setNotice(result.commandSync === false
-                    ? 'Mode Islam débloqué. Synchronisation des commandes Discord en cours.'
-                    : 'Code secret validé : le mode Islam et ses commandes (/coran, /quiz) sont débloqués.');
+                setNotice('Code secret validé : le mode Islam et ses commandes (/coran, /priere, /quiz, etc.) sont débloqués.');
             } else {
                 setNotice('Code appliqué avec succès.');
             }
@@ -358,11 +358,14 @@ function GuildConfig() {
         setActivatingIslam(true);
         setError('');
         setNotice('');
+        // Mise à jour optimiste immédiate : l'interface bascule instantanément
+        update('features', 'islamModeEnabled', false);
         try {
             await adminService.activateIslamMode(guildId, { action: 'disable' });
-            await refresh();
             setNotice('Le mode Islam a été désactivé pour ce serveur.');
         } catch (apiError) {
+            // Rétablissement en cas d'échec
+            update('features', 'islamModeEnabled', true);
             setError(apiError.message || 'Impossible de désactiver le mode.');
         } finally {
             setActivatingIslam(false);
@@ -462,12 +465,6 @@ function GuildConfig() {
 
     const isIslamActive = Boolean(form.features?.islamModeEnabled);
 
-    useEffect(() => {
-        if (activeTab === 'islam' && !isIslamActive) {
-            setActiveTab('ai');
-        }
-    }, [activeTab, isIslamActive]);
-
     if (loading) {
         return (
             <main className="site-page site-section-page max-w-5xl py-12">
@@ -494,7 +491,7 @@ function GuildConfig() {
         { id: 'welcome', label: 'Bienvenue & Rôles', icon: '👋', count: form.welcome.rules?.length || 0 },
         { id: 'logs', label: 'Logs & Profil', icon: '📋' },
         { id: 'social', label: 'Réseaux & Niveaux', icon: '📢' },
-        ...(isIslamActive ? [{ id: 'islam', label: 'Mode Islam', icon: '🌙' }] : []),
+        { id: 'islam', label: 'Mode Islam', icon: '🌙', status: isIslamActive ? 'Actif' : 'Code requis' },
     ];
 
     return (
@@ -558,6 +555,11 @@ function GuildConfig() {
                         <span>{tab.label}</span>
                         {typeof tab.count === 'number' && tab.count > 0 ? (
                             <span className="admin-tab-badge">{tab.count}</span>
+                        ) : null}
+                        {tab.status ? (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${tab.status === 'Actif' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}`}>
+                                {tab.status}
+                            </span>
                         ) : null}
                     </button>
                 ))}
@@ -1316,6 +1318,81 @@ function GuildConfig() {
                                             Rétablir photo de profil de base
                                         </button>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Activité & Santé interne de ce serveur */}
+                        <div className="border-t border-slate-700/60 pt-6 space-y-5">
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                                        <span>📊</span> Activité & Santé interne de ce serveur
+                                    </h3>
+                                    <span className="text-[11px] font-semibold text-cyan-400 bg-cyan-950/60 border border-cyan-800/60 px-2.5 py-0.5 rounded-full">
+                                        Données 100% isolées à ce serveur
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-1">
+                                    Ces statistiques et journaux d'erreurs concernent exclusivement l'activité enregistrée sur ce serveur Discord.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-6 md:grid-cols-2">
+                                {/* Commandes les plus utilisées sur ce serveur */}
+                                <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4 space-y-3">
+                                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Commandes utilisées ici</h4>
+                                        <span className="text-xs text-cyan-400 font-semibold">
+                                            {Object.values(form.observability?.commandByName || {}).reduce((a, b) => a + Number(b || 0), 0)} exécutions
+                                        </span>
+                                    </div>
+                                    {Object.keys(form.observability?.commandByName || {}).length ? (
+                                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                            {Object.entries(form.observability.commandByName)
+                                                .sort((a, b) => Number(b[1]) - Number(a[1]))
+                                                .slice(0, 10)
+                                                .map(([cmdName, count], idx) => (
+                                                    <div key={cmdName} className="flex items-center justify-between text-xs bg-slate-800/40 px-3 py-1.5 rounded border border-slate-700/40">
+                                                        <span className="font-mono text-cyan-300 font-semibold">
+                                                            <span className="text-slate-500 mr-2">{idx + 1}.</span>/{cmdName}
+                                                        </span>
+                                                        <span className="font-bold text-white bg-slate-700/50 px-2 py-0.5 rounded text-[11px]">
+                                                            {count}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-slate-500 py-4 text-center">Aucune commande encore exécutée sur ce serveur.</p>
+                                    )}
+                                </div>
+
+                                {/* Erreurs récentes sur ce serveur */}
+                                <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4 space-y-3">
+                                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Erreurs internes du serveur</h4>
+                                        <span className="text-xs text-rose-400 font-semibold">
+                                            {form.observability?.recentErrors?.length || 0} récentes
+                                        </span>
+                                    </div>
+                                    {Array.isArray(form.observability?.recentErrors) && form.observability.recentErrors.length ? (
+                                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                            {form.observability.recentErrors.slice(0, 10).map((err, idx) => (
+                                                <div key={idx} className="rounded border border-rose-900/50 bg-rose-950/20 p-2 text-xs">
+                                                    <div className="flex items-center justify-between text-[11px] text-rose-400 font-semibold">
+                                                        <span>{err.type || 'Erreur'}</span>
+                                                        <time className="text-slate-500">{err.ts ? new Date(err.ts).toLocaleTimeString() : ''}</time>
+                                                    </div>
+                                                    <p className="mt-0.5 text-slate-300 text-[11px] break-words line-clamp-2">{err.message}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-emerald-400/80 py-4 text-center flex items-center justify-center gap-1.5">
+                                            <span>✓</span> Aucune erreur signalée sur ce serveur.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

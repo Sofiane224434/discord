@@ -66,10 +66,18 @@ function Home() {
     return (
         <main className="site-page home-showcase max-w-6xl mx-auto space-y-12 pb-16">
             {/* 1. HERO BANNER PRINCIPAL */}
-            <section className="relative overflow-hidden rounded-3xl border border-slate-700/60 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950 p-8 sm:p-14 shadow-2xl">
+            <section className={`relative overflow-hidden rounded-3xl border p-8 sm:p-14 shadow-2xl transition-all duration-300 ${
+                theme === 'islam'
+                    ? 'border-emerald-700/40 bg-gradient-to-br from-[#042014]/90 via-[#072a1b]/80 to-[#02130c]'
+                    : 'border-slate-700/60 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950'
+            }`}>
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                     <div className="space-y-5 max-w-2xl">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-3.5 py-1 text-xs font-semibold text-cyan-300">
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-semibold ${
+                            theme === 'islam'
+                                ? 'border-emerald-500/40 bg-emerald-950/60 text-emerald-300'
+                                : 'border-cyan-500/30 bg-cyan-950/40 text-cyan-300'
+                        }`}>
                             <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
                             <span>Bot Discord vérifié & multifonction</span>
                         </div>
@@ -89,7 +97,9 @@ function Home() {
                                 href={addToServerUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="btn btn-primary text-sm px-6 py-3.5 shadow-lg shadow-cyan-950/50 flex items-center gap-2 font-bold"
+                                className={`btn btn-primary text-sm px-6 py-3.5 flex items-center gap-2 font-bold ${
+                                    theme === 'islam' ? 'shadow-lg shadow-emerald-950/60' : 'shadow-lg shadow-cyan-950/50'
+                                }`}
                             >
                                 <span>🚀</span>
                                 <span>Ajouter Azim à Discord</span>
@@ -151,11 +161,18 @@ function Home() {
                                 {feat.text}
                             </p>
                             <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                                <span className="font-mono text-xs text-cyan-300/90 font-medium">
+                                <span className={`font-mono text-xs font-medium ${
+                                    theme === 'islam' ? 'text-emerald-300' : 'text-cyan-300/90'
+                                }`}>
                                     {feat.command}
                                 </span>
-                                <Link to="/modules" className="text-xs text-slate-400 hover:text-cyan-300 transition-colors">
-                                    En savoir plus →
+                                <Link
+                                    to="/docs/accueil"
+                                    className={`text-xs transition-colors ${
+                                        theme === 'islam' ? 'text-slate-400 hover:text-emerald-300' : 'text-slate-400 hover:text-cyan-300'
+                                    }`}
+                                >
+                                    Documentation →
                                 </Link>
                             </div>
                         </article>
@@ -164,7 +181,9 @@ function Home() {
             </section>
 
             {/* 3. COMMANDES LES PLUS POPULAIRES */}
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 space-y-6">
+            <section className={`rounded-2xl border p-6 sm:p-8 space-y-6 ${
+                theme === 'islam' ? 'border-emerald-800/30 bg-[#041a12]/70' : 'border-slate-800 bg-slate-900/60'
+            }`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
                     <div>
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -172,7 +191,7 @@ function Home() {
                         </h2>
                         <p className="text-xs text-slate-400">Quelques commandes prêtes à l'emploi avec barre oblique (/slash).</p>
                     </div>
-                    <Link to="/commands" className="btn btn-soft text-xs whitespace-nowrap self-start sm:self-auto">
+                    <Link to="/docs/commandes" className="btn btn-soft text-xs whitespace-nowrap self-start sm:self-auto">
                         Voir toutes les {isIslamUnlocked ? '31' : '21'} commandes →
                     </Link>
                 </div>
@@ -181,11 +200,17 @@ function Home() {
                     {popularCommands.map((cmd) => (
                         <div
                             key={cmd.name}
-                            className="flex items-center gap-3.5 rounded-xl border border-slate-800/80 bg-slate-950/60 p-3.5 hover:border-slate-700 transition-colors"
+                            className={`flex items-center gap-3.5 rounded-xl border p-3.5 transition-colors ${
+                                theme === 'islam'
+                                    ? 'border-emerald-900/40 bg-[#03150e]/80 hover:border-emerald-700/50'
+                                    : 'border-slate-800/80 bg-slate-950/60 hover:border-slate-700'
+                            }`}
                         >
                             <span className="text-xl shrink-0">{cmd.icon}</span>
                             <div className="min-w-0 flex-1">
-                                <div className="font-mono text-sm font-bold text-cyan-300">{cmd.name}</div>
+                                <div className={`font-mono text-sm font-bold ${
+                                    theme === 'islam' ? 'text-emerald-300' : 'text-cyan-300'
+                                }`}>{cmd.name}</div>
                                 <div className="text-xs text-slate-300 truncate">{cmd.desc}</div>
                             </div>
                         </div>
@@ -194,7 +219,11 @@ function Home() {
             </section>
 
             {/* 4. BANNIÈRE D'INVITATION FINALE */}
-            <section className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 via-slate-900/90 to-slate-900 p-8 text-center space-y-4">
+            <section className={`rounded-2xl border p-8 text-center space-y-4 ${
+                theme === 'islam'
+                    ? 'border-emerald-500/35 bg-gradient-to-r from-emerald-950/60 via-[#05261a]/90 to-[#021810]'
+                    : 'border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 via-slate-900/90 to-slate-900'
+            }`}>
                 <h2 className="text-2xl font-bold text-white">Prêt à installer Azim sur votre serveur ?</h2>
                 <p className="text-sm text-slate-300 max-w-xl mx-auto">
                     Installation en un clic, gratuit et immédiatement fonctionnel avec vos membres.

@@ -8,7 +8,7 @@ const commandGroups = [
         commands: [
             ['/ask', 'Pose une question à l’assistant IA du serveur.'],
             ['/help', 'Affiche les commandes actives et leur usage.'],
-            ['/botavatar', 'Affiche et permet de télécharger la photo de profil (avatar) officielle d’AzimBot en HD/4K.'],
+            ['/botavatar', 'Affiche, télécharge en HD ou rétablit la photo de profil de base d’AzimBot.'],
             ['/ping', 'Mesure la latence Discord et WebSocket.'],
             ['/remindme', 'Programme un rappel personnel dans un délai donné.'],
             ['/salon', 'Propose un nom et une description de salon.'],
@@ -20,7 +20,7 @@ const commandGroups = [
     {
         name: 'Réglages & accueil',
         commands: [
-            ['/config', 'Règle la langue IA, le prompt, les journaux et le profil du bot.'],
+            ['/config', 'Règle la langue IA, le prompt, les journaux, l’avatar et le profil du bot.'],
             ['/welcome', 'Configure les messages d’arrivée et les règles par rôle.'],
             ['/code', 'Active un module avec son code d’accès.'],
             ['/permissions', 'Consulte les accès requis pour les commandes.'],

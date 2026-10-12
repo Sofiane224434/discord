@@ -32,13 +32,13 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/public-servers" element={<PublicServers />} />
         <Route path="/bots" element={<PublicServers />} />
-        <Route path="/modules" element={<Modules />} />
-        <Route path="/commands" element={<Commands />} />
         <Route path="/docs" element={<Docs />} />
         <Route path="/docs/accueil" element={<Docs />} />
         <Route path="/docs/:slug" element={<Docs />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/faq" element={<Help />} />
+        <Route path="/modules" element={<Navigate to="/docs/accueil" replace />} />
+        <Route path="/commands" element={<Navigate to="/docs/commandes" replace />} />
+        <Route path="/help" element={<Navigate to="/docs/faq" replace />} />
+        <Route path="/faq" element={<Navigate to="/docs/faq" replace />} />
         <Route path="/status" element={<Status />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/parametres" element={<Settings />} />

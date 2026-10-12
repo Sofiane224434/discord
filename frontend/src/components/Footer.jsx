@@ -51,8 +51,8 @@ function Footer() {
                         <ul className="draft-footer__nav-list">
                             <li><Link to="/">Accueil</Link></li>
                             <li><Link to="/docs/accueil">Documentation</Link></li>
-                            <li><Link to="/commands">Commandes</Link></li>
-                            <li><Link to="/modules">Modules</Link></li>
+                            <li><Link to="/feedback">Retours & Idées</Link></li>
+                            <li><Link to="/settings">Paramètres</Link></li>
                             <li><Link to="/dashboard">Panel de gestion</Link></li>
                             <li><Link to="/status">Statut des services</Link></li>
                         </ul>

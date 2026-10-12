@@ -3496,4 +3496,458 @@ html.theme-transitioning::after {
 	letter-spacing: -0.01em;
 }
 
+/* ==========================================================================
+   HEADER LATÉRAL (SIDEBAR NAVIGATION) & AGENCEMENT DU SITE
+   ========================================================================== */
+
+.site-layout-with-sidebar {
+	display: flex;
+	min-height: 100vh;
+	width: 100%;
+}
+
+.site-layout-main-wrapper {
+	margin-left: 260px;
+	width: calc(100% - 260px);
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+@media (max-width: 1023px) {
+	.site-layout-with-sidebar {
+		flex-direction: column;
+	}
+	.site-layout-main-wrapper {
+		margin-left: 0;
+		width: 100%;
+	}
+}
+
+/* --- SIDEBAR LATÉRALE PRINCIPALE --- */
+.lateral-sidebar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 260px;
+	z-index: 50;
+	background: #060c18;
+	border-right: 1px solid rgba(255, 255, 255, 0.08);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 24px 18px;
+	overflow-y: auto;
+	transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="islam"] .lateral-sidebar {
+	background: #02140d;
+	border-right: 1px solid rgba(16, 185, 129, 0.16);
+}
+
+.lateral-sidebar::-webkit-scrollbar {
+	width: 4px;
+}
+.lateral-sidebar::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+}
+
+/* Top: Brand */
+.lateral-sidebar__top {
+	margin-bottom: 28px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lateral-sidebar__brand {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	text-decoration: none;
+}
+
+.lateral-brand-icon {
+	width: 42px;
+	height: 42px;
+	object-fit: contain;
+	filter: drop-shadow(0 2px 8px rgba(0, 210, 255, 0.25));
+}
+
+[data-theme="islam"] .lateral-brand-icon {
+	filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.35));
+}
+
+.lateral-brand-meta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.lateral-brand-title {
+	font-size: 19px;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	color: #ffffff;
+}
+
+.lateral-brand-badge {
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 9999px;
+	background: rgba(56, 189, 248, 0.15);
+	color: #38bdf8;
+	border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+[data-theme="islam"] .lateral-brand-badge {
+	background: rgba(16, 185, 129, 0.15);
+	color: #34d399;
+	border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Center: Navigation Links */
+.lateral-sidebar__nav {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.lateral-nav-eyebrow {
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: #64748b;
+	margin: 0 0 10px 8px;
+}
+
+[data-theme="islam"] .lateral-nav-eyebrow {
+	color: #059669;
+}
+
+.lateral-nav-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.lateral-nav-link {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 11px 14px;
+	border-radius: 10px;
+	color: #94a3b8;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.18s ease;
+}
+
+.lateral-nav-link:hover {
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.05);
+	transform: translateX(2px);
+}
+
+.lateral-nav-link.is-active {
+	color: #38bdf8;
+	background: rgba(56, 189, 248, 0.12);
+	font-weight: 600;
+}
+
+[data-theme="islam"] .lateral-nav-link.is-active {
+	color: #34d399;
+	background: rgba(16, 185, 129, 0.14);
+}
+
+.lateral-nav-icon {
+	font-size: 17px;
+	line-height: 1;
+}
+
+.lateral-nav-glow {
+	display: none;
+}
+
+.lateral-nav-link.is-active .lateral-nav-glow {
+	display: block;
+	position: absolute;
+	left: 0;
+	top: 10px;
+	bottom: 10px;
+	width: 3px;
+	border-radius: 0 4px 4px 0;
+	background: #38bdf8;
+	box-shadow: 0 0 10px #38bdf8;
+}
+
+[data-theme="islam"] .lateral-nav-link.is-active .lateral-nav-glow {
+	background: #10b981;
+	box-shadow: 0 0 10px #10b981;
+}
+
+/* Bottom: Account, Lang & CTA */
+.lateral-sidebar__bottom {
+	margin-top: 24px;
+	padding-top: 18px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.lateral-lang-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 12px;
+	color: #64748b;
+	padding: 0 4px;
+}
+
+.lateral-lang-pills {
+	display: inline-flex;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 9999px;
+	padding: 2px 8px;
+}
+
+.lateral-lang-btn {
+	background: transparent;
+	border: 0;
+	color: #94a3b8;
+	font-size: 11px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 2px 5px;
+	border-radius: 4px;
+	transition: all 0.15s ease;
+}
+
+.lateral-lang-btn.is-active {
+	color: #ffffff;
+	background: rgba(56, 189, 248, 0.25);
+}
+
+[data-theme="islam"] .lateral-lang-btn.is-active {
+	background: rgba(16, 185, 129, 0.25);
+}
+
+.lateral-lang-sep {
+	color: #475569;
+	font-size: 10px;
+	margin: 0 2px;
+}
+
+.lateral-user-card {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lateral-user-info {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.lateral-user-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	background: #0284c7;
+	color: #ffffff;
+	font-weight: 700;
+	font-size: 13px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+[data-theme="islam"] .lateral-user-avatar {
+	background: #059669;
+}
+
+.lateral-user-details {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.lateral-user-name {
+	font-size: 13px;
+	font-weight: 600;
+	color: #f1f5f9;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lateral-user-status {
+	font-size: 10.5px;
+	color: #10b981;
+}
+
+.lateral-logout-btn {
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	font-size: 15px;
+	padding: 4px;
+	border-radius: 6px;
+	opacity: 0.7;
+	transition: opacity 0.15s ease;
+}
+
+.lateral-logout-btn:hover {
+	opacity: 1;
+}
+
+.lateral-login-link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 14px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	color: #cbd5e1;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.15s ease;
+}
+
+.lateral-login-link:hover {
+	background: rgba(255, 255, 255, 0.09);
+	color: #ffffff;
+}
+
+.lateral-add-bot-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 11px 16px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #0284c7, #0369a1);
+	border: 1px solid rgba(56, 189, 248, 0.4);
+	color: #ffffff;
+	font-size: 13.5px;
+	font-weight: 700;
+	text-decoration: none;
+	box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+	transition: all 0.2s ease;
+}
+
+[data-theme="islam"] .lateral-add-bot-btn {
+	background: linear-gradient(135deg, #059669, #047857);
+	border-color: rgba(16, 185, 129, 0.4);
+	box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+}
+
+.lateral-add-bot-btn:hover {
+	filter: brightness(1.1);
+	transform: translateY(-1px);
+}
+
+/* --- BARRE MOBILE & TIROIR --- */
+.lateral-mobile-bar {
+	display: none;
+}
+
+@media (max-width: 1023px) {
+	.lateral-mobile-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 18px;
+		background: #060c18;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		position: sticky;
+		top: 0;
+		z-index: 45;
+		backdrop-filter: blur(12px);
+	}
+
+	[data-theme="islam"] .lateral-mobile-bar {
+		background: #02140d;
+		border-bottom-color: rgba(16, 185, 129, 0.16);
+	}
+
+	.lateral-mobile-brand {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		text-decoration: none;
+	}
+
+	.lateral-brand-icon-sm {
+		width: 32px;
+		height: 32px;
+		object-fit: contain;
+	}
+
+	.lateral-brand-name {
+		font-size: 18px;
+		font-weight: 800;
+		color: #ffffff;
+	}
+
+	.lateral-mobile-toggle {
+		background: transparent;
+		border: 0;
+		cursor: pointer;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 6px;
+	}
+
+	.lateral-toggle-line {
+		width: 22px;
+		height: 2px;
+		background: #cbd5e1;
+		border-radius: 2px;
+	}
+
+	.lateral-sidebar {
+		transform: translateX(-100%);
+	}
+
+	.lateral-sidebar.is-open {
+		transform: translateX(0);
+		box-shadow: 10px 0 35px rgba(0, 0, 0, 0.6);
+	}
+
+	.lateral-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 48;
+		background: rgba(0, 0, 0, 0.65);
+		backdrop-filter: blur(4px);
+	}
+}
+
+
 

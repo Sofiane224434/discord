@@ -123,8 +123,8 @@ const DOCS_DATA = [
                                     ['Voir les salons & Envoyer des messages', 'Permet à Azim d’écouter et répondre aux commandes', 'Oui'],
                                     ['Gérer les rôles', 'Attribution des rôles de bienvenue et récompenses de niveaux', 'Oui'],
                                     ['Gérer les messages', 'Nécessaire pour la commande de modération /purge', 'Oui'],
-                                    ['Intégrer des liens & Joindre des fichiers', 'Affichage des embeds riches, cartes de niveau et Coran', 'Oui'],
-                                    ['Se connecter & Parler (Vocal)', 'Diffusion de la radio Coran 24/7 et annonces vocales', 'Optionnel']
+                                    ['Intégrer des liens & Joindre des fichiers', 'Affichage des embeds riches et cartes de niveau', 'Oui'],
+                                    ['Se connecter & Parler (Vocal)', 'Diffusion audio et annonces vocales', 'Optionnel']
                                 ]
                             }
                         },
@@ -414,11 +414,124 @@ const DOCS_DATA = [
                             id: 'avatar-bot',
                             title: 'Personnalisation de la photo de profil (/botavatar)',
                             paragraphs: [
-                                'AzimBot adapte automatiquement sa photo de profil de serveur selon le mode activé :',
-                                '• En mode classique : le logo processeur bleu haute définition.',
-                                '• En mode Islamique : la calligraphie dorée et émeraude officielle.',
-                                'Vous pouvez également télécharger l’image officielle ou rétablir l’avatar par défaut à tout moment via `/botavatar`.'
+                                'AzimBot propose une photo de profil officielle haute définition pour votre serveur Discord.',
+                                'Vous pouvez afficher, télécharger l’image officielle ou rétablir l’avatar par défaut à tout moment via `/botavatar`.'
                             ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        category: 'Commandes & Support',
+        items: [
+            {
+                slug: 'commandes',
+                title: 'Toutes les commandes',
+                icon: 'Terminal',
+                summary: 'Catalogue complet et interactif de toutes les commandes slash d’AzimBot.',
+                sections: [
+                    { id: 'questions-outils', label: 'Questions & Outils' },
+                    { id: 'reglages-accueil', label: 'Réglages & Accueil' },
+                    { id: 'moderation-niveaux', label: 'Modération & Niveaux' },
+                    { id: 'alertes-reseaux', label: 'Alertes & Réseaux' },
+                ],
+                content: {
+                    badge: 'Répertoire complet',
+                    heading: 'Toutes les commandes d’AzimBot',
+                    lead: 'Retrouvez l’ensemble des commandes disponibles sur votre serveur, leur syntaxe et leur utilité.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'questions-outils',
+                            title: 'Questions & Outils',
+                            codeList: [
+                                { cmd: '/ask prompt:[texte]', desc: 'Pose une question à l’assistant IA du serveur.' },
+                                { cmd: '/site', desc: 'Consulte le site officiel et accède au tableau de bord.' },
+                                { cmd: '/report', desc: 'Signale un bug ou soumets une suggestion pour AzimBot.' },
+                                { cmd: '/help', desc: 'Affiche les commandes actives et leur usage sur le serveur.' },
+                                { cmd: '/botavatar', desc: 'Affiche, télécharge ou rétablit la photo de profil du bot.' },
+                                { cmd: '/ping', desc: 'Mesure la latence Discord et WebSocket.' },
+                                { cmd: '/remindme temps:[délai] texte:[note]', desc: 'Programme un rappel personnel automatique.' },
+                                { cmd: '/salon nom:[texte]', desc: 'Propose un nom et une description de salon.' },
+                                { cmd: '/version', desc: 'Affiche la version et l’historique du bot.' },
+                                { cmd: '/serverinfo', desc: 'Consulte les informations et statistiques du serveur.' },
+                                { cmd: '/userinfo membre:[@user]', desc: 'Affiche le profil Discord d’un membre.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'reglages-accueil',
+                            title: 'Réglages & Accueil',
+                            codeList: [
+                                { cmd: '/config', desc: 'Règle la langue IA, le prompt, les journaux et le profil du bot.' },
+                                { cmd: '/welcome', desc: 'Configure les messages d’arrivée et les rôles automatiques.' },
+                                { cmd: '/code valeur:[code]', desc: 'Active ou désactive des modules d’extension avec un code d’accès.' },
+                                { cmd: '/permissions', desc: 'Consulte les autorisations requises pour chaque commande.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'moderation-niveaux',
+                            title: 'Modération & Niveaux',
+                            codeList: [
+                                { cmd: '/purge nombre:[1-100]', desc: 'Supprime un ensemble de messages selon des filtres.' },
+                                { cmd: '/zzzz', desc: 'Suspend temporairement les réponses automatiques de l’IA dans le salon.' },
+                                { cmd: '/rank', desc: 'Affiche votre carte de niveau et votre jauge d’XP.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'alertes-reseaux',
+                            title: 'Alertes & Réseaux sociaux',
+                            codeList: [
+                                { cmd: '/youtube channel:[ID/URL]', desc: 'Surveille une chaîne YouTube et annonce ses nouvelles vidéos.' },
+                                { cmd: '/tiktok username:[compte]', desc: 'Alerte instantanément lors du passage en live TikTok.' },
+                                { cmd: '/pubtimer', desc: 'Suit le temps consacré aux publications de l’équipe.' },
+                                { cmd: '/rappelbump', desc: 'Envoie le rappel de bump du serveur Discord.' }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                slug: 'faq',
+                title: 'Foire Aux Questions (FAQ)',
+                icon: 'HelpCircle',
+                summary: 'Questions fréquentes, résolution de problèmes et support.',
+                sections: [
+                    { id: 'general', label: 'Questions générales' },
+                    { id: 'permissions-faq', label: 'Permissions & Rôles' },
+                ],
+                content: {
+                    badge: 'Aide & Dépannage',
+                    heading: 'Foire Aux Questions & Support',
+                    lead: 'Trouvez rapidement des réponses aux interrogations les plus fréquentes concernant l’utilisation d’AzimBot.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'general',
+                            title: 'Questions générales',
+                            items: [
+                                { strong: 'Le bot est-il gratuit ?', text: 'Oui, toutes les fonctionnalités principales (IA, niveaux, accueil, modération, alertes) sont 100% gratuites.' },
+                                { strong: 'Pourquoi le bot ne répond pas à /ask ?', text: 'Vérifiez que le bot possède la permission "Envoyer des messages" et "Intégrer des liens" dans le salon concerné, et que l’IA n’a pas été mise en pause via /zzzz.' },
+                                { strong: 'Comment modifier les réglages ?', text: 'Connectez-vous sur le Panel de gestion avec votre compte Discord ou utilisez la commande /config.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'permissions-faq',
+                            title: 'Permissions & Rôles automatiques',
+                            paragraphs: [
+                                'Si AzimBot n’arrive pas à attribuer un rôle de bienvenue ou de niveau, vérifiez que le rôle du bot se situe plus haut dans la liste des rôles Discord que les rôles qu’il doit distribuer.'
+                            ]
+                        },
+                        {
+                            type: 'hint',
+                            variant: 'info',
+                            title: 'Besoin d’aide supplémentaire ?',
+                            text: 'Rejoignez notre serveur support Discord officiel pour poser vos questions directement à l’équipe ou échanger avec la communauté.'
                         }
                     ]
                 }

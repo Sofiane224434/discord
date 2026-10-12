@@ -5,10 +5,12 @@ import ThemeUnlockModal from '../components/ThemeUnlockModal.jsx';
 
 function MainLayout() {
     return (
-        <div>
+        <div className="site-layout-with-sidebar">
             <Header />
-            <Outlet />
-            <Footer />
+            <div className="site-layout-main-wrapper">
+                <Outlet />
+                <Footer />
+            </div>
             <ThemeUnlockModal />
         </div>
     );

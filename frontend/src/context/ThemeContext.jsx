@@ -45,6 +45,24 @@ export function ThemeProvider({ children }) {
         }
     }, [theme, isIslamUnlocked]);
 
+    useEffect(() => {
+        // Auto-détecter si au moins un serveur a le mode islam actif dès le chargement
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        fetch('/api/bot/overview', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                const hasIslam = (data?.guilds || []).some((g) => g.islamModeEnabled);
+                if (hasIslam) {
+                    setIsIslamUnlocked(true);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
     const unlockIslam = (code) => {
         const normalized = String(code || '').trim().toLowerCase();
         if (VALID_ISLAM_CODES.has(normalized)) {
@@ -59,9 +77,12 @@ export function ThemeProvider({ children }) {
     const setTheme = (newTheme) => {
         if (!isIslamUnlocked) {
             setThemeState('cyber');
+            localStorage.setItem('azim_theme', 'cyber');
             return;
         }
-        setThemeState(newTheme === 'islam' ? 'islam' : 'cyber');
+        const chosen = newTheme === 'islam' ? 'islam' : 'cyber';
+        setThemeState(chosen);
+        localStorage.setItem('azim_theme', chosen);
     };
 
     const toggleTheme = () => {

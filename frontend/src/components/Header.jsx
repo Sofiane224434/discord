@@ -3,7 +3,6 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
-import ThemeSelector from './ThemeSelector.jsx';
 
 const languages = [
     { code: 'fr', label: 'FR' },
@@ -83,7 +82,6 @@ function Header() {
                 </nav>
 
                 <div className="site-header-actions">
-                    <ThemeSelector />
                     <label className="site-language-control">
                         <span className="sr-only">Changer de langue</span>
                             <select

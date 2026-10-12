@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
+import { useTheme } from '../context/ThemeContext.jsx';
 import { botService, discordService } from '../services/api.js';
 
 function hasManageGuildPermission(guild) {
@@ -30,6 +31,7 @@ function getDiscordGuildIcon(guild) {
 
 function Dashboard() {
     const { user } = useAuth();
+    const { setIsIslamUnlocked } = useTheme();
     const [overview, setOverview] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -42,13 +44,19 @@ function Dashboard() {
             const data = await botService.getOverview();
             setOverview(data);
             setError('');
+
+            // "Dès qu'il y a un serveur en mode islam tu as le thème islam directement"
+            const hasIslamActive = (data?.guilds || []).some((bg) => bg.islamModeEnabled);
+            if (hasIslamActive) {
+                setIsIslamUnlocked(true);
+            }
         } catch (apiError) {
             setError(apiError.message || 'Impossible de charger les données du bot.');
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [user, setIsIslamUnlocked]);
 
     useEffect(() => {
         loadData();

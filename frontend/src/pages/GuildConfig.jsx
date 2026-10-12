@@ -182,7 +182,7 @@ function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
 
 function GuildConfig() {
     const { guildId } = useParams();
-    const { setIsIslamUnlocked } = useTheme();
+    const { setIsIslamUnlocked, theme, setTheme } = useTheme();
     const [form, setForm] = useState(EMPTY_CONFIG);
     const [activeTab, setActiveTab] = useState('ai');
     const [loading, setLoading] = useState(true);
@@ -1407,6 +1407,47 @@ function GuildConfig() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Choix du Thème si débloqué */}
+                            {isIslamActive ? (
+                                <div className="border-t border-slate-700/60 pt-6">
+                                    <div className="rounded-xl border border-emerald-600/40 bg-gradient-to-r from-emerald-950/40 to-slate-900/80 p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xl">🎨</span>
+                                                <h3 className="font-semibold text-white text-base">Thème d'affichage du site</h3>
+                                            </div>
+                                            <p className="text-xs text-slate-300 mt-1">
+                                                Choisissez l'ambiance visuelle du panel pour votre navigation (Mode Islam débloqué).
+                                            </p>
+                                        </div>
+                                        <div className="inline-flex rounded-lg border border-slate-700 bg-slate-900/90 p-1 shrink-0 self-start sm:self-auto">
+                                            <button
+                                                type="button"
+                                                onClick={() => setTheme('cyber')}
+                                                className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
+                                                    theme === 'cyber'
+                                                        ? 'bg-cyan-600 text-white shadow-md shadow-cyan-950/50'
+                                                        : 'text-slate-400 hover:text-slate-200'
+                                                }`}
+                                            >
+                                                <span>🤖</span> Cyber
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setTheme('islam')}
+                                                className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
+                                                    theme === 'islam'
+                                                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md shadow-emerald-950/50'
+                                                        : 'text-slate-400 hover:text-slate-200'
+                                                }`}
+                                            >
+                                                <span>🌙</span> Islam
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
                     </section>
                 ) : null}
@@ -1587,6 +1628,43 @@ function GuildConfig() {
                                     >
                                         {activatingIslam ? 'Désactivation…' : 'Désactiver le mode Islam'}
                                     </button>
+                                </div>
+
+                                {/* Choix du Thème du Site (paramètres) */}
+                                <div className="rounded-xl border border-emerald-600/50 bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-slate-900/90 p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xl">🎨</span>
+                                            <h3 className="font-semibold text-white text-base">Thème & Apparence du site</h3>
+                                        </div>
+                                        <p className="text-xs text-slate-300 mt-1">
+                                            Le mode Islam étant débloqué sur votre serveur, vous pouvez choisir d’afficher le site avec le thème Islamique (émeraude & or) ou le thème Cyber classique.
+                                        </p>
+                                    </div>
+                                    <div className="inline-flex rounded-lg border border-slate-700 bg-slate-900/90 p-1 shrink-0 self-start sm:self-auto">
+                                        <button
+                                            type="button"
+                                            onClick={() => setTheme('cyber')}
+                                            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
+                                                theme === 'cyber'
+                                                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-950/50'
+                                                    : 'text-slate-400 hover:text-slate-200'
+                                            }`}
+                                        >
+                                            <span>🤖</span> Thème Cyber
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTheme('islam')}
+                                            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
+                                                theme === 'islam'
+                                                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md shadow-emerald-950/50'
+                                                    : 'text-slate-400 hover:text-slate-200'
+                                            }`}
+                                        >
+                                            <span>🌙</span> Thème Islam
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* 1. Horaires de Prière & Rappels Adhan Automatiques */}

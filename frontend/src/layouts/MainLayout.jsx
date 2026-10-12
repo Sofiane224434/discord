@@ -5,14 +5,15 @@ import ThemeUnlockModal from '../components/ThemeUnlockModal.jsx';
 
 function MainLayout() {
     return (
-        <div className="site-layout-with-sidebar">
+        <div className="draft-shell">
             <Header />
-            <div className="site-layout-main-wrapper">
+            <main className="draft-main">
                 <Outlet />
-                <Footer />
-            </div>
+            </main>
+            <Footer />
             <ThemeUnlockModal />
         </div>
     );
 }
+
 export default MainLayout;

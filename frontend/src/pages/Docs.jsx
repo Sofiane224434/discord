@@ -8,12 +8,12 @@ const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=146254398458
 // Données exhaustives de la documentation
 const DOCS_DATA = [
     {
-        category: 'Démarrage',
+        category: '', // Groupe principal en tête sans titre (façon DraftBot)
         items: [
             {
                 slug: 'accueil',
-                title: 'Accueil & Découverte',
-                icon: 'Home',
+                title: 'Accueil',
+                icon: '📍',
                 summary: 'Présentation globale d’AzimBot, fonctionnalités phares et architecture.',
                 sections: [
                     { id: 'introduction', label: 'Introduction' },
@@ -22,10 +22,13 @@ const DOCS_DATA = [
                     { id: 'demarrage-rapide', label: 'Démarrage rapide' },
                 ],
                 content: {
-                    badge: 'Présentation officielle',
-                    heading: 'Bienvenue dans la documentation d’AzimBot',
-                    lead: 'AzimBot est un bot Discord modulaire de nouvelle génération, conçu pour transformer et animer vos communautés grâce à l’intelligence artificielle, une modération automatisée sans faille et une personnalisation intégrale.',
+                    badge: '',
+                    heading: 'Accueil',
+                    lead: 'Bienvenue sur la documentation d’AzimBot. Retrouvez ici des conseils, des tutoriels et les réponses à vos questions.',
                     blocks: [
+                        {
+                            type: 'draft_intro',
+                        },
                         {
                             type: 'hint',
                             variant: 'info',
@@ -82,8 +85,8 @@ const DOCS_DATA = [
             },
             {
                 slug: 'installation',
-                title: 'Installation & Permissions',
-                icon: 'Shield',
+                title: 'Installation',
+                icon: '🛠️',
                 summary: 'Comment inviter le bot et configurer les permissions Discord requises.',
                 sections: [
                     { id: 'invitation', label: 'Inviter le bot' },
@@ -141,9 +144,9 @@ const DOCS_DATA = [
                 }
             },
             {
-                slug: 'premiers-pas',
-                title: 'Premiers pas & Panel',
-                icon: 'Sparkles',
+                slug: 'parametres',
+                title: 'Paramètres',
+                icon: '⚙️',
                 summary: 'Prise en main des commandes de base et accès au dashboard web.',
                 sections: [
                     { id: 'commandes-initiales', label: 'Commandes initiales' },
@@ -176,16 +179,11 @@ const DOCS_DATA = [
                         }
                     ]
                 }
-            }
-        ]
-    },
-    {
-        category: 'Configuration & Modules',
-        items: [
+            },
             {
                 slug: 'ia',
-                title: 'Assistant IA & Personas',
-                icon: 'Cpu',
+                title: 'Messages & IA',
+                icon: '💬',
                 summary: 'Configuration du modèle IA, personnalisation du prompt et salon dédié.',
                 sections: [
                     { id: 'fonctionnement-ia', label: 'Fonctionnement de l’IA' },
@@ -233,10 +231,175 @@ const DOCS_DATA = [
                     ]
                 }
             },
+        ]
+    },
+    {
+        category: 'ACCUEIL DES MEMBRES',
+        items: [
+            {
+                slug: 'bienvenue',
+                title: 'Arrivées & départs',
+                icon: '👋',
+                summary: 'Messages d’arrivée, messages privés et attribution de rôles dès l’adhésion.',
+                sections: [
+                    { id: 'messages-bienvenue', label: 'Messages d’arrivée' },
+                    { id: 'roles-auto', label: 'Rôles automatiques' },
+                ],
+                content: {
+                    badge: 'Gestion des membres',
+                    heading: 'Accueil personnalisé & Rôles automatiques',
+                    lead: 'Créez une première impression mémorable pour chaque nouveau venu avec des messages de bienvenue illustrés et des rôles attribués dès la première seconde.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'messages-bienvenue',
+                            title: 'Configuration du message d’accueil',
+                            paragraphs: [
+                                'Vous pouvez définir un salon textuel public où Azim souhaitera la bienvenue, ou envoyer un message privé chaleureux au nouveau membre.',
+                                'Utilisez les variables dynamiques telles que `{user}`, `{server}` et `{count}` pour personnaliser votre texte.'
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'roles-auto',
+                            title: 'Autorôles',
+                            paragraphs: [
+                                'Dès qu’un utilisateur rejoint le serveur, AzimBot peut lui assigner un ou plusieurs rôles par défaut (ex: Rôle Membre, Rôle Non-Vérifié).'
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                slug: 'roles',
+                title: 'Gestion des rôles',
+                icon: '🏷️',
+                summary: 'Configuration des rôles automatiques, hiérarchie et permissions.',
+                sections: [
+                    { id: 'roles-bienvenue', label: 'Rôles à l’arrivée' },
+                    { id: 'roles-niveaux', label: 'Rôles de récompense XP' },
+                    { id: 'hierarchie-discord', label: 'Hiérarchie Discord' },
+                ],
+                content: {
+                    badge: 'Gestion des rôles',
+                    heading: 'Gestion & Attribution des Rôles',
+                    lead: 'Automatisez la gestion des rangs de votre serveur Discord : autorôles pour nouveaux membres et rôles exclusifs attribués par palier d’activité.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'roles-bienvenue',
+                            title: '1. Rôles attribués à l’arrivée',
+                            paragraphs: [
+                                'Dès qu’un nouveau membre rejoint votre communauté, AzimBot peut lui assigner un ou plusieurs rôles prédéfinis sans intervention manuelle.',
+                                'Configurez ces rôles directement depuis l’onglet "Accueil & Membres" de votre panel d’administration.'
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'roles-niveaux',
+                            title: '2. Rôles de récompense par palier de niveau',
+                            paragraphs: [
+                                'Fidélisez votre serveur en définissant des rôles débloqués automatiquement lorsque les membres atteignent les niveaux 5, 10, 20 ou 50.',
+                                'AzimBot annonce fièrement le déblocage du nouveau rôle avec une carte personnalisée.'
+                            ]
+                        },
+                        {
+                            type: 'hint',
+                            variant: 'warning',
+                            title: 'Règle essentielle de hiérarchie',
+                            text: 'Assurez-vous que le rôle d’AzimBot est positionné au-dessus de tous les rôles qu’il doit attribuer dans les Paramètres du Serveur > Rôles.'
+                        }
+                    ]
+                }
+            },
+        ]
+    },
+    {
+        category: 'ENGAGEMENT',
+        items: [
+            {
+                slug: 'niveaux',
+                title: 'Niveaux',
+                icon: '📈',
+                summary: 'Système d’XP, paliers de niveau, cartes /rank et classement de serveur.',
+                sections: [
+                    { id: 'mecanique-xp', label: 'Mécanique d’expérience' },
+                    { id: 'commandes-rank', label: 'Commandes /rank' },
+                ],
+                content: {
+                    badge: 'Engagement & Gamification',
+                    heading: 'Système de Niveaux & XP',
+                    lead: 'Récompensez l’activité de vos membres les plus fidèles avec un système d’XP automatique, des cartes visuelles et des rôles débloqués par palier.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'mecanique-xp',
+                            title: 'Comment les membres gagnent de l’XP ?',
+                            paragraphs: [
+                                'Chaque message envoyé rapporte entre 15 et 25 points d’expérience avec un cooldown de 60 secondes pour éviter le spam abusif.',
+                                'Au fil des niveaux, des rôles exclusifs peuvent être attribués automatiquement.'
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'commandes-rank',
+                            title: 'Commandes de niveaux',
+                            codeList: [
+                                { cmd: '/rank', desc: 'Affiche votre carte de niveau personnelle avec votre jauge d’XP.' },
+                                { cmd: '/rank membre:@Ami', desc: 'Affiche la carte de progression d’un autre membre.' }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                slug: 'reseaux',
+                title: 'Alertes Réseaux',
+                icon: '🔔',
+                summary: 'Surveillance et annonces automatiques pour chaînes YouTube et TikTok Live.',
+                sections: [
+                    { id: 'youtube', label: 'Alertes YouTube' },
+                    { id: 'tiktok', label: 'Alertes TikTok' },
+                ],
+                content: {
+                    badge: 'Intégrations & Médias',
+                    heading: 'Alertes YouTube & TikTok',
+                    lead: 'Ne manquez plus aucune sortie de vidéo ou lancement de live grâce aux alertes automatisées dans le salon de votre choix.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'youtube',
+                            title: 'Surveillance YouTube',
+                            paragraphs: [
+                                'Ajoutez l’identifiant d’une chaîne YouTube pour recevoir un message riche avec miniature, titre et lien direct dès qu’une vidéo est mise en ligne.'
+                            ],
+                            codeList: [
+                                { cmd: '/youtube channel:UC...', desc: 'Configure la surveillance d’une chaîne YouTube.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'tiktok',
+                            title: 'Surveillance TikTok',
+                            paragraphs: [
+                                'Détectez le passage en live de vos créateurs préférés et prévenez instantanément votre communauté.'
+                            ],
+                            codeList: [
+                                { cmd: '/tiktok username:@creator', desc: 'Alerte dès le démarrage d’un live TikTok.' }
+                            ]
+                        }
+                    ]
+                }
+            },
+        ]
+    },
+    {
+        category: 'SÉCURITÉ & OUTILS',
+        items: [
             {
                 slug: 'moderation',
-                title: 'Modération & Protection',
-                icon: 'ShieldAlert',
+                title: 'Modération & Purge',
+                icon: '🛡️',
                 summary: 'Commandes de modération rapide, purge de messages et gestion des alertes.',
                 sections: [
                     { id: 'outils-moderation', label: 'Outils de modération' },
@@ -277,117 +440,9 @@ const DOCS_DATA = [
                 }
             },
             {
-                slug: 'bienvenue',
-                title: 'Accueil & Rôles automatiques',
-                icon: 'UserPlus',
-                summary: 'Messages d’arrivée, messages privés et attribution de rôles dès l’adhésion.',
-                sections: [
-                    { id: 'messages-bienvenue', label: 'Messages d’arrivée' },
-                    { id: 'roles-auto', label: 'Rôles automatiques' },
-                ],
-                content: {
-                    badge: 'Gestion des membres',
-                    heading: 'Accueil personnalisé & Rôles automatiques',
-                    lead: 'Créez une première impression mémorable pour chaque nouveau venu avec des messages de bienvenue illustrés et des rôles attribués dès la première seconde.',
-                    blocks: [
-                        {
-                            type: 'section',
-                            id: 'messages-bienvenue',
-                            title: 'Configuration du message d’accueil',
-                            paragraphs: [
-                                'Vous pouvez définir un salon textuel public où Azim souhaitera la bienvenue, ou envoyer un message privé chaleureux au nouveau membre.',
-                                'Utilisez les variables dynamiques telles que `{user}`, `{server}` et `{count}` pour personnaliser votre texte.'
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            id: 'roles-auto',
-                            title: 'Autorôles',
-                            paragraphs: [
-                                'Dès qu’un utilisateur rejoint le serveur, AzimBot peut lui assigner un ou plusieurs rôles par défaut (ex: Rôle Membre, Rôle Non-Vérifié).'
-                            ]
-                        }
-                    ]
-                }
-            },
-            {
-                slug: 'niveaux',
-                title: 'Niveaux & Récompenses XP',
-                icon: 'Trophy',
-                summary: 'Système d’XP, paliers de niveau, cartes /rank et classement de serveur.',
-                sections: [
-                    { id: 'mecanique-xp', label: 'Mécanique d’expérience' },
-                    { id: 'commandes-rank', label: 'Commandes /rank' },
-                ],
-                content: {
-                    badge: 'Engagement & Gamification',
-                    heading: 'Système de Niveaux & XP',
-                    lead: 'Récompensez l’activité de vos membres les plus fidèles avec un système d’XP automatique, des cartes visuelles et des rôles débloqués par palier.',
-                    blocks: [
-                        {
-                            type: 'section',
-                            id: 'mecanique-xp',
-                            title: 'Comment les membres gagnent de l’XP ?',
-                            paragraphs: [
-                                'Chaque message envoyé rapporte entre 15 et 25 points d’expérience avec un cooldown de 60 secondes pour éviter le spam abusif.',
-                                'Au fil des niveaux, des rôles exclusifs peuvent être attribués automatiquement.'
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            id: 'commandes-rank',
-                            title: 'Commandes de niveaux',
-                            codeList: [
-                                { cmd: '/rank', desc: 'Affiche votre carte de niveau personnelle avec votre jauge d’XP.' },
-                                { cmd: '/rank membre:@Ami', desc: 'Affiche la carte de progression d’un autre membre.' }
-                            ]
-                        }
-                    ]
-                }
-            },
-            {
-                slug: 'reseaux',
-                title: 'Alertes Réseaux Sociaux',
-                icon: 'Bell',
-                summary: 'Surveillance et annonces automatiques pour chaînes YouTube et TikTok Live.',
-                sections: [
-                    { id: 'youtube', label: 'Alertes YouTube' },
-                    { id: 'tiktok', label: 'Alertes TikTok' },
-                ],
-                content: {
-                    badge: 'Intégrations & Médias',
-                    heading: 'Alertes YouTube & TikTok',
-                    lead: 'Ne manquez plus aucune sortie de vidéo ou lancement de live grâce aux alertes automatisées dans le salon de votre choix.',
-                    blocks: [
-                        {
-                            type: 'section',
-                            id: 'youtube',
-                            title: 'Surveillance YouTube',
-                            paragraphs: [
-                                'Ajoutez l’identifiant d’une chaîne YouTube pour recevoir un message riche avec miniature, titre et lien direct dès qu’une vidéo est mise en ligne.'
-                            ],
-                            codeList: [
-                                { cmd: '/youtube channel:UC...', desc: 'Configure la surveillance d’une chaîne YouTube.' }
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            id: 'tiktok',
-                            title: 'Surveillance TikTok',
-                            paragraphs: [
-                                'Détectez le passage en live de vos créateurs préférés et prévenez instantanément votre communauté.'
-                            ],
-                            codeList: [
-                                { cmd: '/tiktok username:@creator', desc: 'Alerte dès le démarrage d’un live TikTok.' }
-                            ]
-                        }
-                    ]
-                }
-            },
-            {
                 slug: 'utilitaires',
-                title: 'Utilitaires & Profil du bot',
-                icon: 'Wrench',
+                title: 'Utilitaires & Profil',
+                icon: '🔧',
                 summary: 'Commandes pratiques, infos de serveur, rappels et gestion de la photo de profil du bot.',
                 sections: [
                     { id: 'commandes-utiles', label: 'Commandes utiles' },
@@ -424,12 +479,12 @@ const DOCS_DATA = [
         ]
     },
     {
-        category: 'Commandes & Support',
+        category: 'COMMANDES & SUPPORT',
         items: [
             {
                 slug: 'commandes',
                 title: 'Toutes les commandes',
-                icon: 'Terminal',
+                icon: '⚡',
                 summary: 'Catalogue complet et interactif de toutes les commandes slash d’AzimBot.',
                 sections: [
                     { id: 'questions-outils', label: 'Questions & Outils' },
@@ -497,8 +552,8 @@ const DOCS_DATA = [
             },
             {
                 slug: 'faq',
-                title: 'Foire Aux Questions (FAQ)',
-                icon: 'HelpCircle',
+                title: 'Foire Aux Questions',
+                icon: '❓',
                 summary: 'Questions fréquentes, résolution de problèmes et support.',
                 sections: [
                     { id: 'general', label: 'Questions générales' },
@@ -539,13 +594,13 @@ const DOCS_DATA = [
         ]
     },
     {
-        category: 'Spiritualité (Mode Islamique)',
+        category: 'ISLAM & SPIRITUALITÉ',
         isIslamicCategory: true,
         items: [
             {
                 slug: 'islam-priere',
-                title: 'Horaires de Prière & Adhan',
-                icon: 'Moon',
+                title: 'Horaires & Adhan',
+                icon: '🕌',
                 summary: 'Calcul précis des 5 prières quotidiennes, compte à rebours et alertes Adhan.',
                 sections: [
                     { id: 'calcul-priere', label: 'Calcul des horaires' },
@@ -577,8 +632,8 @@ const DOCS_DATA = [
             },
             {
                 slug: 'islam-coran',
-                title: 'Radio Coran 24/7 & Récitations',
-                icon: 'BookOpen',
+                title: 'Radio Coran 24/7',
+                icon: '📖',
                 summary: 'Radio Coran en continu dans les salons vocaux et recherche de versets.',
                 sections: [
                     { id: 'radio-coran', label: 'Radio Coran 24/7' },
@@ -617,8 +672,8 @@ const DOCS_DATA = [
             },
             {
                 slug: 'islam-rappels',
-                title: 'Hadiths & Douas Authentiques',
-                icon: 'Compass',
+                title: 'Hadiths & Invocations',
+                icon: '🤲',
                 summary: 'Invocations de la Citadelle du Musulman et 40 Hadiths Nawawi.',
                 sections: [
                     { id: 'douas', label: 'Invocations (/doua)' },
@@ -749,11 +804,13 @@ function Docs() {
                         {filteredCategories.length === 0 ? (
                             <p className="doc-nav__no-results">Aucun résultat trouvé pour "{searchQuery}".</p>
                         ) : (
-                            filteredCategories.map((cat) => (
-                                <div key={cat.category} className="doc-nav__category">
-                                    <h3 className="doc-nav__category-title">
-                                        {cat.isIslamicCategory ? '🕌 ' : ''}{cat.category}
-                                    </h3>
+                            filteredCategories.map((cat, catIdx) => (
+                                <div key={cat.category || `cat-${catIdx}`} className="doc-nav__category">
+                                    {cat.category && (
+                                        <h3 className="doc-nav__category-title">
+                                            {cat.isIslamicCategory ? '🕌 ' : ''}{cat.category}
+                                        </h3>
+                                    )}
                                     <ul className="doc-nav__list">
                                         {cat.items.map((item) => {
                                             const isActive = item.slug === currentArticle?.slug;
@@ -763,7 +820,11 @@ function Docs() {
                                                         to={`/docs/${item.slug}`}
                                                         className={`doc-nav__link ${isActive ? 'is-active' : ''}`}
                                                     >
-                                                        <span className="doc-nav__link-bullet" aria-hidden="true" />
+                                                        {item.icon ? (
+                                                            <span className="doc-nav__icon" aria-hidden="true">{item.icon}</span>
+                                                        ) : (
+                                                            <span className="doc-nav__link-bullet" aria-hidden="true" />
+                                                        )}
                                                         <span className="doc-nav__link-text">{item.title}</span>
                                                     </Link>
                                                 </li>
@@ -780,23 +841,31 @@ function Docs() {
                 {/* COLONNE CENTRALE : doc-content (Contenu prose façon DraftBot) */}
                 {/* ========================================================= */}
                 <main className="doc-content" role="main">
-                    {/* Fil d'ariane (Breadcrumbs) */}
-                    <nav className="doc-breadcrumbs" aria-label="Fil d’Ariane">
-                        <Link to="/">Accueil</Link>
-                        <span className="doc-breadcrumbs__sep">/</span>
-                        <Link to="/docs/accueil">Documentation</Link>
-                        <span className="doc-breadcrumbs__sep">/</span>
-                        <span className="doc-breadcrumbs__category">{currentArticle?.categoryName}</span>
-                        <span className="doc-breadcrumbs__sep">/</span>
-                        <span className="doc-breadcrumbs__current">{currentArticle?.title}</span>
-                    </nav>
+                    {/* Fil d'ariane (Breadcrumbs - masqué sur l'Accueil façon DraftBot) */}
+                    {currentArticle?.slug !== 'accueil' && (
+                        <nav className="doc-breadcrumbs" aria-label="Fil d’Ariane">
+                            <Link to="/">Accueil</Link>
+                            <span className="doc-breadcrumbs__sep">/</span>
+                            <Link to="/docs/accueil">Documentation</Link>
+                            {currentArticle?.categoryName && (
+                                <>
+                                    <span className="doc-breadcrumbs__sep">/</span>
+                                    <span className="doc-breadcrumbs__category">{currentArticle.categoryName}</span>
+                                </>
+                            )}
+                            <span className="doc-breadcrumbs__sep">/</span>
+                            <span className="doc-breadcrumbs__current">{currentArticle?.title}</span>
+                        </nav>
+                    )}
 
-                    {/* En-tête d'article */}
+                    {/* En-tête d'article façon DraftBot */}
                     <header className="doc-header">
-                        <div className="doc-header__badge-row">
-                            <span className="doc-header__badge">{currentArticle?.content?.badge}</span>
-                            <span className="doc-header__tag">AzimBot v2.4</span>
-                        </div>
+                        {currentArticle?.slug !== 'accueil' && currentArticle?.content?.badge && (
+                            <div className="doc-header__badge-row">
+                                <span className="doc-header__badge">{currentArticle?.content?.badge}</span>
+                                <span className="doc-header__tag">AzimBot v2.4</span>
+                            </div>
+                        )}
                         <h1 className="doc-header__title">{currentArticle?.content?.heading}</h1>
                         <p className="doc-header__lead">{currentArticle?.content?.lead}</p>
                     </header>
@@ -807,6 +876,36 @@ function Docs() {
                             if (block.isIslamic && !isIslamUnlocked) {
                                 return null;
                             }
+                            if (block.type === 'draft_intro') {
+                                return (
+                                    <div key={idx} className="doc-draft-intro">
+                                        <p className="doc-section__p">
+                                            Afin que votre découverte de <strong>AzimBot</strong> via notre documentation se passe au mieux, voici quelques détails concernant la rédaction :
+                                        </p>
+                                        <p className="doc-section__p">
+                                            La documentation regroupe <strong>les commandes</strong> et fonctionnalités par <strong>module</strong>, vous permettant ainsi d’appréhender au mieux le bot, de manière claire et intuitive.
+                                        </p>
+                                        <p className="doc-section__p">
+                                            Si vous souhaitez directement accéder à une fonctionnalité en particulier, vous pouvez utiliser la <strong>barre de recherche</strong>.
+                                        </p>
+                                        <div className="doc-support-callout">
+                                            <span className="doc-support-callout__icon" aria-hidden="true">ℹ️</span>
+                                            <p className="doc-support-callout__text">
+                                                Si vous souhaitez contacter le <strong>Support</strong>, retrouvez-nous sur Discord en{' '}
+                                                <a
+                                                    href="https://discord.gg/azim"
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="doc-support-callout__link"
+                                                >
+                                                    cliquant ici
+                                                </a>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
                             if (block.type === 'hint') {
                                 return (
                                     <div key={idx} className={`doc-hint doc-hint--${block.variant}`}>
@@ -934,50 +1033,46 @@ function Docs() {
                 {/* ========================================================= */}
                 <aside className="doc-tocs" aria-label="Sommaire de la page">
                     <div className="doc-tocs__inner">
-                        {/* Sur cette page */}
-                        <div className="doc-tocs__section">
-                            <h4 className="doc-tocs__heading">SUR CETTE PAGE</h4>
-                            <ul className="doc-tocs__list">
-                                {currentArticle?.sections?.map((sec) => (
-                                    <li key={sec.id} className="doc-tocs__item">
-                                        <a href={`#${sec.id}`} className="doc-tocs__link">
-                                            {sec.label}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Liens rapides façon DraftBot */}
+                        {/* Liens rapides façon DraftBot (En haut !) */}
                         <div className="doc-tocs__section doc-tocs__section--quicklinks">
-                            <h4 className="doc-tocs__heading">LIENS RAPIDES</h4>
+                            <h4 className="doc-tocs__heading">Liens rapides</h4>
                             <ul className="doc-tocs__quick-list">
                                 <li>
+                                    <Link to="/feedback" className="doc-tocs__quick-link">
+                                        <span className="doc-tocs__quick-icon">✏️</span>
+                                        <span>Modifier cette page</span>
+                                    </Link>
+                                </li>
+                                <li>
                                     <a href="https://discord.gg/azim" target="_blank" rel="noreferrer" className="doc-tocs__quick-link">
-                                        <span className="doc-tocs__quick-icon">💬</span>
+                                        <span className="doc-tocs__quick-icon">🎧</span>
                                         <span>Support Discord</span>
                                     </a>
                                 </li>
                                 <li>
                                     <a href={ADD_BOT_URL} target="_blank" rel="noreferrer" className="doc-tocs__quick-link">
                                         <span className="doc-tocs__quick-icon">🤖</span>
-                                        <span>Inviter le bot</span>
+                                        <span>Inviter AzimBot</span>
                                     </a>
-                                </li>
-                                <li>
-                                    <Link to={isAuthenticated ? '/dashboard' : '/login'} className="doc-tocs__quick-link">
-                                        <span className="doc-tocs__quick-icon">⚙️</span>
-                                        <span>Panel de gestion</span>
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/feedback" className="doc-tocs__quick-link">
-                                        <span className="doc-tocs__quick-icon">📝</span>
-                                        <span>Signaler un bug</span>
-                                    </Link>
                                 </li>
                             </ul>
                         </div>
+
+                        {/* Sur cette page */}
+                        {currentArticle?.sections && currentArticle.sections.length > 0 && (
+                            <div className="doc-tocs__section mt-6">
+                                <h4 className="doc-tocs__heading">SUR CETTE PAGE</h4>
+                                <ul className="doc-tocs__list">
+                                    {currentArticle.sections.map((sec) => (
+                                        <li key={sec.id} className="doc-tocs__item">
+                                            <a href={`#${sec.id}`} className="doc-tocs__link">
+                                                {sec.label}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </aside>
             </div>

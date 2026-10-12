@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
@@ -9,177 +9,213 @@ const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=146254398458
 function Header() {
     const { user, isAuthenticated, logout } = useAuth();
     const { theme } = useTheme();
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
-    const currentLanguage = (i18n.resolvedLanguage || i18n.language || 'fr').slice(0, 2);
 
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const menuRef = useRef(null);
 
-    // Menu latéral épuré : Accueil, Documentation, Retours, Paramètres, et Panel si connecté.
-    // Plus besoin de "Modules", "Commandes" ou "Aide", tout est centralisé dans la Documentation.
-    const navItems = [
-        { label: 'Accueil', to: '/', icon: '🏠' },
-        { label: 'Documentation', to: '/docs/accueil', icon: '📖' },
-        { label: 'Retours & Idées', to: '/feedback', icon: '💬' },
-        { label: 'Paramètres', to: '/settings', icon: '⚙️' },
-        ...(isAuthenticated ? [{ label: 'Panel de gestion', to: '/dashboard', icon: '📊' }] : []),
-    ];
+    // Fermer le menu dropdown utilisateur quand on clique en dehors
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setUserMenuOpen(false);
+            }
+        }
+        if (userMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [userMenuOpen]);
 
     const handleLogout = () => {
+        setUserMenuOpen(false);
+        setMobileOpen(false);
         logout();
         navigate('/login');
     };
 
-    const handleLanguageChange = (lang) => {
-        i18n.changeLanguage(lang);
-    };
+    // Navigation façon DraftBot (majuscules, clean)
+    const navItems = [
+        { label: 'DOCUMENTATION', to: '/docs/accueil' },
+        ...(isAuthenticated ? [{ label: 'PANEL', to: '/dashboard' }] : [{ label: 'FONCTIONNALITÉS', to: '/#features' }]),
+        { label: 'STATUTS', to: '/status' },
+        { label: 'RETOURS & IDÉES', to: '/feedback' },
+        { label: 'PARAMÈTRES', to: '/settings' },
+    ];
 
     return (
-        <>
-            {/* BARRE MOBILE EN HAUT (visible uniquement sur mobile / tablette < 1024px) */}
-            <header className="lateral-mobile-bar" aria-label="En-tête mobile">
-                <Link to="/" className="lateral-mobile-brand">
-                    <img
-                        src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
-                        alt="AzimBot"
-                        className="lateral-brand-icon-sm"
-                    />
-                    <span className="lateral-brand-name">AzimBot</span>
-                </Link>
-
-                <button
-                    type="button"
-                    onClick={() => setMobileOpen((prev) => !prev)}
-                    className="lateral-mobile-toggle"
-                    aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-                    aria-expanded={mobileOpen}
-                >
-                    <span className="lateral-toggle-line" />
-                    <span className="lateral-toggle-line" />
-                    <span className="lateral-toggle-line" />
-                </button>
-            </header>
-
-            {/* FOND OBSCURCISSANT MOBILE QUAND LE MENU EST OUVERT */}
-            {mobileOpen && (
-                <div
-                    className="lateral-backdrop"
-                    onClick={() => setMobileOpen(false)}
-                    aria-hidden="true"
-                />
-            )}
-
-            {/* HEADER LATÉRAL PRINCIPAL (Sidebar fixe à gauche sur desktop) */}
-            <aside
-                className={`lateral-sidebar ${mobileOpen ? 'is-open' : ''}`}
-                aria-label="Navigation principale latérale"
-            >
-                {/* 1. HAUT : LOGO + VERSION */}
-                <div className="lateral-sidebar__top">
-                    <Link to="/" onClick={() => setMobileOpen(false)} className="lateral-sidebar__brand">
+        <header className="draft-header" role="banner">
+            <div className="draft-header__inner">
+                {/* 1. GAUCHE : ICONE EMBLÈME + TEXT LOGO FAÇON DRAFTBOT */}
+                <div className="draft-header__left">
+                    <Link to="/" className="draft-header__brand" aria-label="Accueil AzimBot">
                         <img
                             src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
-                            alt="AzimBot"
-                            className="lateral-brand-icon"
+                            alt="AzimBot Icon"
+                            className="draft-header__icon"
                         />
-                        <div className="lateral-brand-meta">
-                            <span className="lateral-brand-title">AzimBot</span>
-                            <span className="lateral-brand-badge">v2.4</span>
-                        </div>
+                        <img
+                            src={theme === 'islam' ? '/logo-islam.png' : '/logo.png'}
+                            alt="AzimBot"
+                            className="draft-header__text-logo"
+                        />
                     </Link>
                 </div>
 
-                {/* 2. CENTRE : LIENS DE NAVIGATION */}
-                <nav className="lateral-sidebar__nav" aria-label="Liens principaux">
-                    <span className="lateral-nav-eyebrow">MENU PRINCIPAL</span>
-                    <ul className="lateral-nav-list">
-                        {navItems.map((item) => (
-                            <li key={item.to} className="lateral-nav-item">
-                                <NavLink
-                                    to={item.to}
-                                    onClick={() => setMobileOpen(false)}
-                                    className={({ isActive }) =>
-                                        `lateral-nav-link ${isActive ? 'is-active' : ''}`
-                                    }
-                                >
-                                    <span className="lateral-nav-icon" aria-hidden="true">{item.icon}</span>
-                                    <span className="lateral-nav-label">{item.label}</span>
-                                    <span className="lateral-nav-glow" aria-hidden="true" />
-                                </NavLink>
-                            </li>
-                        ))}
-                    </ul>
+                {/* 2. MILIEU : LIENS HORIZONTAUX EN MAJUSCULES */}
+                <nav className="draft-header__nav" aria-label="Navigation principale">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={({ isActive }) =>
+                                `draft-nav-link ${isActive ? 'is-active' : ''}`
+                            }
+                        >
+                            {item.label}
+                        </NavLink>
+                    ))}
                 </nav>
 
-                {/* 3. BAS : COMPTE, LANGUE & BOUTON AJOUTER LE BOT */}
-                <div className="lateral-sidebar__bottom">
-                    {/* Sélecteur de langue FR / EN */}
-                    <div className="lateral-lang-row">
-                        <span className="lateral-lang-label">Langue :</span>
-                        <div className="lateral-lang-pills">
-                            <button
-                                type="button"
-                                onClick={() => handleLanguageChange('fr')}
-                                className={`lateral-lang-btn ${currentLanguage === 'fr' ? 'is-active' : ''}`}
-                            >
-                                FR
-                            </button>
-                            <span className="lateral-lang-sep">/</span>
-                            <button
-                                type="button"
-                                onClick={() => handleLanguageChange('en')}
-                                className={`lateral-lang-btn ${currentLanguage === 'en' ? 'is-active' : ''}`}
-                            >
-                                EN
-                            </button>
-                        </div>
-                    </div>
+                {/* 3. DROITE : BOUTON SUPPORT CAPSULE + UTILISATEUR OU CONNEXION */}
+                <div className="draft-header__right">
+                    {/* Bouton Support outline façon DraftBot */}
+                    <a
+                        href="https://discord.gg/azim"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="draft-header__support-btn"
+                    >
+                        SUPPORT
+                    </a>
 
-                    {/* État de connexion utilisateur */}
-                    {isAuthenticated ? (
-                        <div className="lateral-user-card">
-                            <div className="lateral-user-info">
-                                <span className="lateral-user-avatar">
-                                    {(user?.firstname || user?.username || 'U').charAt(0).toUpperCase()}
-                                </span>
-                                <div className="lateral-user-details">
-                                    <span className="lateral-user-name">{user?.firstname || user?.username || 'Mon Compte'}</span>
-                                    <span className="lateral-user-status">Connecté</span>
-                                </div>
-                            </div>
+                    {/* Menu Utilisateur connecté ou Bouton de connexion */}
+                    {isAuthenticated && user ? (
+                        <div className="draft-header__user-wrapper" ref={menuRef}>
                             <button
                                 type="button"
-                                onClick={handleLogout}
-                                className="lateral-logout-btn"
-                                title="Se déconnecter"
+                                className="draft-header__user-pill"
+                                onClick={() => setUserMenuOpen((prev) => !prev)}
+                                aria-expanded={userMenuOpen}
+                                aria-haspopup="true"
                             >
-                                🚪
+                                {user.avatarUrl ? (
+                                    <img
+                                        src={user.avatarUrl}
+                                        alt={user.username}
+                                        className="draft-header__avatar-img"
+                                    />
+                                ) : (
+                                    <div className="draft-header__avatar-fallback">
+                                        {(user.username || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                                <span className="draft-header__user-name">{user.username}</span>
+                                <span className="draft-header__chevron" aria-hidden="true">
+                                    {userMenuOpen ? '▲' : '▼'}
+                                </span>
                             </button>
+
+                            {/* Menu déroulant profil */}
+                            {userMenuOpen && (
+                                <div className="draft-user-dropdown" role="menu">
+                                    <div className="draft-user-dropdown__header">
+                                        <p className="draft-user-dropdown__user">{user.username}</p>
+                                        <span className="draft-user-dropdown__badge">Connecté via Discord</span>
+                                    </div>
+                                    <div className="draft-user-dropdown__divider" />
+                                    <Link
+                                        to="/dashboard"
+                                        onClick={() => setUserMenuOpen(false)}
+                                        className="draft-user-dropdown__item"
+                                        role="menuitem"
+                                    >
+                                        <span>📊</span>
+                                        <span>Mes serveurs</span>
+                                    </Link>
+                                    <Link
+                                        to="/settings"
+                                        onClick={() => setUserMenuOpen(false)}
+                                        className="draft-user-dropdown__item"
+                                        role="menuitem"
+                                    >
+                                        <span>⚙️</span>
+                                        <span>Paramètres</span>
+                                    </Link>
+                                    <Link
+                                        to="/feedback"
+                                        onClick={() => setUserMenuOpen(false)}
+                                        className="draft-user-dropdown__item"
+                                        role="menuitem"
+                                    >
+                                        <span>💬</span>
+                                        <span>Retours & Idées</span>
+                                    </Link>
+                                    <div className="draft-user-dropdown__divider" />
+                                    <button
+                                        type="button"
+                                        onClick={handleLogout}
+                                        className="draft-user-dropdown__item draft-user-dropdown__item--danger"
+                                        role="menuitem"
+                                    >
+                                        <span>🚪</span>
+                                        <span>Déconnexion</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
-                        <Link
-                            to="/login"
-                            onClick={() => setMobileOpen(false)}
-                            className="lateral-login-link"
-                        >
-                            <span>Connexion Discord</span>
-                            <span aria-hidden="true">→</span>
+                        <Link to="/login" className="draft-header__login-btn">
+                            Connexion
                         </Link>
                     )}
 
-                    {/* Bouton Ajouter le bot */}
-                    <a
-                        href={ADD_BOT_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="lateral-add-bot-btn"
+                    {/* Burger mobile toggle */}
+                    <button
+                        type="button"
+                        onClick={() => setMobileOpen((prev) => !prev)}
+                        className="draft-header__mobile-toggle"
+                        aria-label={mobileOpen ? 'Fermer le menu mobile' : 'Ouvrir le menu mobile'}
+                        aria-expanded={mobileOpen}
                     >
-                        <span>🤖 Ajouter le bot</span>
-                        <span aria-hidden="true">↗</span>
-                    </a>
+                        <span className="draft-toggle-line" />
+                        <span className="draft-toggle-line" />
+                        <span className="draft-toggle-line" />
+                    </button>
                 </div>
-            </aside>
-        </>
+            </div>
+
+            {/* TIROIR MOBILE */}
+            {mobileOpen && (
+                <div className="draft-mobile-drawer">
+                    <nav className="draft-mobile-nav">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.to}
+                                to={item.to}
+                                onClick={() => setMobileOpen(false)}
+                                className="draft-mobile-link"
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+                        <a
+                            href="https://discord.gg/azim"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="draft-mobile-link draft-mobile-link--accent"
+                            onClick={() => setMobileOpen(false)}
+                        >
+                            SUPPORT DISCORD ↗
+                        </a>
+                    </nav>
+                </div>
+            )}
+        </header>
     );
 }
 

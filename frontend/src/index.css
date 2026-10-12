@@ -3497,457 +3497,741 @@ html.theme-transitioning::after {
 }
 
 /* ==========================================================================
-   HEADER LATÉRAL (SIDEBAR NAVIGATION) & AGENCEMENT DU SITE
+   DRAFTBOT TOP HEADER & SHELL LAYOUT
    ========================================================================== */
 
-.site-layout-with-sidebar {
-	display: flex;
-	min-height: 100vh;
-	width: 100%;
-}
-
-.site-layout-main-wrapper {
-	margin-left: 260px;
-	width: calc(100% - 260px);
+.draft-shell {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
-	justify-content: space-between;
-	transition: margin-left 0.3s ease, width 0.3s ease;
+	background: #12131a;
+	color: #e2e8f0;
 }
 
-@media (max-width: 1023px) {
-	.site-layout-with-sidebar {
-		flex-direction: column;
-	}
-	.site-layout-main-wrapper {
-		margin-left: 0;
-		width: 100%;
-	}
+[data-theme="islam"] .draft-shell {
+	background: #03140e;
+	color: #f8fafc;
 }
 
-/* --- SIDEBAR LATÉRALE PRINCIPALE --- */
-.lateral-sidebar {
-	position: fixed;
+.draft-main {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+/* --- EN-TÊTE HORIZONTAL TOP (DRAFTBOT STYLE) --- */
+.draft-header {
+	position: sticky;
 	top: 0;
-	left: 0;
-	bottom: 0;
-	width: 260px;
 	z-index: 50;
-	background: #060c18;
-	border-right: 1px solid rgba(255, 255, 255, 0.08);
+	width: 100%;
+	height: 64px;
+	background: rgba(22, 24, 32, 0.96);
+	backdrop-filter: blur(14px);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="islam"] .draft-header {
+	background: rgba(3, 20, 14, 0.97);
+	border-bottom-color: rgba(16, 185, 129, 0.22);
+}
+
+.draft-header__inner {
+	max-width: 1520px;
+	height: 100%;
+	margin: 0 auto;
+	padding: 0 24px;
 	display: flex;
-	flex-direction: column;
+	align-items: center;
 	justify-content: space-between;
-	padding: 24px 18px;
-	overflow-y: auto;
-	transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	gap: 16px;
 }
 
-[data-theme="islam"] .lateral-sidebar {
-	background: #02140d;
-	border-right: 1px solid rgba(16, 185, 129, 0.16);
+/* 1. GAUCHE : LOGO ICON + TEXT LOGO */
+.draft-header__left {
+	display: flex;
+	align-items: center;
 }
 
-.lateral-sidebar::-webkit-scrollbar {
-	width: 4px;
-}
-.lateral-sidebar::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 4px;
-}
-
-/* Top: Brand */
-.lateral-sidebar__top {
-	margin-bottom: 28px;
-	padding-bottom: 20px;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.lateral-sidebar__brand {
+.draft-header__brand {
 	display: flex;
 	align-items: center;
 	gap: 12px;
 	text-decoration: none;
 }
 
-.lateral-brand-icon {
-	width: 42px;
-	height: 42px;
+.draft-header__icon {
+	width: 36px;
+	height: 36px;
 	object-fit: contain;
-	filter: drop-shadow(0 2px 8px rgba(0, 210, 255, 0.25));
+	filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+	transition: transform 0.2s ease;
 }
 
-[data-theme="islam"] .lateral-brand-icon {
-	filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.35));
+.draft-header__brand:hover .draft-header__icon {
+	transform: scale(1.06);
 }
 
-.lateral-brand-meta {
+.draft-header__text-logo {
+	height: 28px;
+	width: auto;
+	object-fit: contain;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+	transition: opacity 0.2s ease;
+}
+
+.draft-header__brand:hover .draft-header__text-logo {
+	opacity: 0.92;
+}
+
+/* 2. MILIEU : NAVIGATION HORIZONTALE EN MAJUSCULES */
+.draft-header__nav {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 }
 
-.lateral-brand-title {
-	font-size: 19px;
+@media (max-width: 900px) {
+	.draft-header__nav {
+		display: none;
+	}
+}
+
+.draft-nav-link {
+	display: inline-flex;
+	align-items: center;
+	padding: 8px 14px;
+	border-radius: 8px;
+	color: #94a3b8;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	text-decoration: none;
+	transition: all 0.15s ease;
+}
+
+.draft-nav-link:hover {
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.draft-nav-link.is-active {
+	color: #ffffff;
 	font-weight: 800;
-	letter-spacing: -0.01em;
+	background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="islam"] .draft-nav-link.is-active {
+	color: #34d399;
+	background: rgba(16, 185, 129, 0.14);
+}
+
+/* 3. DROITE : SUPPORT CAPSULE + UTILISATEUR */
+.draft-header__right {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.draft-header__support-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 7px 18px;
+	border-radius: 9999px;
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	text-decoration: none;
+	transition: all 0.2s ease;
+}
+
+.draft-header__support-btn:hover {
+	border-color: rgba(255, 255, 255, 0.6);
+	background: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 0 14px rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="islam"] .draft-header__support-btn {
+	border-color: rgba(52, 211, 153, 0.4);
+}
+
+[data-theme="islam"] .draft-header__support-btn:hover {
+	border-color: #34d399;
+	background: rgba(16, 185, 129, 0.12);
+	box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+}
+
+/* User pill wrapper */
+.draft-header__user-wrapper {
+	position: relative;
+}
+
+.draft-header__user-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 12px 5px 6px;
+	border-radius: 9999px;
+	background: #232532;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	color: #ffffff;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.18s ease;
+}
+
+.draft-header__user-pill:hover {
+	background: #2b2e3e;
+	border-color: rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="islam"] .draft-header__user-pill {
+	background: #08281d;
+	border-color: rgba(52, 211, 153, 0.3);
+}
+
+[data-theme="islam"] .draft-header__user-pill:hover {
+	background: #0e3b2b;
+	border-color: #34d399;
+}
+
+.draft-header__avatar-img {
+	width: 26px;
+	height: 26px;
+	border-radius: 9999px;
+	object-fit: cover;
+}
+
+.draft-header__avatar-fallback {
+	width: 26px;
+	height: 26px;
+	border-radius: 9999px;
+	background: #eb459e;
+	color: #ffffff;
+	font-weight: 700;
+	font-size: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.draft-header__user-name {
+	max-width: 110px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.draft-header__chevron {
+	font-size: 11px;
+	color: #94a3b8;
+}
+
+/* User dropdown card */
+.draft-user-dropdown {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 10px);
+	width: 210px;
+	border-radius: 12px;
+	background: #1a1b24;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+	padding: 8px 0;
+	z-index: 60;
+	animation: draftDropdownFade 0.15s ease-out;
+}
+
+[data-theme="islam"] .draft-user-dropdown {
+	background: #062217;
+	border-color: rgba(52, 211, 153, 0.3);
+}
+
+@keyframes draftDropdownFade {
+	from {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.draft-user-dropdown__header {
+	padding: 8px 16px 10px;
+}
+
+.draft-user-dropdown__user {
+	margin: 0;
+	font-size: 13px;
+	font-weight: 700;
 	color: #ffffff;
 }
 
-.lateral-brand-badge {
-	font-size: 10px;
-	font-weight: 700;
-	padding: 2px 6px;
-	border-radius: 9999px;
-	background: rgba(56, 189, 248, 0.15);
-	color: #38bdf8;
-	border: 1px solid rgba(56, 189, 248, 0.3);
+.draft-user-dropdown__badge {
+	font-size: 10.5px;
+	color: #5865f2;
+	font-weight: 600;
 }
 
-[data-theme="islam"] .lateral-brand-badge {
-	background: rgba(16, 185, 129, 0.15);
+[data-theme="islam"] .draft-user-dropdown__badge {
 	color: #34d399;
-	border-color: rgba(16, 185, 129, 0.3);
 }
 
-/* Center: Navigation Links */
-.lateral-sidebar__nav {
-	flex: 1;
+.draft-user-dropdown__divider {
+	height: 1px;
+	background: rgba(255, 255, 255, 0.08);
+	margin: 4px 0;
+}
+
+.draft-user-dropdown__item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 16px;
+	color: #cbd5e1;
+	font-size: 12.5px;
+	font-weight: 500;
+	text-decoration: none;
+	width: 100%;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	text-align: left;
+	transition: background 0.12s ease, color 0.12s ease;
+}
+
+.draft-user-dropdown__item:hover {
+	background: rgba(255, 255, 255, 0.06);
+	color: #ffffff;
+}
+
+.draft-user-dropdown__item--danger {
+	color: #f87171;
+}
+
+.draft-user-dropdown__item--danger:hover {
+	background: rgba(239, 68, 68, 0.12);
+	color: #ef4444;
+}
+
+.draft-header__login-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 7px 18px;
+	border-radius: 9999px;
+	background: #5865f2;
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	text-decoration: none;
+	box-shadow: 0 4px 14px rgba(88, 101, 242, 0.35);
+	transition: all 0.2s ease;
+}
+
+.draft-header__login-btn:hover {
+	background: #4752c4;
+	box-shadow: 0 6px 18px rgba(88, 101, 242, 0.5);
+}
+
+/* Mobile burger toggle */
+.draft-header__mobile-toggle {
+	display: none;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	flex-direction: column;
+	gap: 5px;
+	padding: 6px;
+}
+
+@media (max-width: 900px) {
+	.draft-header__mobile-toggle {
+		display: flex;
+	}
+}
+
+.draft-toggle-line {
+	width: 22px;
+	height: 2px;
+	background: #cbd5e1;
+	border-radius: 2px;
+}
+
+.draft-mobile-drawer {
+	position: absolute;
+	top: 64px;
+	left: 0;
+	right: 0;
+	background: #151720;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	padding: 16px 20px 24px;
+	box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="islam"] .draft-mobile-drawer {
+	background: #041910;
+	border-bottom-color: rgba(16, 185, 129, 0.2);
+}
+
+.draft-mobile-nav {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
 
-.lateral-nav-eyebrow {
-	font-size: 10px;
-	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: #64748b;
-	margin: 0 0 10px 8px;
+.draft-mobile-link {
+	padding: 11px 14px;
+	border-radius: 8px;
+	color: #cbd5e1;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 600;
 }
 
-[data-theme="islam"] .lateral-nav-eyebrow {
+.draft-mobile-link:hover {
+	background: rgba(255, 255, 255, 0.06);
+	color: #ffffff;
+}
+
+.draft-mobile-link--accent {
+	color: #38bdf8;
+}
+
+[data-theme="islam"] .draft-mobile-link--accent {
+	color: #34d399;
+}
+
+/* ==========================================================================
+   DOCUMENTATION EXACTE FAÇON DRAFTBOT
+   ========================================================================== */
+
+.doc-page {
+	min-height: calc(100vh - 64px);
+	background: #17181f;
+	color: #e2e8f0;
+	padding: 0;
+}
+
+[data-theme="islam"] .doc-page {
+	background: #03140e;
+}
+
+.doc-page__container {
+	max-width: 1480px;
+	margin: 0 auto;
+	display: flex;
+	align-items: flex-start;
+	min-height: calc(100vh - 64px);
+}
+
+@media (max-width: 1024px) {
+	.doc-page__container {
+		flex-direction: column;
+	}
+}
+
+/* --- COLONNE 1 : SIDEBAR GAUCHE AVEC LISERÉ ACCENT VERTICAL --- */
+.doc-nav {
+	width: 270px;
+	flex-shrink: 0;
+	position: sticky;
+	top: 64px;
+	height: calc(100vh - 64px);
+	overflow-y: auto;
+	padding: 24px 18px 48px;
+	border-right: 2px solid #f97316; /* Liseré orange vif façon DraftBot */
+	background: #17181f;
+}
+
+[data-theme="islam"] .doc-nav {
+	border-right: 2px solid #10b981; /* Liseré émeraude vibrant en mode islam */
+	background: #03140e;
+}
+
+@media (max-width: 1024px) {
+	.doc-nav {
+		width: 100%;
+		position: static;
+		height: auto;
+		border-right: 0;
+		border-bottom: 2px solid #f97316;
+		padding: 20px 20px 28px;
+	}
+}
+
+.doc-nav__search-box {
+	margin-bottom: 22px;
+}
+
+.doc-nav__search-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	background: #1f212a;
+	border: 1px solid rgba(255, 255, 255, 0.09);
+	border-radius: 9px;
+	padding: 2px 10px 2px 34px;
+	transition: all 0.2s ease;
+}
+
+.doc-nav__search-wrapper:focus-within {
+	border-color: #f97316;
+	box-shadow: 0 0 14px rgba(249, 115, 22, 0.25);
+}
+
+[data-theme="islam"] .doc-nav__search-wrapper:focus-within {
+	border-color: #10b981;
+	box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+}
+
+.doc-nav__search-icon {
+	position: absolute;
+	left: 10px;
+	width: 15px;
+	height: 15px;
+	color: #64748b;
+}
+
+.doc-nav__search-input {
+	width: 100%;
+	background: transparent;
+	border: 0;
+	padding: 7px 0;
+	color: #f1f5f9;
+	font-size: 13px;
+	outline: none;
+}
+
+.doc-nav__search-input::placeholder {
+	color: #64748b;
+}
+
+.doc-nav__search-kbd {
+	font-family: inherit;
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 5px;
+	background: #121319;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	color: #94a3b8;
+}
+
+.doc-nav__tree {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.doc-nav__category-title {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+	color: #838996;
+	margin: 14px 0 6px 10px;
+}
+
+[data-theme="islam"] .doc-nav__category-title {
 	color: #059669;
 }
 
-.lateral-nav-list {
+.doc-nav__list {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 2px;
 }
 
-.lateral-nav-link {
-	position: relative;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 11px 14px;
-	border-radius: 10px;
-	color: #94a3b8;
-	text-decoration: none;
-	font-size: 14px;
-	font-weight: 500;
-	transition: all 0.18s ease;
-}
-
-.lateral-nav-link:hover {
-	color: #ffffff;
-	background: rgba(255, 255, 255, 0.05);
-	transform: translateX(2px);
-}
-
-.lateral-nav-link.is-active {
-	color: #38bdf8;
-	background: rgba(56, 189, 248, 0.12);
-	font-weight: 600;
-}
-
-[data-theme="islam"] .lateral-nav-link.is-active {
-	color: #34d399;
-	background: rgba(16, 185, 129, 0.14);
-}
-
-.lateral-nav-icon {
-	font-size: 17px;
-	line-height: 1;
-}
-
-.lateral-nav-glow {
-	display: none;
-}
-
-.lateral-nav-link.is-active .lateral-nav-glow {
-	display: block;
-	position: absolute;
-	left: 0;
-	top: 10px;
-	bottom: 10px;
-	width: 3px;
-	border-radius: 0 4px 4px 0;
-	background: #38bdf8;
-	box-shadow: 0 0 10px #38bdf8;
-}
-
-[data-theme="islam"] .lateral-nav-link.is-active .lateral-nav-glow {
-	background: #10b981;
-	box-shadow: 0 0 10px #10b981;
-}
-
-/* Bottom: Account, Lang & CTA */
-.lateral-sidebar__bottom {
-	margin-top: 24px;
-	padding-top: 18px;
-	border-top: 1px solid rgba(255, 255, 255, 0.06);
-	display: flex;
-	flex-direction: column;
-	gap: 14px;
-}
-
-.lateral-lang-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	font-size: 12px;
-	color: #64748b;
-	padding: 0 4px;
-}
-
-.lateral-lang-pills {
-	display: inline-flex;
-	align-items: center;
-	background: rgba(255, 255, 255, 0.05);
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	border-radius: 9999px;
-	padding: 2px 8px;
-}
-
-.lateral-lang-btn {
-	background: transparent;
-	border: 0;
-	color: #94a3b8;
-	font-size: 11px;
-	font-weight: 600;
-	cursor: pointer;
-	padding: 2px 5px;
-	border-radius: 4px;
-	transition: all 0.15s ease;
-}
-
-.lateral-lang-btn.is-active {
-	color: #ffffff;
-	background: rgba(56, 189, 248, 0.25);
-}
-
-[data-theme="islam"] .lateral-lang-btn.is-active {
-	background: rgba(16, 185, 129, 0.25);
-}
-
-.lateral-lang-sep {
-	color: #475569;
-	font-size: 10px;
-	margin: 0 2px;
-}
-
-.lateral-user-card {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 10px 12px;
-	border-radius: 10px;
-	background: rgba(255, 255, 255, 0.04);
-	border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.lateral-user-info {
+.doc-nav__link {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	min-width: 0;
+	padding: 7px 12px;
+	border-radius: 8px;
+	color: #94a3b8;
+	text-decoration: none;
+	font-size: 13.5px;
+	font-weight: 500;
+	transition: all 0.12s ease;
 }
 
-.lateral-user-avatar {
-	width: 32px;
-	height: 32px;
-	border-radius: 8px;
-	background: #0284c7;
+.doc-nav__link:hover {
+	color: #f1f5f9;
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.doc-nav__link.is-active {
 	color: #ffffff;
-	font-weight: 700;
-	font-size: 13px;
+	background: #252834;
+	font-weight: 600;
+}
+
+[data-theme="islam"] .doc-nav__link.is-active {
+	color: #ffffff;
+	background: #093324;
+}
+
+.doc-nav__icon {
+	font-size: 15px;
+	line-height: 1;
+}
+
+.doc-nav__link-text {
+	flex: 1;
+}
+
+/* --- COLONNE 2 : CONTENU PRINCIPAL --- */
+.doc-content {
+	flex: 1;
+	min-width: 0;
+	padding: 40px 52px 80px;
+	max-width: 880px;
+}
+
+@media (max-width: 768px) {
+	.doc-content {
+		padding: 24px 20px 48px;
+	}
+}
+
+.doc-header__title {
+	font-size: 40px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: #ea580c; /* Titre Accueil orange vif façon DraftBot */
+	margin: 0 0 14px;
+	line-height: 1.15;
+}
+
+[data-theme="islam"] .doc-header__title {
+	color: #34d399; /* Titre vert émeraude en mode islam */
+}
+
+.doc-header__lead {
+	font-size: 15.5px;
+	line-height: 1.65;
+	color: #cbd5e1;
+	margin: 0 0 20px;
+}
+
+.doc-draft-intro {
+	margin-bottom: 32px;
+}
+
+.doc-section__p {
+	font-size: 14.5px;
+line-height: 1.7;
+	color: #cbd5e1;
+	margin: 0 0 16px;
+}
+
+/* Callout support cliquable façon DraftBot */
+.doc-support-callout {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 12px;
+	padding: 13px 18px;
+	border-radius: 10px;
+	background: #1f212a;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	margin: 24px 0 28px;
+}
+
+[data-theme="islam"] .doc-support-callout {
+	background: #042116;
+	border-color: rgba(52, 211, 153, 0.25);
+}
+
+.doc-support-callout__icon {
+	font-size: 17px;
 	flex-shrink: 0;
 }
 
-[data-theme="islam"] .lateral-user-avatar {
-	background: #059669;
-}
-
-.lateral-user-details {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-}
-
-.lateral-user-name {
-	font-size: 13px;
-	font-weight: 600;
-	color: #f1f5f9;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.lateral-user-status {
-	font-size: 10.5px;
-	color: #10b981;
-}
-
-.lateral-logout-btn {
-	background: transparent;
-	border: 0;
-	cursor: pointer;
-	font-size: 15px;
-	padding: 4px;
-	border-radius: 6px;
-	opacity: 0.7;
-	transition: opacity 0.15s ease;
-}
-
-.lateral-logout-btn:hover {
-	opacity: 1;
-}
-
-.lateral-login-link {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 10px 14px;
-	border-radius: 10px;
-	background: rgba(255, 255, 255, 0.05);
-	border: 1px solid rgba(255, 255, 255, 0.08);
+.doc-support-callout__text {
+	margin: 0;
+	font-size: 13.5px;
 	color: #cbd5e1;
-	font-size: 13px;
-	font-weight: 600;
-	text-decoration: none;
-	transition: all 0.15s ease;
+	line-height: 1.5;
 }
 
-.lateral-login-link:hover {
-	background: rgba(255, 255, 255, 0.09);
+.doc-support-callout__link {
 	color: #ffffff;
+	font-weight: 700;
+	text-decoration: underline;
+	transition: color 0.15s ease;
 }
 
-.lateral-add-bot-btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	padding: 11px 16px;
-	border-radius: 10px;
-	background: linear-gradient(135deg, #0284c7, #0369a1);
-	border: 1px solid rgba(56, 189, 248, 0.4);
-	color: #ffffff;
+.doc-support-callout__link:hover {
+	color: #f97316;
+}
+
+[data-theme="islam"] .doc-support-callout__link:hover {
+	color: #34d399;
+}
+
+/* --- COLONNE 3 : LIENS RAPIDES (RIGHT SIDEBAR) --- */
+.doc-tocs {
+	width: 230px;
+	flex-shrink: 0;
+	position: sticky;
+	top: 64px;
+	height: calc(100vh - 64px);
+	overflow-y: auto;
+	padding: 40px 16px 40px 24px;
+}
+
+@media (max-width: 1200px) {
+	.doc-tocs {
+		display: none;
+	}
+}
+
+.doc-tocs__heading {
 	font-size: 13.5px;
 	font-weight: 700;
+	color: #f8fafc;
+	margin: 0 0 14px;
+	letter-spacing: -0.01em;
+}
+
+.doc-tocs__quick-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.doc-tocs__quick-link {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	color: #94a3b8;
+	font-size: 13px;
 	text-decoration: none;
-	box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
-	transition: all 0.2s ease;
+	transition: color 0.15s ease;
 }
 
-[data-theme="islam"] .lateral-add-bot-btn {
-	background: linear-gradient(135deg, #059669, #047857);
-	border-color: rgba(16, 185, 129, 0.4);
-	box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+.doc-tocs__quick-link:hover {
+	color: #ffffff;
 }
 
-.lateral-add-bot-btn:hover {
-	filter: brightness(1.1);
-	transform: translateY(-1px);
+.doc-tocs__quick-icon {
+	font-size: 14px;
 }
-
-/* --- BARRE MOBILE & TIROIR --- */
-.lateral-mobile-bar {
-	display: none;
-}
-
-@media (max-width: 1023px) {
-	.lateral-mobile-bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 12px 18px;
-		background: #060c18;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-		position: sticky;
-		top: 0;
-		z-index: 45;
-		backdrop-filter: blur(12px);
-	}
-
-	[data-theme="islam"] .lateral-mobile-bar {
-		background: #02140d;
-		border-bottom-color: rgba(16, 185, 129, 0.16);
-	}
-
-	.lateral-mobile-brand {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		text-decoration: none;
-	}
-
-	.lateral-brand-icon-sm {
-		width: 32px;
-		height: 32px;
-		object-fit: contain;
-	}
-
-	.lateral-brand-name {
-		font-size: 18px;
-		font-weight: 800;
-		color: #ffffff;
-	}
-
-	.lateral-mobile-toggle {
-		background: transparent;
-		border: 0;
-		cursor: pointer;
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-		padding: 6px;
-	}
-
-	.lateral-toggle-line {
-		width: 22px;
-		height: 2px;
-		background: #cbd5e1;
-		border-radius: 2px;
-	}
-
-	.lateral-sidebar {
-		transform: translateX(-100%);
-	}
-
-	.lateral-sidebar.is-open {
-		transform: translateX(0);
-		box-shadow: 10px 0 35px rgba(0, 0, 0, 0.6);
-	}
-
-	.lateral-backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: 48;
-		background: rgba(0, 0, 0, 0.65);
-		backdrop-filter: blur(4px);
-	}
-}
-
-
-

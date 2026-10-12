@@ -59,7 +59,39 @@ export default function Feedback() {
         loadReports();
     }, []);
 
-    // Gestion de l'ajout d'images / captures d'écran
+    // Compression automatique des captures d'écran pour éviter les surcharges (erreur 413)
+    const compressImage = (file, maxDimension = 1600, quality = 0.82) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
+                        } else {
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.onerror = () => resolve(e.target.result);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+    };
+
+    // Gestion de l'ajout d'images / captures d'écran avec compression automatique
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
@@ -72,23 +104,21 @@ export default function Feedback() {
 
         const selectedFiles = files.slice(0, remainingSlots);
 
-        selectedFiles.forEach((file) => {
+        selectedFiles.forEach(async (file) => {
             if (!file.type.startsWith('image/')) {
                 setSubmitError('Format de fichier non supporté. Veuillez choisir une image PNG, JPEG ou WebP.');
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                setSubmitError('Image trop volumineuse (maximum 5 Mo par image).');
+            if (file.size > 20 * 1024 * 1024) {
+                setSubmitError('Image trop volumineuse (maximum 20 Mo par image).');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64 = event.target.result;
-                setImages((prev) => (prev.length < MAX_IMAGES ? [...prev, base64] : prev));
+            const compressedBase64 = await compressImage(file);
+            if (compressedBase64) {
+                setImages((prev) => (prev.length < MAX_IMAGES ? [...prev, compressedBase64] : prev));
                 setSubmitError('');
-            };
-            reader.readAsDataURL(file);
+            }
         });
 
         if (fileInputRef.current) {
@@ -151,7 +181,12 @@ export default function Feedback() {
                 loadReports();
             }
         } catch (err) {
-            setSubmitError(err.message || 'Impossible d\'envoyer le rapport. Réessayez plus tard.');
+            const msg = err.message || '';
+            if (msg.includes('413') || err.status === 413) {
+                setSubmitError('Le contenu du signalement ou les captures d\'écran sont trop volumineux. Veuillez réduire la taille ou le nombre d\'images.');
+            } else {
+                setSubmitError(msg || 'Impossible d\'envoyer le rapport. Réessayez plus tard.');
+            }
         } finally {
             setSubmitting(false);
         }

@@ -191,22 +191,26 @@ function GuildConfig() {
     const [activatingIslam, setActivatingIslam] = useState(false);
     const [commandSearch, setCommandSearch] = useState('');
     const [downloadingAvatar, setDownloadingAvatar] = useState(false);
-    const [showAllKeys, setShowAllKeys] = useState(true);
-    const [revealedKeys, setRevealedKeys] = useState({});
     const [copiedKeyIndex, setCopiedKeyIndex] = useState(null);
-
-    const toggleKeyVisibility = (index) => {
-        setRevealedKeys((prev) => ({
-            ...prev,
-            [index]: !(prev[index] !== undefined ? prev[index] : showAllKeys),
-        }));
-    };
+    const [copiedAllKeys, setCopiedAllKeys] = useState(false);
 
     const copyKeyToClipboard = (keyString, index) => {
         navigator.clipboard.writeText(keyString);
         setCopiedKeyIndex(index);
         setTimeout(() => setCopiedKeyIndex(null), 2000);
     };
+
+    const copyAllKeysToClipboard = () => {
+        const allKeys = form.ai.keysPreviews.map((k) => k.key || k.preview).filter(Boolean);
+        if (!allKeys.length) return;
+        navigator.clipboard.writeText(allKeys.join('\n'));
+        setCopiedAllKeys(true);
+        setTimeout(() => setCopiedAllKeys(null), 2500);
+    };
+
+    const detectedGroqKeys = useMemo(() => {
+        return [...new Set(newKey.match(/gsk_[A-Za-z0-9_-]{16,}/g) || [])];
+    }, [newKey]);
 
     const refresh = useCallback(async () => {
         const data = await adminService.getGuildConfig(guildId);
@@ -641,22 +645,22 @@ function GuildConfig() {
 
                         {/* Clés Groq */}
                         <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-4 space-y-3">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <h3 className="font-semibold text-white">Clés API Groq du serveur</h3>
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <h3 className="font-semibold text-white">Clés API Groq du serveur</h3>
+                                    <p className="text-xs text-slate-400">Toutes vos clés sont affichées en entier pour vous permettre de les vérifier ou de les copier.</p>
+                                </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300">{form.ai.keysCount} active(s)</span>
+                                    <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300 font-semibold">{form.ai.keysCount} active(s)</span>
                                     {form.ai.keysPreviews.length > 0 ? (
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                const nextState = !showAllKeys;
-                                                setShowAllKeys(nextState);
-                                                setRevealedKeys({});
-                                            }}
-                                            className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1.5"
+                                            onClick={copyAllKeysToClipboard}
+                                            className="btn btn-primary text-xs py-1 px-3 flex items-center gap-1.5 shadow-md shadow-cyan-900/40"
+                                            title="Copie toutes les clés de ce serveur séparées par des retours à la ligne"
                                         >
-                                            <span>{showAllKeys ? '🔒' : '👁️'}</span>
-                                            <span>{showAllKeys ? 'Tout masquer' : 'Tout afficher'}</span>
+                                            <span>{copiedAllKeys ? '✓' : '📋'}</span>
+                                            <span>{copiedAllKeys ? 'Toutes les clés copiées !' : `Tout copier d'un coup (${form.ai.keysPreviews.length})`}</span>
                                         </button>
                                     ) : null}
                                 </div>
@@ -668,12 +672,10 @@ function GuildConfig() {
                                     <strong>Isolation stricte :</strong> Les clés API configurées ici sont hermétiques et utilisées exclusivement pour ce serveur ({getGuildName(guildId)}). Aucun autre serveur ne peut utiliser ou partager vos clés ou quotas.
                                 </div>
                             </div>
+
                             <div className="space-y-2.5">
                                 {form.ai.keysPreviews.map((key) => {
                                     const fullKey = key.key || key.preview || '';
-                                    const maskedPreview = key.masked || (fullKey.length > 12 ? `${fullKey.slice(0, 8)}...${fullKey.slice(-4)}` : fullKey);
-                                    const isRevealed = revealedKeys[key.index] !== undefined ? revealedKeys[key.index] : showAllKeys;
-                                    const displayValue = isRevealed ? fullKey : maskedPreview;
 
                                     return (
                                         <div
@@ -684,27 +686,17 @@ function GuildConfig() {
                                                 <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-xs text-slate-400 shrink-0">
                                                     #{key.index}
                                                 </span>
-                                                <code className="font-mono text-cyan-300 break-all select-all text-xs sm:text-sm bg-[#050e18] px-2.5 py-1 rounded border border-cyan-950/60 flex-1">
-                                                    {displayValue}
+                                                <code className="font-mono text-cyan-300 break-all select-all text-xs sm:text-sm bg-[#050e18] px-2.5 py-1.5 rounded border border-cyan-950/60 flex-1">
+                                                    {fullKey}
                                                 </code>
                                             </div>
 
                                             <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                                                 <button
                                                     type="button"
-                                                    onClick={() => toggleKeyVisibility(key.index)}
-                                                    className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1 text-slate-300 hover:text-white"
-                                                    title={isRevealed ? 'Masquer cette clé' : 'Afficher la clé entière'}
-                                                >
-                                                    <span>{isRevealed ? '🔒' : '👁️'}</span>
-                                                    <span className="hidden sm:inline">{isRevealed ? 'Masquer' : 'Révéler'}</span>
-                                                </button>
-
-                                                <button
-                                                    type="button"
                                                     onClick={() => copyKeyToClipboard(fullKey, key.index)}
                                                     className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1 text-cyan-300 hover:text-cyan-200"
-                                                    title="Copier la clé complète dans le presse-papiers"
+                                                    title="Copier cette clé complète"
                                                 >
                                                     <span>{copiedKeyIndex === key.index ? '✓' : '📋'}</span>
                                                     <span>{copiedKeyIndex === key.index ? 'Copié !' : 'Copier'}</span>
@@ -724,22 +716,69 @@ function GuildConfig() {
                                     );
                                 })}
                             </div>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                <TextInput
-                                    type="password"
-                                    autoComplete="new-password"
-                                    placeholder="gsk_…"
+
+                            {/* Zone d'ajout de clés en bloc ou à l'unité */}
+                            <div className="mt-4 rounded-lg border border-slate-700/80 bg-slate-900/60 p-3.5 space-y-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <label className="text-xs font-semibold text-slate-200">
+                                        Ajouter ou coller plusieurs clés d'un coup
+                                    </label>
+                                    {detectedGroqKeys.length > 0 ? (
+                                        <span className="rounded bg-cyan-950/80 border border-cyan-600/40 px-2 py-0.5 text-[11px] font-semibold text-cyan-300">
+                                            ✨ {detectedGroqKeys.length} clé(s) Groq détectée(s)
+                                        </span>
+                                    ) : null}
+                                </div>
+
+                                <textarea
+                                    className="form-input min-h-[90px] w-full resize-y font-mono text-xs sm:text-sm"
+                                    placeholder="Collez une ou plusieurs clés Groq ici (séparées par saut de ligne, espace ou virgule) :&#10;gsk_123...&#10;gsk_456...&#10;gsk_789..."
                                     value={newKey}
                                     onChange={(e) => setNewKey(e.target.value)}
                                 />
-                                <button
-                                    type="button"
-                                    disabled={!newKey.trim()}
-                                    onClick={() => manageKey({ addKey: newKey.trim() })}
-                                    className="btn btn-soft text-xs disabled:opacity-50"
-                                >
-                                    Ajouter une clé
-                                </button>
+
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <button
+                                        type="button"
+                                        disabled={detectedGroqKeys.length === 0}
+                                        onClick={() => manageKey({ addKeys: detectedGroqKeys })}
+                                        className="btn btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5 disabled:opacity-40 shadow-sm"
+                                    >
+                                        <span>+</span>
+                                        <span>
+                                            {detectedGroqKeys.length > 1
+                                                ? `Ajouter ces ${detectedGroqKeys.length} clés d'un coup`
+                                                : detectedGroqKeys.length === 1
+                                                ? 'Ajouter cette clé'
+                                                : 'Ajouter les clés'}
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        disabled={detectedGroqKeys.length === 0}
+                                        onClick={() => {
+                                            if (window.confirm(`Voulez-vous vraiment remplacer TOUTES les clés existantes par ces ${detectedGroqKeys.length} nouvelle(s) clé(s) ?`)) {
+                                                manageKey({ setKeys: detectedGroqKeys });
+                                            }
+                                        }}
+                                        className="btn btn-soft text-xs py-1.5 px-3 text-amber-300 hover:text-amber-200 disabled:opacity-40"
+                                        title="Remplace toutes les clés existantes par la liste collée"
+                                    >
+                                        <span>🔄</span>
+                                        <span>Remplacer tout par ce lot</span>
+                                    </button>
+
+                                    {newKey ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewKey('')}
+                                            className="btn btn-soft text-xs py-1.5 px-2.5 text-slate-400"
+                                        >
+                                            Effacer
+                                        </button>
+                                    ) : null}
+                                </div>
                             </div>
                         </div>
                     </section>

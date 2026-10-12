@@ -1,156 +1,213 @@
 // pages/Home.jsx
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
-import { systemService } from '../services/api.js';
 
 function Home() {
     const { isAuthenticated } = useAuth();
     const { theme, isIslamUnlocked } = useTheme();
-    const [health, setHealth] = useState(null);
-    const [apiChecked, setApiChecked] = useState(false);
 
-    useEffect(() => {
-        let active = true;
-        systemService.getHealth().then((data) => {
-            if (active) {
-                setHealth(data);
-                setApiChecked(true);
-            }
-        }).catch(() => {
-            if (active) {
-                setHealth(null);
-                setApiChecked(true);
-            }
-        });
-        return () => { active = false; };
-    }, []);
+    const addToServerUrl = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
 
-    const services = health?.services || {};
-    const botApiStatus = services.botApi?.status || 'unconfigured';
-    const serviceLabel = (status) => ({
-        ok: 'En ligne',
-        degraded: 'Dégradé',
-        error: 'Indisponible',
-        unconfigured: 'À configurer',
-    }[status] || 'En attente');
-    const serviceCards = [
-        { label: 'API du bot', status: services.botApi?.status },
-        { label: 'Base de données', status: services.db?.status },
-        { label: 'Connexion Discord', status: services.oauth?.status },
-    ];
-    const quickCommands = [
-        { command: '/welcome', description: 'Messages d’arrivée' },
-        { command: '/rank', description: 'Niveaux et classement' },
-        { command: '/youtube', description: 'Alertes nouvelles vidéos' },
-        { command: '/tiktok', description: 'Alertes TikTok Live' },
-    ];
     const features = [
-        { title: 'Questions à l’IA', text: 'Posez une question avec /ask. Choisissez la langue et les consignes dans /config.', commands: '/ask · /config ia_langue' },
-        { title: 'Messages d’accueil', text: 'Souhaitez la bienvenue aux nouveaux membres, dans un salon ou en message privé.', commands: '/welcome' },
-        { title: 'Niveaux', text: 'Les membres gagnent de l’XP en discutant. Ajoutez des rôles à certains niveaux.', commands: '/rank' },
-        { title: 'Modération', text: 'Nettoyez un salon ou mettez en pause les réponses de l’IA.', commands: '/purge · /zzzz' },
-        { title: 'Alertes', text: 'Annoncez les nouvelles vidéos YouTube et les débuts de live TikTok.', commands: '/youtube · /tiktok' },
-        { title: 'Informations & rappels', text: 'Consultez les informations du serveur et programmez un rappel.', commands: '/serverinfo · /remindme' },
+        {
+            icon: '🤖',
+            title: 'Intelligence Artificielle',
+            text: 'Posez n’importe quelle question avec /ask. Réponses instantanées propulsées par Groq et adaptées à vos besoins.',
+            command: '/ask · /config',
+        },
+        {
+            icon: '👋',
+            title: 'Accueil & Bienvenue',
+            text: 'Souhaitez la bienvenue aux nouveaux arrivants avec messages personnalisés dans un salon dédié et attribution automatique de rôles.',
+            command: '/welcome',
+        },
+        {
+            icon: '🏆',
+            title: 'Niveaux & Classement XP',
+            text: 'Fidélisez votre communauté grâce au gain d’XP textuel. Attribuez automatiquement des rôles exclusifs aux paliers atteints.',
+            command: '/rank · /leaderboard',
+        },
+        {
+            icon: '🛡️',
+            title: 'Modération & Outils',
+            text: 'Nettoyez rapidement vos salons avec /purge, gérez les permissions des commandes et protégez vos membres.',
+            command: '/purge · /serverinfo',
+        },
+        {
+            icon: '📢',
+            title: 'Alertes Réseaux Sociaux',
+            text: 'Soyez notifié en temps réel sur Discord lors de la sortie d’une nouvelle vidéo YouTube ou du lancement d’un live TikTok.',
+            command: '/youtube · /tiktok',
+        },
+        ...(isIslamUnlocked ? [
+            {
+                icon: '🕌',
+                title: 'Islam & Spiritualité',
+                text: 'Horaires des 5 prières quotidiennes avec rappels Adhan automatiques, lecture du Coran, rappels des Jours Blancs et quiz islamique.',
+                command: '/priere · /coran · /quiz',
+                isIslamic: true,
+            }
+        ] : []),
+    ];
+
+    const popularCommands = [
+        { name: '/ask', desc: 'Poser une question à l’intelligence artificielle', icon: '💡' },
+        { name: '/rank', desc: 'Consulter son niveau, son XP et sa progression', icon: '📊' },
+        { name: '/welcome', desc: 'Gérer les messages d’accueil et rôles automatiques', icon: '👋' },
+        { name: '/purge', desc: 'Supprimer rapidement plusieurs messages d’un salon', icon: '🧹' },
+        { name: '/youtube', desc: 'Suivre une chaîne YouTube et recevoir les alertes', icon: '📺' },
+        ...(isIslamUnlocked ? [
+            { name: '/priere', desc: 'Afficher les horaires des 5 prières du jour', icon: '🕌' },
+            { name: '/coran', desc: 'Lire et écouter les sourates du Coran', icon: '📖' },
+        ] : []),
     ];
 
     return (
-        <main className="site-page home-dashboard">
-            <header className="home-dashboard-heading">
-                <div>
-                    <p className="site-eyebrow">BOT DISCORD · AZIMBOT</p>
-                    <h1>AzimBot</h1>
-                    <p>Accueil, niveaux, alertes et commandes pour votre serveur.</p>
-                </div>
-                <Link to={isAuthenticated ? '/dashboard' : '/login'} className="btn btn-soft">{isAuthenticated ? 'Ouvrir le panel' : 'Connexion Discord'} <span aria-hidden="true">→</span></Link>
-            </header>
+        <main className="site-page home-showcase max-w-6xl mx-auto space-y-12 pb-16">
+            {/* 1. HERO BANNER PRINCIPAL */}
+            <section className="relative overflow-hidden rounded-3xl border border-slate-700/60 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-950 p-8 sm:p-14 shadow-2xl">
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+                    <div className="space-y-5 max-w-2xl">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-950/40 px-3.5 py-1 text-xs font-semibold text-cyan-300">
+                            <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Bot Discord vérifié & multifonction</span>
+                        </div>
 
-            <section className="home-dashboard-metrics" aria-label="État rapide">
-                {[
-                    { label: 'Bot Discord', status: services.botApi?.status },
-                    { label: 'Panel', status: services.db?.status },
-                    { label: 'Connexion Discord', status: services.oauth?.status },
-                ].map((item) => (
-                    <article className={`home-dashboard-metric home-metric-${item.status || 'unknown'}`} key={item.label}>
-                        <span className="home-metric-mark" aria-hidden="true" />
-                        <span>{item.label}</span>
-                        <strong>{health ? serviceLabel(item.status) : apiChecked ? 'Indisponible' : 'Vérification…'}</strong>
-                    </article>
-                ))}
-                <article className="home-dashboard-metric home-metric-commands">
-                    <span className="home-metric-mark" aria-hidden="true" />
-                    <span>Commandes</span>
-                    <strong>{isIslamUnlocked ? 31 : 21}</strong>
-                </article>
+                        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                            Tout ce dont votre serveur Discord a besoin.
+                        </h1>
+
+                        <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
+                            {isIslamUnlocked
+                                ? 'Intelligence artificielle, gestion d’accueil, niveaux XP, alertes YouTube / TikTok, modération et module spirituel complet.'
+                                : 'Intelligence artificielle, messages d’accueil, niveaux XP, alertes YouTube / TikTok et outils de modération pour votre communauté.'}
+                        </p>
+
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                            <a
+                                href={addToServerUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn btn-primary text-sm px-6 py-3.5 shadow-lg shadow-cyan-950/50 flex items-center gap-2 font-bold"
+                            >
+                                <span>🚀</span>
+                                <span>Ajouter Azim à Discord</span>
+                            </a>
+
+                            <Link
+                                to={isAuthenticated ? '/dashboard' : '/login'}
+                                className="btn btn-soft text-sm px-6 py-3.5 flex items-center gap-2 font-semibold"
+                            >
+                                <span>⚙️</span>
+                                <span>{isAuthenticated ? 'Accéder à la console' : 'Se connecter au panel'}</span>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Logo Mascotte Bot */}
+                    <div className="shrink-0 flex flex-col items-center gap-3">
+                        <div className="relative group">
+                            <div className={`absolute -inset-2 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity ${
+                                theme === 'islam' ? 'bg-emerald-500/30' : 'bg-cyan-500/30'
+                            }`} />
+                            <div className="relative flex size-36 sm:size-44 items-center justify-center rounded-3xl border-2 border-slate-700 bg-slate-900/90 p-3 shadow-2xl backdrop-blur-md">
+                                <img
+                                    src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
+                                    alt="AzimBot Icon"
+                                    className="size-28 sm:size-36 object-contain transition-transform duration-300 group-hover:scale-105"
+                                />
+                            </div>
+                        </div>
+                        <span className="text-xs font-mono text-slate-400">AzimBot v2.4</span>
+                    </div>
+                </div>
             </section>
 
-            <div className="home-dashboard-grid">
-                <section className="home-dashboard-panel site-panel">
-                    <div className="home-panel-heading">
-                        <div><p className="site-eyebrow">BOT</p><h2>AzimBot</h2></div>
-                        <span className={`home-bot-state ${botApiStatus === 'ok' ? 'is-online' : 'is-offline'}`}><i />{health ? serviceLabel(botApiStatus) : apiChecked ? 'Indisponible' : 'Vérification…'}</span>
-                    </div>
-                    <div className="home-bot-identity">
-                        <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="AzimBot" className="size-11 object-contain" />
-                        <div><strong>AzimBot</strong><span>{isIslamUnlocked ? 'Accueil · niveaux · alertes · modération · spiritualité' : 'Accueil · niveaux · alertes · modération'}</span></div>
-                    </div>
-                    <div className="home-quick-actions">
-                        <Link to="/commands" className="home-quick-action"><span aria-hidden="true">⌘</span>Commandes</Link>
-                        <Link to="/modules" className="home-quick-action"><span aria-hidden="true">▦</span>Modules</Link>
-                        <Link to={isAuthenticated ? '/dashboard' : '/login'} className="home-quick-action"><span aria-hidden="true">⚙</span>Configurer</Link>
-                    </div>
-                    <div className="home-command-heading"><h3>Commandes utiles</h3><Link to="/commands" className="site-link">Toutes les commandes →</Link></div>
-                    <div className="home-quick-command-list">
-                        {quickCommands.map((item) => (
-                            <div className="home-quick-command" key={item.command}>
-                                <code>{item.command}</code><span>{item.description}</span>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
-                <aside className="home-dashboard-side">
-                    <section className="home-dashboard-panel site-panel">
-                        <div className="home-panel-heading">
-                            <div><p className="site-eyebrow">ÉTAT</p><h2>Services</h2></div>
-                            <Link to="/status" className="site-link">Détails →</Link>
-                        </div>
-                        <div className="home-service-list">
-                            {serviceCards.map((service) => (
-                                <div className="home-service-row" key={service.label}>
-                                    <span className={`home-service-dot ${service.status === 'ok' ? 'is-online' : 'is-offline'}`} />
-                                    <span>{service.label === 'API du bot' ? 'Bot Azim' : service.label === 'Base de données' ? 'Base de données' : 'Discord OAuth'}</span>
-                                    <strong>{health ? serviceLabel(service.status) : apiChecked ? 'Indisponible' : 'Vérification…'}</strong>
-                                </div>
-                            ))}
-                        </div>
-                        <p className="home-last-check">Dernière vérification <span>{health?.timestamp ? new Date(health.timestamp).toLocaleTimeString() : '—'}</span></p>
-                    </section>
-                    <section className="home-dashboard-panel home-help-panel site-panel">
-                        <p className="site-eyebrow">BESOIN D’AIDE ?</p>
-                        <h2>Une commande ne fait pas ce que vous voulez ?</h2>
-                        <Link to="/help" className="site-link">Lire l’aide →</Link>
-                    </section>
-                </aside>
-            </div>
-
-            <section className="home-feature-section">
-                <div className="home-feature-heading">
-                    <div>
-                        <p className="site-eyebrow">COMMANDES DU BOT</p>
-                        <h2>Qu’est-ce qu’Azim peut faire ?</h2>
-                    </div>
-                    <Link to="/modules" className="site-link text-sm">Voir les modules →</Link>
+            {/* 2. GRILLE DES FONCTIONNALITÉS CLÉS (AVEC GRANDES ICÔNES VISIBLES) */}
+            <section className="space-y-6">
+                <div className="text-center sm:text-left space-y-1">
+                    <p className="site-eyebrow">MODULES DU BOT</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white">Des fonctionnalités pensées pour vos membres</h2>
                 </div>
-                <div className="home-feature-grid">
-                    {features.map((feature) => (
-                        <article className="home-feature-item" key={feature.title}>
-                            <h3>{feature.title}</h3>
-                            <p>{feature.text}</p>
-                            <p className="mt-3 font-mono text-[11px] text-cyan-300">{feature.commands}</p>
+
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {features.map((feat) => (
+                        <article
+                            key={feat.title}
+                            className={`rounded-2xl border p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
+                                feat.isIslamic
+                                    ? 'border-emerald-600/50 bg-gradient-to-br from-emerald-950/40 via-slate-900/90 to-slate-900 shadow-emerald-950/30'
+                                    : 'border-slate-800 bg-slate-900/70 hover:border-slate-700 shadow-slate-950/40'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3.5 mb-3.5">
+                                <span className="flex size-12 items-center justify-center rounded-xl bg-slate-800 text-2xl shadow-inner border border-slate-700/60">
+                                    {feat.icon}
+                                </span>
+                                <h3 className="font-bold text-lg text-white">{feat.title}</h3>
+                            </div>
+                            <p className="text-sm text-slate-300 leading-relaxed min-h-[64px]">
+                                {feat.text}
+                            </p>
+                            <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                                <span className="font-mono text-xs text-cyan-300/90 font-medium">
+                                    {feat.command}
+                                </span>
+                                <Link to="/modules" className="text-xs text-slate-400 hover:text-cyan-300 transition-colors">
+                                    En savoir plus →
+                                </Link>
+                            </div>
                         </article>
                     ))}
+                </div>
+            </section>
+
+            {/* 3. COMMANDES LES PLUS POPULAIRES */}
+            <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <span>⚡</span> Commandes populaires
+                        </h2>
+                        <p className="text-xs text-slate-400">Quelques commandes prêtes à l'emploi avec barre oblique (/slash).</p>
+                    </div>
+                    <Link to="/commands" className="btn btn-soft text-xs whitespace-nowrap self-start sm:self-auto">
+                        Voir toutes les {isIslamUnlocked ? '31' : '21'} commandes →
+                    </Link>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {popularCommands.map((cmd) => (
+                        <div
+                            key={cmd.name}
+                            className="flex items-center gap-3.5 rounded-xl border border-slate-800/80 bg-slate-950/60 p-3.5 hover:border-slate-700 transition-colors"
+                        >
+                            <span className="text-xl shrink-0">{cmd.icon}</span>
+                            <div className="min-w-0 flex-1">
+                                <div className="font-mono text-sm font-bold text-cyan-300">{cmd.name}</div>
+                                <div className="text-xs text-slate-300 truncate">{cmd.desc}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* 4. BANNIÈRE D'INVITATION FINALE */}
+            <section className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 via-slate-900/90 to-slate-900 p-8 text-center space-y-4">
+                <h2 className="text-2xl font-bold text-white">Prêt à installer Azim sur votre serveur ?</h2>
+                <p className="text-sm text-slate-300 max-w-xl mx-auto">
+                    Installation en un clic, gratuit et immédiatement fonctionnel avec vos membres.
+                </p>
+                <div className="pt-2 flex justify-center gap-4">
+                    <a
+                        href={addToServerUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-primary text-sm px-6 py-3 font-bold"
+                    >
+                        Inviter le bot maintenant ↗
+                    </a>
                 </div>
             </section>
         </main>

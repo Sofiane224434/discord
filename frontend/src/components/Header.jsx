@@ -19,13 +19,11 @@ function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const categoryLinks = [
         { label: 'Accueil', to: '/' },
-        { label: 'Bots', to: '/public-servers' },
         { label: 'Modules', to: '/modules' },
         { label: 'Commandes', to: '/commands' },
-        ...(isAuthenticated ? [{ label: 'Utilisation', to: '/command-history' }] : []),
-        { label: 'Statut', to: '/status' },
         { label: 'Aide', to: '/help' },
         { label: 'Retours', to: '/feedback' },
+        { label: 'Paramètres', to: '/settings' },
         ...(isAuthenticated ? [{ label: 'Panel', to: '/dashboard' }] : []),
     ];
 

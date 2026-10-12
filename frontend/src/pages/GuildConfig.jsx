@@ -409,6 +409,18 @@ function GuildConfig() {
         }
     };
 
+    const handleUpdateBotName = async (newName) => {
+        setError('');
+        setNotice('');
+        try {
+            await adminService.updateGuildConfig(guildId, { profile: { botDisplayName: newName } });
+            await refresh();
+            setNotice(`Nom du bot mis à jour avec succès : "${newName}"`);
+        } catch (apiError) {
+            setError(apiError.message || 'Impossible de modifier le nom du bot.');
+        }
+    };
+
     const updateCommand = (commandName, field, value) => {
         const updated = form.commands.map((cmd) => {
             if (cmd.name.toLowerCase() === commandName.toLowerCase()) {
@@ -563,7 +575,7 @@ function GuildConfig() {
                         onClick={() => setActiveTab(tab.id)}
                         className={`admin-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
                     >
-                        <span>{tab.icon}</span>
+                        <span className="text-lg sm:text-xl shrink-0">{tab.icon}</span>
                         <span>{tab.label}</span>
                         {typeof tab.count === 'number' && tab.count > 0 ? (
                             <span className="admin-tab-badge">{tab.count}</span>
@@ -1294,6 +1306,26 @@ function GuildConfig() {
                             </div>
 
                             <div className="grid gap-5 md:grid-cols-2">
+                                <div>
+                                    <Field label="Nom / Surnom du bot sur ce serveur" hint="Personnalisez le nom affiché du bot sur ce serveur Discord (1 à 32 caractères)">
+                                        <div className="flex gap-2">
+                                            <TextInput
+                                                maxLength={32}
+                                                placeholder="Ex: AzimBot, Assistant, MonBot…"
+                                                value={form.profile.botDisplayName || ''}
+                                                onChange={(e) => update('profile', 'botDisplayName', e.target.value)}
+                                            />
+                                            <button
+                                                type="button"
+                                                disabled={saving || !form.profile.botDisplayName?.trim()}
+                                                onClick={() => handleUpdateBotName(form.profile.botDisplayName.trim())}
+                                                className="btn btn-primary text-xs whitespace-nowrap"
+                                            >
+                                                Renommer
+                                            </button>
+                                        </div>
+                                    </Field>
+                                </div>
                                 <Field label="Bio personnalisée du bot" hint="Maximum 190 caractères.">
                                     <TextInput
                                         maxLength={190}
@@ -1302,34 +1334,35 @@ function GuildConfig() {
                                         onChange={(e) => update('profile', 'bio', e.target.value)}
                                     />
                                 </Field>
-                                <div>
-                                    <Field label="Changer l'avatar du serveur" hint="URL HTTPS hébergée sur cdn.discordapp.com ou media.discordapp.net">
-                                        <TextInput
-                                            type="url"
-                                            placeholder="https://cdn.discordapp.com/…"
-                                            value={form.profile.avatarUrl || ''}
-                                            onChange={(e) => update('profile', 'avatarUrl', e.target.value)}
-                                        />
-                                    </Field>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                        <button
-                                            type="button"
-                                            disabled={!form.profile.avatarUrl?.trim()}
-                                            onClick={() => updateAvatar(form.profile.avatarUrl.trim())}
-                                            className="btn btn-soft text-xs disabled:opacity-50"
-                                        >
-                                            Appliquer cet avatar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => updateAvatar('')}
-                                            className="btn btn-soft text-xs text-rose-300 hover:text-rose-200 flex items-center gap-1.5"
-                                            title="Effacer la photo custom pour revenir à la photo de base"
-                                        >
-                                            <span>🔄</span>
-                                            Rétablir photo de profil de base
-                                        </button>
-                                    </div>
+                            </div>
+
+                            <div className="border-t border-slate-700/60 pt-4">
+                                <Field label="Changer l'avatar du serveur" hint="URL HTTPS hébergée sur cdn.discordapp.com ou media.discordapp.net">
+                                    <TextInput
+                                        type="url"
+                                        placeholder="https://cdn.discordapp.com/…"
+                                        value={form.profile.avatarUrl || ''}
+                                        onChange={(e) => update('profile', 'avatarUrl', e.target.value)}
+                                    />
+                                </Field>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        disabled={!form.profile.avatarUrl?.trim()}
+                                        onClick={() => updateAvatar(form.profile.avatarUrl.trim())}
+                                        className="btn btn-soft text-xs disabled:opacity-50"
+                                    >
+                                        Appliquer cet avatar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => updateAvatar('')}
+                                        className="btn btn-soft text-xs text-rose-300 hover:text-rose-200 flex items-center gap-1.5"
+                                        title="Effacer la photo custom pour revenir à la photo de base"
+                                    >
+                                        <span>🔄</span>
+                                        Rétablir photo de profil de base
+                                    </button>
                                 </div>
                             </div>
                         </div>

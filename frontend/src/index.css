@@ -2345,14 +2345,14 @@ body {
 .admin-tab-btn {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
-	padding: 8px 14px;
-	font-size: 13px;
+	gap: 10px;
+	padding: 9px 16px;
+	font-size: 14px;
 	font-weight: 600;
 	color: var(--azim-ink-soft);
 	background: rgba(16, 34, 57, 0.6);
 	border: 1px solid rgba(40, 83, 115, 0.45);
-	border-radius: 6px;
+	border-radius: 8px;
 	cursor: pointer;
 	white-space: nowrap;
 	transition: all 0.18s ease;
@@ -2367,6 +2367,23 @@ body {
 	background: #087eae;
 	border-color: #28bdf3;
 	box-shadow: 0 0 14px rgba(32, 185, 242, 0.28);
+}
+
+[data-theme="islam"] .admin-tab-btn {
+	background: rgba(6, 30, 20, 0.7) !important;
+	border-color: rgba(52, 211, 153, 0.28) !important;
+	color: #cbd5e1 !important;
+}
+[data-theme="islam"] .admin-tab-btn:hover {
+	background: rgba(8, 44, 30, 0.85) !important;
+	border-color: #34d399 !important;
+	color: #ffffff !important;
+}
+[data-theme="islam"] .admin-tab-btn.active {
+	background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+	border-color: #34d399 !important;
+	color: #ffffff !important;
+	box-shadow: 0 0 16px rgba(16, 185, 129, 0.45) !important;
 }
 .admin-tab-badge {
 	font-size: 10px;

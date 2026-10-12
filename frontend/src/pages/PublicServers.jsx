@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { systemService } from '../services/api.js';
+import { useTheme } from '../context/ThemeContext.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 
 function PublicServers() {
+    const { theme } = useTheme();
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -35,7 +37,7 @@ function PublicServers() {
             {!loading && !health ? <p className="site-empty-state">L’état d’AzimBot est momentanément indisponible.</p> : null}
             <section className="public-server-list" aria-label="Bot AzimBot">
                 <article className="public-server-row">
-                    <img src="/icon.png" alt="AzimBot" />
+                    <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="AzimBot" />
                     <div><h2>AzimBot</h2><p>Accueil des membres, niveaux, commandes et alertes.</p></div>
                     <span className={`public-server-tag ${services.botApi?.status === 'ok' ? 'is-online' : 'is-offline'}`}><i />{loading ? 'Vérification…' : services.botApi?.status === 'ok' ? 'En ligne' : 'Indisponible'}</span>
                 </article>

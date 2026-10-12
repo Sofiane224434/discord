@@ -18,6 +18,7 @@ import CommandHistory from './pages/CommandHistory.jsx';
 import GuildConfig from './pages/GuildConfig.jsx';
 import Modules from './pages/Modules.jsx';
 import Feedback from './pages/Feedback.jsx';
+import Settings from './pages/Settings.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 
 function App() {
@@ -36,6 +37,8 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/faq" element={<Help />} />
         <Route path="/status" element={<Status />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/parametres" element={<Settings />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/report" element={<Feedback />} />
         <Route path="/suggestions" element={<Feedback />} />

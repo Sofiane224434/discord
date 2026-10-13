@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { botService, discordService } from '../services/api.js';
-import MotherboardBackground from '../components/MotherboardBackground.jsx';
-import { CuteCircuitHeader, OscilloscopeWave, CuteRetroCrtMonitor, CuteRobotMascot } from '../components/CyberMascots.jsx';
 
 function hasManageGuildPermission(guild) {
     if (guild?.owner) return true;
@@ -15,18 +13,25 @@ function hasManageGuildPermission(guild) {
     }
 }
 
+function formatUptime(seconds = 0) {
+    const safeSeconds = Math.max(0, Number(seconds) || 0);
+    const days = Math.floor(safeSeconds / 86400);
+    const hours = Math.floor((safeSeconds % 86400) / 3600);
+    const minutes = Math.floor((safeSeconds % 3600) / 60);
+    if (days) return `${days}j ${hours}h`;
+    if (hours) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+}
+
 function getDiscordGuildIcon(guild) {
     if (guild.iconUrl) return guild.iconUrl;
     if (guild.icon) return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=96`;
     return null;
 }
 
-const PLUG_COLORS = ['purple', 'green', 'cyan'];
-
 function Dashboard() {
     const { user } = useAuth();
     const { setIsIslamUnlocked } = useTheme();
-    const location = useLocation();
     const [overview, setOverview] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -40,6 +45,7 @@ function Dashboard() {
             setOverview(data);
             setError('');
 
+            // "Dès qu'il y a un serveur en mode islam tu as le thème islam directement"
             const hasIslamActive = (data?.guilds || []).some((bg) => bg.islamModeEnabled);
             if (hasIslamActive) {
                 setIsIslamUnlocked(true);
@@ -50,7 +56,7 @@ function Dashboard() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [setIsIslamUnlocked]);
+    }, [user, setIsIslamUnlocked]);
 
     useEffect(() => {
         loadData();
@@ -65,11 +71,11 @@ function Dashboard() {
         }
     }, []);
 
-    const connectedGuildIds = useMemo(
-        () => new Set((overview?.guilds || []).map((guild) => String(guild.id))),
-        [overview]
-    );
-
+    const bot = overview?.bot || {};
+    const stats = overview?.stats || {};
+    const observability = overview?.observability || {};
+    const connectedGuildIds = useMemo(() => new Set((overview?.guilds || []).map((guild) => String(guild.id))), [overview]);
+    // Map de tous les serveurs Discord de l'utilisateur (avec ses permissions réelles)
     const userGuildMap = useMemo(() => {
         const map = new Map();
         for (const g of discordGuilds) {
@@ -100,7 +106,7 @@ function Dashboard() {
         return result;
     }, [userGuildMap, connectedGuildIds, overview]);
 
-    // Commandes les plus utilisées
+    // Commandes les plus utilisées (strictement isolées aux serveurs gérés par cet utilisateur)
     const topCommands = useMemo(() => {
         const counts = {};
         for (const g of manageableGuilds) {
@@ -117,7 +123,7 @@ function Dashboard() {
             .slice(0, 6);
     }, [manageableGuilds, overview]);
 
-    // Erreurs récentes
+    // Erreurs récentes (strictement isolées aux serveurs gérés par cet utilisateur)
     const recentErrors = useMemo(() => {
         const errors = [];
         for (const g of manageableGuilds) {
@@ -139,28 +145,59 @@ function Dashboard() {
         return total;
     }, [manageableGuilds, overview]);
 
-    // 2. Autres serveurs où le bot est présent sans permission
+    const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
+
+    // 2. Autres serveurs où le bot est présent : Bot présent mais SANS perm de gestion
     const otherBotGuilds = useMemo(() => {
         const result = [];
         const addedIds = new Set(manageableGuilds.map((g) => g.id));
+
+        // Serveurs de l'utilisateur où le bot est connecté mais sans permission de gestion
         for (const g of userGuildMap.values()) {
             if (!addedIds.has(g.id) && connectedGuildIds.has(g.id)) {
                 const botGuild = (overview?.guilds || []).find((bg) => String(bg.id) === g.id);
-                if (botGuild?.islamModeEnabled || g.id === '1283533269047971894') continue;
+                // Si le serveur a le mode islam actif et que l'utilisateur n'a aucun droit dessus, masqué
+                if (botGuild?.islamModeEnabled || g.id === '1283533269047971894') {
+                    continue;
+                }
                 result.push({
                     ...g,
                     iconUrl: g.iconUrl || botGuild?.iconUrl || getDiscordGuildIcon(g),
                     memberCount: g.memberCount || botGuild?.memberCount || null,
                     connected: true,
                     canManage: false,
+                    isMember: true,
                 });
                 addedIds.add(g.id);
+            }
+        }
+
+        // Serveurs connectés au bot non répertoriés dans les serveurs de session
+        if (Array.isArray(overview?.guilds)) {
+            for (const bg of overview.guilds) {
+                const id = String(bg.id);
+                // Si le serveur a le mode islam et que l'utilisateur n'a aucun droit de gestion, masqué du site
+                if (bg.islamModeEnabled || id === '1283533269047971894') {
+                    continue;
+                }
+                if (!addedIds.has(id)) {
+                    result.push({
+                        id,
+                        name: bg.name,
+                        iconUrl: bg.iconUrl,
+                        memberCount: bg.memberCount,
+                        connected: true,
+                        canManage: false,
+                        fromBotList: true,
+                    });
+                    addedIds.add(id);
+                }
             }
         }
         return result;
     }, [userGuildMap, connectedGuildIds, manageableGuilds, overview]);
 
-    // 3. Serveurs administrables à inviter
+    // 3. Serveurs où l'utilisateur a la perm de gérer, mais le bot n'est pas encore présent (à inviter)
     const inviteableGuilds = useMemo(() => {
         const result = [];
         for (const g of userGuildMap.values()) {
@@ -176,6 +213,19 @@ function Dashboard() {
         return result;
     }, [userGuildMap, connectedGuildIds]);
 
+    const totalConnectedCount = Math.max(
+        Number(stats.guildCount || 0),
+        overview?.guilds?.length || 0,
+        connectedGuildIds.size
+    );
+
+    const cards = [
+        { label: 'Serveurs', value: totalConnectedCount.toLocaleString(), detail: 'connectés au bot', marker: '01' },
+        { label: 'Membres', value: Number(stats.memberCount || 0).toLocaleString(), detail: 'sur les serveurs', marker: '02' },
+        { label: 'Commandes · 24 h', value: Number(stats.commandCount24h || 0).toLocaleString(), detail: 'exécutées', marker: '03' },
+        { label: 'Disponibilité', value: bot.status === 'online' ? 'En ligne' : 'Hors ligne', detail: `latence ${Math.max(0, Number(bot.latency || 0))} ms`, marker: '04' },
+    ];
+
     const inviteBot = async (guildId) => {
         setInviteLoading(guildId);
         try {
@@ -188,264 +238,155 @@ function Dashboard() {
         }
     };
 
-    const firstCommand = topCommands[0];
-    const firstCommandCount = firstCommand ? Number(firstCommand.count || 1) : 1;
-    const username = user?.firstname || user?.username || 'Sofiane';
-
     return (
-        <main className="cyber-dashboard-root">
-            {/* 1. Carte Mère Fond Vectoriel (Motherboard SVG) */}
-            <MotherboardBackground />
+        <main className="ops-dashboard">
+            <div className="ops-page-heading">
+                <div>
+                        <p className="site-eyebrow">PANEL AZIM</p>
+                        <h1>{user?.firstname ? `Bonjour ${user.firstname}` : 'Vos serveurs'}</h1>
+                        <p className="site-muted">Choisissez un serveur pour voir son état ou modifier ses réglages.</p>
+                </div>
+                <div className="ops-heading-actions">
+                    <Link to="/login" className="ops-action-button">Actualiser Discord</Link>
+                    <button type="button" onClick={loadData} disabled={refreshing} className="ops-action-button">
+                        {refreshing ? 'Actualisation…' : 'Actualiser'}
+                    </button>
+                    <span className={`ops-status-chip ${bot.status === 'online' ? 'ops-status-online' : 'ops-status-offline'}`}>
+                        <span /> {bot.status === 'online' ? 'Bot actif' : loading ? 'Connexion…' : 'Bot indisponible'}
+                    </span>
+                    <Link to="/status" className="ops-icon-link" title="État des services" aria-label="État des services">⚙</Link>
+                </div>
+            </div>
 
-            {/* 2. Layout principal de la console */}
-            <div className="cyber-console-layout">
-                {/* === COLONNE GAUCHE : BARRE DE NAVIGATION PILULES === */}
-                <aside className="cyber-sidebar" aria-label="Console Navigation">
-                    {/* Dôme supérieur de la console */}
-                    <div className="cyber-saucer-dome" aria-hidden="true">
-                        <svg className="cyber-saucer-svg" viewBox="0 0 160 48" fill="none">
-                            <ellipse cx="80" cy="22" rx="72" ry="16" fill="#0b2440" stroke="#1d558b" strokeWidth="2.5" />
-                            <ellipse cx="80" cy="20" rx="46" ry="10" fill="#071b30" stroke="#22d3ee" strokeWidth="1.5" />
-                            <ellipse cx="80" cy="20" rx="28" ry="4" fill="#22d3ee" opacity="0.85" />
-                            <path d="M 30 18 Q 80 8 130 18" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-                        </svg>
-                    </div>
+            {error ? <div role="alert" className="ops-alert">{error}</div> : null}
 
-                    {/* Bouton 1 : Panel (Actif) */}
-                    <Link
-                        to="/dashboard"
-                        className={`cyber-nav-pill ${location.pathname === '/dashboard' ? 'is-active' : ''}`}
-                    >
-                        <span className="cyber-nav-pill__socket-left" style={{ borderColor: '#22d3ee' }} />
-                        <span className="cyber-nav-pill__label">Panel</span>
-                        <span className="cyber-nav-pill__icon" style={{ color: '#22d3ee' }}>⚙️</span>
-                    </Link>
+            <section className="ops-metric-grid" aria-label="Statistiques du bot">
+                {cards.map((card) => (
+                    <article className="ops-metric site-panel" key={card.label}>
+                        <div className="ops-metric-head"><span className="ops-metric-symbol">{card.marker}</span><span>{card.label}</span></div>
+                        <strong className={card.label === 'Disponibilité' ? (bot.status === 'online' ? 'ops-value-online' : 'ops-value-offline') : ''}>{loading ? '—' : card.value}</strong>
+                        <small>{loading ? 'lecture des données' : card.detail}</small>
+                    </article>
+                ))}
+            </section>
 
-                    {/* Bouton 2 : Documentation */}
-                    <Link
-                        to="/docs/accueil"
-                        className={`cyber-nav-pill ${location.pathname.startsWith('/docs') ? 'is-active' : ''}`}
-                    >
-                        <span className="cyber-nav-pill__label">Documentation</span>
-                        <span className="cyber-nav-pill__icon" style={{ color: '#ec4899' }}>👾</span>
-                        <span className="cyber-nav-pill__socket-right" style={{ color: '#ec4899' }} />
-                    </Link>
-
-                    {/* Bouton 3 : Statuts */}
-                    <Link
-                        to="/status"
-                        className={`cyber-nav-pill ${location.pathname === '/status' ? 'is-active' : ''}`}
-                    >
-                        <span className="cyber-nav-pill__label">Statuts</span>
-                        <span className="cyber-nav-pill__icon" style={{ color: '#22c55e' }}>🖲️</span>
-                        <span className="cyber-nav-pill__socket-right" style={{ color: '#22c55e' }} />
-                    </Link>
-
-                    {/* Bouton 4 : Retours & idées */}
-                    <Link
-                        to="/feedback"
-                        className={`cyber-nav-pill ${location.pathname === '/feedback' ? 'is-active' : ''}`}
-                    >
-                        <span className="cyber-nav-pill__label">Retours & idées</span>
-                        <span className="cyber-nav-pill__icon" style={{ color: '#f43f5e' }}>💖</span>
-                        <span className="cyber-nav-pill__socket-right" style={{ color: '#a855f7' }} />
-                    </Link>
-
-                    {/* Bouton 5 : Support */}
-                    <a
-                        href="https://discord.gg/azim"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="cyber-nav-pill"
-                    >
-                        <span className="cyber-nav-pill__label">Support</span>
-                        <span className="cyber-nav-pill__icon" style={{ color: '#38bdf8' }}>⚙️</span>
-                        <span className="cyber-nav-pill__socket-left" style={{ borderColor: '#38bdf8' }} />
-                    </a>
-
-                    {/* Capsule Utilisateur */}
-                    <div className="cyber-user-capsule">
-                        <div className="cyber-user-avatar-wrap">
-                            {user?.avatarUrl ? (
-                                <img src={user.avatarUrl} alt={username} className="cyber-user-avatar" />
-                            ) : (
-                                <div className="flex size-full items-center justify-center font-bold text-cyan-300 text-xs">
-                                    {username.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                            <span className="cyber-user-status-dot" />
-                        </div>
-                        <span className="cyber-user-name">{username}</span>
-                        <Link to="/settings" className="cyber-user-settings-btn" title="Paramètres">
-                            ⚙
-                        </Link>
-                    </div>
-                </aside>
-
-                {/* === COLONNE CENTRALE : VOS ACCÈS (SERVEURS À GÉRER) === */}
-                <main className="cyber-center-column">
-                    <section className="cyber-chassis" aria-label="Serveurs à gérer">
-                        {/* En-tête de la carte avec composants mignons */}
-                        <div className="cyber-chassis__header">
+            <div className="ops-main-grid">
+                <div className="ops-servers-column flex flex-col gap-4">
+                    {/* Section 1 : Serveurs à gérer */}
+                    <section className="ops-panel site-panel">
+                        <div className="ops-panel-heading">
                             <div>
-                                <p className="cyber-chassis__eyebrow">VOS ACCÈS</p>
-                                <h1 className="cyber-chassis__title">Serveurs à gérer</h1>
+                                <p className="site-eyebrow">VOS ACCÈS</p>
+                                <h2>Serveurs à gérer</h2>
                             </div>
-
-                            {/* Ruban décoratif circuit avec les 3 puces kawaii souriantes */}
-                            <div className="cyber-cute-ribbon" aria-hidden="true">
-                                <CuteCircuitHeader />
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <span className="cyber-chassis__count">
-                                    {manageableGuilds.length} serveur(s)
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={loadData}
-                                    disabled={refreshing}
-                                    title="Actualiser les serveurs"
-                                    className="text-xs text-cyan-400 hover:text-cyan-200 transition-colors p-1"
-                                >
-                                    {refreshing ? '⟳' : '↻'}
-                                </button>
-                            </div>
+                            <span className="ops-count">
+                                {manageableGuilds.length} serveur(s)
+                            </span>
                         </div>
-
-                        {error ? (
-                            <div role="alert" className="mb-4 rounded-lg bg-rose-950/50 border border-rose-600/40 p-3 text-xs text-rose-300">
-                                {error}
-                            </div>
-                        ) : null}
-
-                        {/* En-tête du tableau */}
-                        <div className="cyber-table-head" aria-hidden="true">
-                            <span>Serveur</span>
-                            <span>Bot</span>
-                            <span>Membres</span>
-                            <span>Configuration</span>
-                        </div>
-
-                        {/* Liste des serveurs avec connecteurs 3D */}
-                        <div className="cyber-server-list">
-                            {manageableGuilds.length > 0 ? (
-                                manageableGuilds.map((guild, idx) => {
-                                    const icon = getDiscordGuildIcon(guild);
-                                    const plugColor = PLUG_COLORS[idx % PLUG_COLORS.length];
-
-                                    return (
-                                        <article className="cyber-server-row" key={guild.id}>
-                                            {/* Prise connecteur 3D à gauche de la ligne */}
-                                            <div className={`cyber-socket-plug cyber-socket-plug--${plugColor}`} aria-hidden="true">
-                                                <span className="cyber-socket-plug__pin" />
-                                            </div>
-
-                                            {/* Identité : icône + nom */}
-                                            <div className="cyber-server-identity">
-                                                {icon ? (
-                                                    <img src={icon} alt="" className="cyber-server-icon" />
-                                                ) : (
-                                                    <span className="cyber-server-fallback">
-                                                        {(guild.name || '?').slice(0, 1).toUpperCase()}
-                                                    </span>
-                                                )}
-                                                <span className="cyber-server-name" title={guild.name}>
-                                                    {guild.name}
-                                                </span>
-                                            </div>
-
-                                            {/* Statut Bot Installé */}
-                                            <div>
-                                                <span className="cyber-bot-badge">
-                                                    <span className="cyber-bot-badge__dot" />
-                                                    Installé
-                                                </span>
-                                            </div>
-
-                                            {/* Nombre de membres */}
-                                            <div className="cyber-server-members">
-                                                {guild.memberCount ? Number(guild.memberCount).toLocaleString() : '—'}
-                                            </div>
-
-                                            {/* Bouton Configurer */}
-                                            <div>
-                                                <Link
-                                                    to={`/dashboard/servers/${guild.id}/config`}
-                                                    className="cyber-btn-config"
-                                                >
-                                                    <span>Configurer</span>
-                                                    <span aria-hidden="true">↗</span>
-                                                </Link>
-                                            </div>
-                                        </article>
-                                    );
-                                })
-                            ) : (
-                                <div className="rounded-xl border border-dashed border-cyan-800/50 bg-[#071628]/60 p-8 text-center">
-                                    <p className="text-sm text-slate-300 font-medium">
-                                        Aucun serveur où vous êtes administrateur n'a Azim installé actuellement.
-                                    </p>
-                                    {inviteableGuilds.length > 0 ? (
-                                        <p className="mt-2 text-xs text-cyan-400">
-                                            Vous pouvez l'ajouter en un clic sur l'un de vos serveurs ci-dessous.
-                                        </p>
-                                    ) : (
-                                        <Link to="/login" className="mt-4 inline-block text-xs font-semibold text-cyan-400 hover:underline">
-                                            Actualiser vos autorisations Discord →
-                                        </Link>
-                                    )}
+                        {manageableGuilds.length ? (
+                            <>
+                                <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Configuration</span></div>
+                                <div className="ops-server-list">
+                                    {manageableGuilds.map((guild) => {
+                                        const icon = getDiscordGuildIcon(guild);
+                                        return (
+                                            <article className="ops-server-row" key={guild.id}>
+                                                <div className="ops-server-identity">
+                                                    {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
+                                                    <span>{guild.name}</span>
+                                                </div>
+                                                <span className="ops-server-status is-connected"><i />Installé</span>
+                                                <span className="ops-server-members">{guild.memberCount ? Number(guild.memberCount).toLocaleString() : '—'}</span>
+                                                <div className="ops-server-actions">
+                                                    <Link to={`/dashboard/servers/${guild.id}/config`} className="ops-action-button">Configurer <span aria-hidden="true">↗</span></Link>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
                                 </div>
-                            )}
+                            </>
+                        ) : (
+                            <div className="ops-empty-state">
+                                <p>Aucun serveur où vous avez les permissions de gestion n'a Azim installé actuellement.</p>
+                                {inviteableGuilds.length > 0 ? (
+                                    <p className="site-muted text-xs mt-2">Vous pouvez ajouter le bot à vos serveurs administrables dans la section ci-dessous.</p>
+                                ) : (
+                                    <Link to="/login" className="site-link">Actualiser vos permissions Discord →</Link>
+                                )}
+                            </div>
+                        )}
+                        <div className="ops-server-footer">
+                            <span>Disponibilité globale <strong>{bot.status === 'online' ? 'Opérationnelle' : 'À vérifier'}</strong></span>
+                            <span>Depuis le redémarrage <strong>{formatUptime(bot.uptime)}</strong></span>
                         </div>
                     </section>
 
-                    {/* Section additionnelle si d'autres serveurs peuvent être invités */}
-                    {inviteableGuilds.length > 0 && (
-                        <section className="cyber-chassis mt-6 opacity-95">
-                            <div className="cyber-chassis__header">
+                    {/* Section 2 : Autres serveurs avec Azim */}
+                    {otherBotGuilds.length > 0 && (
+                        <section className="ops-panel site-panel">
+                            <div className="ops-panel-heading">
                                 <div>
-                                    <p className="cyber-chassis__eyebrow">INVITATION</p>
-                                    <h2 className="cyber-chassis__title">Ajouter Azim à vos autres serveurs</h2>
+                                    <p className="site-eyebrow">COMMUNAUTÉS AZIM</p>
+                                    <h2>Autres serveurs avec Azim</h2>
                                 </div>
-                                <span className="cyber-chassis__count">
+                                <span className="ops-count">
+                                    {otherBotGuilds.length} serveur(s)
+                                </span>
+                            </div>
+                            <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Statut</span></div>
+                            <div className="ops-server-list">
+                                {otherBotGuilds.map((guild) => {
+                                    const icon = getDiscordGuildIcon(guild);
+                                    return (
+                                        <article className="ops-server-row" key={guild.id}>
+                                            <div className="ops-server-identity">
+                                                {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
+                                                <span>{guild.name}</span>
+                                            </div>
+                                            <span className="ops-server-status is-connected"><i />En ligne</span>
+                                            <span className="ops-server-members">{guild.memberCount ? Number(guild.memberCount).toLocaleString() : '—'}</span>
+                                            <div className="ops-server-actions">
+                                                <span className="ops-action-hint">Permission requise pour gérer</span>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Section 3 : Serveurs disponibles pour invitation */}
+                    {inviteableGuilds.length > 0 && (
+                        <section className="ops-panel site-panel" style={{ opacity: 0.95 }}>
+                            <div className="ops-panel-heading">
+                                <div>
+                                    <p className="site-eyebrow">INVITATION</p>
+                                    <h2>Ajouter Azim à d'autres serveurs</h2>
+                                </div>
+                                <span className="ops-count">
                                     {inviteableGuilds.length} disponible(s)
                                 </span>
                             </div>
-
-                            <div className="cyber-server-list">
+                            <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Action</span></div>
+                            <div className="ops-server-list">
                                 {inviteableGuilds.map((guild) => {
                                     const icon = getDiscordGuildIcon(guild);
-
                                     return (
-                                        <article className="cyber-server-row" key={guild.id}>
-                                            <div className="cyber-socket-plug cyber-socket-plug--cyan" aria-hidden="true">
-                                                <span className="cyber-socket-plug__pin" />
+                                        <article className="ops-server-row" key={guild.id}>
+                                            <div className="ops-server-identity">
+                                                {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
+                                                <span>{guild.name}</span>
                                             </div>
-                                            <div className="cyber-server-identity">
-                                                {icon ? (
-                                                    <img src={icon} alt="" className="cyber-server-icon" />
-                                                ) : (
-                                                    <span className="cyber-server-fallback">
-                                                        {(guild.name || '?').slice(0, 1).toUpperCase()}
-                                                    </span>
-                                                )}
-                                                <span className="cyber-server-name">{guild.name}</span>
-                                            </div>
-                                            <div>
-                                                <span className="cyber-bot-badge text-slate-400 bg-slate-800/80 border-slate-700">
-                                                    Non installé
-                                                </span>
-                                            </div>
-                                            <div className="cyber-server-members">—</div>
-                                            <div>
+                                            <span className="ops-server-status is-disconnected"><i />Non installé</span>
+                                            <span className="ops-server-members">—</span>
+                                            <div className="ops-server-actions">
                                                 <button
                                                     type="button"
                                                     onClick={() => inviteBot(guild.id)}
                                                     disabled={inviteLoading === guild.id}
-                                                    className="cyber-btn-config"
+                                                    className="ops-action-button"
                                                 >
-                                                    {inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter le bot ↗'}
+                                                    {inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter le bot'}
                                                 </button>
                                             </div>
                                         </article>
@@ -454,94 +395,54 @@ function Dashboard() {
                             </div>
                         </section>
                     )}
+                </div>
 
-                    {/* Section communautés publiques / autres serveurs */}
-                    {otherBotGuilds.length > 0 && (
-                        <section className="cyber-chassis mt-6 opacity-90">
-                            <div className="cyber-chassis__header">
-                                <div>
-                                    <p className="cyber-chassis__eyebrow">COMMUNAUTÉS AZIM</p>
-                                    <h2 className="cyber-chassis__title">Autres serveurs avec Azim</h2>
-                                </div>
-                                <span className="cyber-chassis__count">{otherBotGuilds.length} serveur(s)</span>
-                            </div>
-                            <div className="cyber-server-list">
-                                {otherBotGuilds.map((guild) => {
-                                    const icon = getDiscordGuildIcon(guild);
-                                    return (
-                                        <article className="cyber-server-row" key={guild.id}>
-                                            <div className="cyber-socket-plug cyber-socket-plug--purple" aria-hidden="true">
-                                                <span className="cyber-socket-plug__pin" />
-                                            </div>
-                                            <div className="cyber-server-identity">
-                                                {icon ? <img src={icon} alt="" className="cyber-server-icon" /> : <span className="cyber-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
-                                                <span className="cyber-server-name">{guild.name}</span>
-                                            </div>
-                                            <div>
-                                                <span className="cyber-bot-badge"><span className="cyber-bot-badge__dot" />En ligne</span>
-                                            </div>
-                                            <div className="cyber-server-members">{guild.memberCount ? Number(guild.memberCount).toLocaleString() : '—'}</div>
-                                            <div>
-                                                <span className="text-xs text-slate-500 italic">Accès membre</span>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
-                </main>
-
-                {/* === COLONNE DROITE : COMMANDES OSCILLOSCOPE + JOURNAL ERREURS CRT === */}
-                <aside className="cyber-right-column">
-                    {/* Carte 1 : UTILISATION - Commandes les plus utilisées */}
-                    <section className="cyber-chassis" aria-label="Commandes les plus utilisées">
-                        <div className="cyber-chassis__header">
-                            <div>
-                                <p className="cyber-chassis__eyebrow">UTILISATION</p>
-                                <h2 className="cyber-chassis__title">Commandes les plus utilisées</h2>
-                            </div>
-                            <Link to="/command-history" className="text-xs font-semibold text-cyan-400 hover:text-cyan-200 transition-colors">
-                                Tout voir →
-                            </Link>
+                <aside className="ops-side-column">
+                    <section className="ops-panel site-panel ops-analytics-panel">
+                        <div className="ops-panel-heading">
+                            <div><p className="site-eyebrow">UTILISATION</p><h2>Commandes les plus utilisées</h2></div>
+                            <Link to="/command-history" className="site-link text-xs">Tout voir →</Link>
                         </div>
-
-                        {/* Rang 01 + Prise + Onde sinusoïdale néon oscilloscope + compteur */}
-                        <div className="mt-2">
-                            <OscilloscopeWave count={firstCommandCount} />
-                            {firstCommand && (
-                                <p className="mt-2 text-xs font-mono text-cyan-300 flex items-center justify-between px-1">
-                                    <span>/{firstCommand.name}</span>
-                                    <span className="text-slate-400">{firstCommandCount} appel(s)</span>
-                                </p>
-                            )}
-                        </div>
+                        {topCommands.length ? (
+                            <div className="ops-command-chart">
+                                {topCommands.map((command, index) => (
+                                    <div className="ops-command-bar-row" key={command.name}>
+                                        <span className="ops-command-rank">{String(index + 1).padStart(2, '0')}</span>
+                                        <span className="ops-command-name">/{command.name}</span>
+                                        <span className="ops-command-track"><i style={{ width: `${Math.max(5, (Number(command.count || 0) / maxCommandCount) * 100)}%` }} /></span>
+                                        <strong>{Number(command.count || 0).toLocaleString()}</strong>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : <p className="ops-quiet-empty">Les commandes apparaîtront après leurs premières utilisations.</p>}
                     </section>
 
-                    {/* Carte 2 : JOURNAL - Erreurs récentes avec TV CRT et Robot */}
-                    <section className="cyber-chassis" aria-label="Journal d'erreurs">
-                        <div className="cyber-chassis__header">
-                            <div>
-                                <p className="cyber-chassis__eyebrow">JOURNAL</p>
-                                <h2 className="cyber-chassis__title">Erreurs récentes</h2>
-                            </div>
-                            <span className="cyber-chassis__count">{errorTotal} au total</span>
+                    <section className="ops-panel site-panel ops-activity-panel">
+                        <div className="ops-panel-heading">
+                            <div><p className="site-eyebrow">JOURNAL</p><h2>Erreurs récentes</h2></div>
+                            <span className="ops-count">{Number(errorTotal || 0)} au total</span>
                         </div>
-
-                        {/* Corps : Téléviseur CRT oscilloscope + Robot avec bulle de dialogue */}
-                        <div className="cyber-errors-body">
-                            <CuteRetroCrtMonitor />
-                            <CuteRobotMascot
-                                message={
-                                    recentErrors.length === 0
-                                        ? 'Aucune erreur récente signalée. 😊'
-                                        : `${recentErrors.length} événement(s) récent(s). Le système fonctionne bien.`
-                                }
-                            />
-                        </div>
+                        {recentErrors.length ? (
+                            <ol className="ops-activity-list">
+                                {recentErrors.map((item, index) => (
+                                    <li key={`${item.ts}-${index}`}>
+                                        <span className="ops-activity-dot" />
+                                        <span className="ops-activity-copy"><strong>{item.type || 'Erreur'}</strong><small>{String(item.message || '').slice(0, 90)}</small></span>
+                                        <time>{item.ts ? new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</time>
+                                    </li>
+                                ))}
+                            </ol>
+                        ) : <p className="ops-quiet-empty">Aucune erreur récente signalée.</p>}
                     </section>
                 </aside>
             </div>
+
+            <section className="ops-bottom-links">
+                <Link to="/modules"><span>Modules</span><strong>Configurer les fonctions du bot →</strong></Link>
+                <Link to="/commands"><span>Documentation</span><strong>Parcourir les commandes →</strong></Link>
+                <Link to="/help"><span>Support</span><strong>Obtenir de l’aide →</strong></Link>
+                <Link to="/feedback"><span>Retours & Bugs</span><strong>Signaler un bug ou une suggestion →</strong></Link>
+            </section>
         </main>
     );
 }

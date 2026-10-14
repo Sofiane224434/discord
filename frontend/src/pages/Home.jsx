@@ -14,6 +14,9 @@ function DiscordIcon() {
     );
 }
 
+// Couleurs des modules (cyclées dans le bandeau)
+const HUES = ['#20b9f2', '#b5a0ff', '#ffc46c', '#ff917e', '#51d6a5', '#f472b6'];
+
 function Home() {
     const { theme, isIslamUnlocked } = useTheme();
     const logoSrc = theme === 'islam' ? '/icon-islam.png' : '/icon.png';
@@ -50,92 +53,27 @@ function Home() {
     };
 
     const modules = [
-        'IA /ask', 'Niveaux & XP', 'Modération', 'Accueil', 'YouTube', 'TikTok Live',
-        'Rappels', 'Stats serveur', 'Quiz', 'Rappel bump',
-        ...(isIslamUnlocked ? ['Horaires de prière', 'Coran', 'Radio 24/7', 'Qibla'] : []),
+        { label: 'Intelligence artificielle', icon: 'sparkles' },
+        { label: 'Niveaux & XP', icon: 'activity' },
+        { label: 'Modération', icon: 'shield' },
+        { label: 'Bienvenue', icon: 'hand' },
+        { label: 'Alertes YouTube', icon: 'megaphone' },
+        { label: 'Lives TikTok', icon: 'megaphone' },
+        { label: 'Rappels', icon: 'refresh' },
+        { label: 'Quiz', icon: 'help' },
+        { label: 'Infos serveur', icon: 'server' },
+        ...(isIslamUnlocked ? [
+            { label: 'Horaires de prière', icon: 'moon' },
+            { label: 'Radio Coran 24/7', icon: 'moon' },
+        ] : []),
     ];
-
-    const features = [
-        {
-            key: 'ai',
-            size: 'wide',
-            icon: 'sparkles',
-            title: 'Une IA dans vos salons',
-            desc: "Posez une question avec /ask : la réponse arrive en quelques secondes, propulsée par Groq. Idéal pour aider vos membres sans quitter Discord.",
-            visual: (
-                <div className="azh-mini-chat">
-                    <div className="azh-mini-bubble is-user">/ask Explique-moi les promesses en JS</div>
-                    <div className="azh-mini-bubble is-bot">
-                        <span className="azh-typing"><i /><i /><i /></span>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            key: 'levels',
-            icon: 'activity',
-            title: 'Niveaux & XP',
-            desc: 'Classements, paliers et rôles attribués automatiquement aux membres les plus actifs.',
-            visual: (
-                <div className="azh-xp">
-                    <div className="azh-xp-row"><span>Niv. 12</span><span>2 340 / 3 000 XP</span></div>
-                    <div className="azh-xp-bar"><span /></div>
-                </div>
-            ),
-        },
-        {
-            key: 'moderation',
-            icon: 'shield',
-            title: 'Modération',
-            desc: 'Nettoyez un salon avec /purge, gérez les permissions et gardez une trace de tout.',
-            visual: (
-                <ul className="azh-log">
-                    <li><b>/purge 50</b> · 50 messages supprimés</li>
-                    <li><b>Permissions</b> · rôle Modo mis à jour</li>
-                </ul>
-            ),
-        },
-        {
-            key: 'alerts',
-            icon: 'megaphone',
-            title: 'Alertes YouTube & TikTok',
-            desc: "Une vidéo publiée, un live lancé ? Votre salon d'annonces est prévenu en temps réel.",
-            visual: (
-                <div className="azh-notif">
-                    <span className="azh-notif-dot" />
-                    <div>
-                        <strong>Nouvelle vidéo</strong>
-                        <small>@createur vient de publier</small>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            key: 'welcome',
-            icon: 'hand',
-            title: 'Accueil & outils',
-            desc: 'Messages de bienvenue, rappels, infos serveur et membres : le quotidien de votre communauté, simplifié.',
-        },
-        ...(isIslamUnlocked ? [{
-            key: 'spiritual',
-            size: 'wide',
-            icon: 'moon',
-            title: 'Prières, Coran & radio',
-            desc: 'Horaires des 5 prières avec rappels automatiques, lecture du Coran et radio vocale 24h/24 parmi 22 récitateurs.',
-            visual: (
-                <div className="azh-prayers">
-                    {[['Fajr', '06:42'], ['Dhuhr', '13:51'], ['Asr', '16:48'], ['Maghrib', '19:12'], ['Isha', '20:38']].map(([name, time], i) => (
-                        <div key={name} className={i === 2 ? 'is-next' : ''}><small>{name}</small><b>{time}</b></div>
-                    ))}
-                </div>
-            ),
-        }] : []),
-    ];
+    const half = Math.ceil(modules.length / 2);
+    const rows = [modules.slice(0, half), modules.slice(half)];
 
     const steps = [
-        { n: '01', title: 'Invitez Azim', desc: 'Un clic sur « Ajouter à Discord » et choisissez votre serveur.' },
-        { n: '02', title: 'Configurez', desc: 'Activez les modules qui vous intéressent depuis le dashboard ou avec /config.' },
-        { n: '03', title: 'Profitez', desc: 'Vos membres découvrent les commandes slash, Azim s’occupe du reste.' },
+        { title: 'Invitez Azim', desc: 'Un clic, choisissez votre serveur.', icon: 'plus' },
+        { title: 'Activez vos modules', desc: 'Depuis le panel ou avec /config.', icon: 'settings' },
+        { title: 'C’est parti', desc: 'Vos membres profitent des commandes.', icon: 'check' },
     ];
 
     return (
@@ -161,19 +99,19 @@ function Home() {
                             </span>
                         </h1>
                         <p className="azh-lead">
-                            Azim réunit l'IA, les niveaux, la modération et les alertes réseaux dans un seul bot
-                            français et gratuit, simple à configurer et agréable à utiliser.
+                            IA, niveaux, modération et alertes réseaux dans un seul bot.
+                            Français, gratuit, prêt en une minute.
                         </p>
                         <div className="azh-cta">
                             <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
                                 <DiscordIcon /> Ajouter à Discord
                             </a>
-                            <Link className="azh-btn azh-btn--ghost" to="/docs/commandes">
-                                Voir les commandes <Icon name="arrowRight" size={17} />
+                            <Link className="azh-btn azh-btn--ghost" to="/dashboard">
+                                Ouvrir le panel <Icon name="arrowRight" size={17} />
                             </Link>
                         </div>
                         <ul className="azh-facts">
-                            <li><b>30+</b> commandes slash</li>
+                            <li><b>30+</b> commandes</li>
                             <li><b>24/7</b> en ligne</li>
                             <li><b>0 €</b> pour toujours</li>
                         </ul>
@@ -213,43 +151,139 @@ function Home() {
                 </div>
             </section>
 
-            {/* MODULES QUI DÉFILENT */}
-            <div className="azh-marquee" aria-label="Modules disponibles">
-                <div className="azh-marquee-track">
-                    {[...modules, ...modules].map((m, i) => (
-                        <span key={i} className="azh-chip" aria-hidden={i >= modules.length}>{m}</span>
-                    ))}
-                </div>
+            {/* BANDEAU DES MODULES : deux rubans croisés */}
+            <div className="azh-ribbons" aria-label="Modules disponibles">
+                {rows.map((row, r) => (
+                    <div key={r} className={`azh-ribbon azh-ribbon--${r ? 'b' : 'a'}`}>
+                        <div className="azh-ribbon-track">
+                            {[...row, ...row, ...row, ...row, ...row, ...row].map((m, i) => (
+                                <span key={i} className="azh-tile" style={{ '--c': HUES[(i + r * 3) % HUES.length] }} aria-hidden={i >= row.length}>
+                                    <span className="azh-tile-icon"><Icon name={m.icon} size={16} /></span>
+                                    {m.label}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                ))}
             </div>
 
-            {/* FONCTIONNALITÉS EN GRILLE */}
+            {/* FONCTIONNALITÉS */}
             <section className="azh-section" id="features">
                 <header className="azh-section-head" ref={reveal}>
-                    <h2>Tout ce qu'il faut, rien de superflu</h2>
-                    <p>Chaque module s'active en quelques secondes et se règle au détail près.</p>
+                    <h2>Tout votre serveur, un seul bot</h2>
+                    <p>Activez ce dont vous avez besoin, ignorez le reste.</p>
                 </header>
 
-                <div className="azh-bento">
-                    {features.map((f) => (
-                        <article key={f.key} ref={reveal} className={`azh-card${f.size === 'wide' ? ' azh-card--wide' : ''}`}>
-                            <div className="azh-card-icon"><Icon name={f.icon} size={22} /></div>
-                            <h3>{f.title}</h3>
-                            <p>{f.desc}</p>
-                            {f.visual && <div className="azh-card-visual">{f.visual}</div>}
+                <div className={`azh-bento${isIslamUnlocked ? ' has-islam' : ''}`}>
+                    <article ref={reveal} className="azh-card azh-card--ai" style={{ '--c': '#b5a0ff' }}>
+                        <div className="azh-card-text">
+                            <span className="azh-card-icon"><Icon name="sparkles" size={22} /></span>
+                            <h3>Une IA dans vos salons</h3>
+                            <p>Mentionnez Azim ou tapez /ask : il répond en quelques secondes.</p>
+                        </div>
+                        <div className="azh-card-visual azh-v-chat">
+                            <div className="azh-v-bubble is-user">@Azim c'est quoi une promesse en JS ?</div>
+                            <div className="azh-v-bubble is-bot">
+                                <img src={logoSrc} alt="" />
+                                <span>Une <b>Promise</b> représente une valeur disponible plus tard : on la lit avec <code>.then()</code> ou <code>await</code>.</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article ref={reveal} className="azh-card azh-card--lvl" style={{ '--c': '#ffc46c' }}>
+                        <div className="azh-card-text">
+                            <span className="azh-card-icon"><Icon name="activity" size={22} /></span>
+                            <h3>Niveaux & XP</h3>
+                            <p>Vos membres gagnent de l'XP en discutant et débloquent des rôles.</p>
+                        </div>
+                        <div className="azh-card-visual azh-v-rank">
+                            <div className="azh-rank-card">
+                                <div className="azh-rank-ring">
+                                    <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" /><circle className="is-fill" cx="32" cy="32" r="28" /></svg>
+                                    <span>S</span>
+                                </div>
+                                <div className="azh-rank-info">
+                                    <strong>Sami</strong>
+                                    <small>Niveau 12 · #3</small>
+                                    <div className="azh-rank-bar"><i /></div>
+                                </div>
+                            </div>
+                            <ol className="azh-board">
+                                <li><span className="azh-medal is-gold">1</span> Inès <b>Niv. 27</b></li>
+                                <li><span className="azh-medal is-silver">2</span> Yanis <b>Niv. 19</b></li>
+                                <li><span className="azh-medal is-bronze">3</span> Sami <b>Niv. 12</b></li>
+                            </ol>
+                        </div>
+                    </article>
+
+                    <article ref={reveal} className="azh-card azh-card--mod" style={{ '--c': '#51d6a5' }}>
+                        <div className="azh-card-text">
+                            <span className="azh-card-icon"><Icon name="shield" size={22} /></span>
+                            <h3>Modération</h3>
+                            <p>Nettoyez un salon en une commande.</p>
+                        </div>
+                        <div className="azh-card-visual azh-v-purge">
+                            <code>/purge 50</code>
+                            <span className="azh-v-ok"><Icon name="check" size={14} /> 50 messages supprimés</span>
+                        </div>
+                    </article>
+
+                    <article ref={reveal} className="azh-card azh-card--yt" style={{ '--c': '#ff917e' }}>
+                        <div className="azh-card-text">
+                            <span className="azh-card-icon"><Icon name="megaphone" size={22} /></span>
+                            <h3>Alertes YouTube & TikTok</h3>
+                            <p>Nouvelle vidéo ou live : votre salon est prévenu.</p>
+                        </div>
+                        <div className="azh-card-visual azh-v-video">
+                            <div className="azh-video-thumb"><span>▶</span></div>
+                            <div>
+                                <strong>Nouvelle vidéo !</strong>
+                                <small>@createur · il y a 1 min</small>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article ref={reveal} className="azh-card azh-card--wel" style={{ '--c': '#20b9f2' }}>
+                        <div className="azh-card-text">
+                            <span className="azh-card-icon"><Icon name="hand" size={22} /></span>
+                            <h3>Accueil des membres</h3>
+                            <p>Message de bienvenue, rôles automatiques et message privé à l'arrivée.</p>
+                        </div>
+                        <div className="azh-card-visual azh-v-welcome">
+                            <div className="azh-welcome-banner">
+                                <span className="azh-welcome-avatar">L</span>
+                                <strong>Bienvenue Léa !</strong>
+                                <small>Tu es le 843e membre</small>
+                            </div>
+                        </div>
+                    </article>
+
+                    {isIslamUnlocked ? (
+                        <article ref={reveal} className="azh-card azh-card--isl" style={{ '--c': '#10b981' }}>
+                            <div className="azh-card-text">
+                                <span className="azh-card-icon"><Icon name="moon" size={22} /></span>
+                                <h3>Prières & Coran</h3>
+                                <p>Rappels des 5 prières et radio Coran 24/7.</p>
+                            </div>
+                            <div className="azh-card-visual azh-prayers">
+                                {[['Fajr', '06:42'], ['Dhuhr', '13:51'], ['Asr', '16:48'], ['Maghrib', '19:12'], ['Isha', '20:38']].map(([name, time], i) => (
+                                    <div key={name} className={i === 2 ? 'is-next' : ''}><small>{name}</small><b>{time}</b></div>
+                                ))}
+                            </div>
                         </article>
-                    ))}
+                    ) : null}
                 </div>
             </section>
 
             {/* ÉTAPES */}
-            <section className="azh-section azh-section--steps">
+            <section className="azh-section">
                 <header className="azh-section-head" ref={reveal}>
-                    <h2>Prêt en moins d'une minute</h2>
+                    <h2>Prêt en moins d’une minute</h2>
                 </header>
-                <ol className="azh-steps">
-                    {steps.map((s) => (
-                        <li key={s.n} ref={reveal} className="azh-step">
-                            <span className="azh-step-n">{s.n}</span>
+                <ol className="azh-steps" ref={reveal}>
+                    {steps.map((s, i) => (
+                        <li key={s.title} className="azh-step">
+                            <span className="azh-step-dot"><Icon name={s.icon} size={22} /><i>{i + 1}</i></span>
                             <h3>{s.title}</h3>
                             <p>{s.desc}</p>
                         </li>
@@ -259,16 +293,20 @@ function Home() {
 
             {/* APPEL À L'ACTION FINAL */}
             <section className="azh-final" ref={reveal}>
-                <img src={logoSrc} alt="" className="azh-final-logo" />
-                <div>
-                    <h2>Donnez un coup de boost à votre communauté</h2>
-                    <p>Ajoutez Azim gratuitement et configurez-le depuis le dashboard.</p>
+                <div className="azh-final-art" aria-hidden="true">
+                    <span className="azh-orbit azh-orbit--1" />
+                    <span className="azh-orbit azh-orbit--2" />
+                    <img src={logoSrc} alt="" />
                 </div>
-                <div className="azh-cta">
-                    <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
-                        <DiscordIcon /> Ajouter à Discord
-                    </a>
-                    <Link className="azh-btn azh-btn--ghost" to="/dashboard">Ouvrir le dashboard</Link>
+                <div className="azh-final-copy">
+                    <h2>Prêt à ajouter Azim ?</h2>
+                    <p>Gratuit, sans inscription, configurable depuis Discord ou le panel.</p>
+                    <div className="azh-cta">
+                        <a className="azh-btn azh-btn--light" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
+                            <DiscordIcon /> Ajouter à Discord
+                        </a>
+                        <Link className="azh-btn azh-btn--outline" to="/docs/accueil">Lire la documentation</Link>
+                    </div>
                 </div>
             </section>
         </div>

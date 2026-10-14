@@ -367,7 +367,7 @@ function Dashboard() {
                 <aside className="pnl-side">
                     <section className="pnl-card">
                         <div className="pnl-card__head">
-                            <h2>Commandes populaires</h2>
+                            <h2>Top commandes</h2>
                             <Link to="/command-history" className="pnl-link">Historique <Icon name="arrowRight" size={14} /></Link>
                         </div>
                         {topCommands.length ? (

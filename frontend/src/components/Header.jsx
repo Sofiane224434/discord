@@ -15,6 +15,7 @@ function Header() {
 
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const menuRef = useRef(null);
 
     // Fermer le menu utilisateur au clic extérieur
@@ -29,6 +30,14 @@ function Header() {
         }
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [userMenuOpen]);
+
+    // Ombre sous le header dès qu'on a défilé
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     const handleLogout = () => {
         setUserMenuOpen(false);
@@ -46,7 +55,7 @@ function Header() {
     const isActive = (item) => location.pathname.startsWith(item.match);
 
     return (
-        <header className="az-header" role="banner">
+        <header className={`az-header${scrolled ? ' is-scrolled' : ''}`} role="banner">
             <div className="az-header__inner">
                 <Link to="/" className="az-header__brand" aria-label="Accueil AzimBot">
                     <img

@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import User from '../models/user.model.js';
+import User, { toPublicUser } from '../models/user.model.js';
 import { generateToken } from './auth.controller.js';
 
 const DISCORD_API_BASE = 'https://discord.com/api/v10';
@@ -200,40 +200,48 @@ export const exchangeCode = async (req, res) => {
 
         const fallbackEmail = `discord_${discordUser.id}@azim.local`;
         const email = (discordUser.email || fallbackEmail).toLowerCase();
+        const discordInfo = {
+            id: String(discordUser.id),
+            username: discordUser.global_name || discordUser.username,
+            avatar: discordUser.avatar || null,
+        };
 
-        let localUser = await User.findByEmail(email);
+        // Le compte est d'abord retrouvé par son ID Discord (l'email peut avoir été changé sur le site)
+        let localUser = await User.findByDiscordId(discordInfo.id);
+        if (!localUser) {
+            const byEmail = await User.findByEmail(email);
+            if (byEmail && !byEmail.discord_id) localUser = byEmail;
+        }
+
         if (!localUser) {
             const display = splitDisplayName(discordUser.global_name || discordUser.username);
             localUser = await User.create({
-                email,
+                // Adresse déjà prise par un autre compte lié à Discord : on garde l'adresse technique
+                email: (await User.findByEmail(email)) ? fallbackEmail : email,
                 password: crypto.randomUUID(),
                 firstname: display.firstname,
                 lastname: display.lastname,
+                hasPassword: false,
+                discord: discordInfo,
             });
         } else {
-            localUser = {
-                id: localUser.id,
-                email: localUser.email,
-                firstname: localUser.firstname,
-                lastname: localUser.lastname,
-            };
+            // Pseudo et avatar changent côté Discord : on les remet à jour à chaque connexion
+            await User.linkDiscord(localUser.id, discordInfo);
+            localUser = await User.findById(localUser.id);
         }
 
-        const allGuilds = Array.isArray(guilds) ? guilds : [];
+        const allGuilds = (Array.isArray(guilds) ? guilds : []).map((guild) => ({
+            ...guild,
+            iconUrl: guild.icon
+                ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.${String(guild.icon).startsWith('a_') ? 'gif' : 'png'}?size=128`
+                : null,
+        }));
         const manageableGuildIds = allGuilds.filter(isGuildManager).map((guild) => String(guild.id));
-        const token = generateToken(localUser, manageableGuildIds);
+        const token = generateToken(localUser, manageableGuildIds, 'discord');
 
         return res.json({
             token,
-            user: localUser,
-            discord: {
-                id: discordUser.id,
-                username: discordUser.username,
-                globalName: discordUser.global_name || null,
-                avatarUrl: discordUser.avatar
-                    ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=128`
-                    : null,
-            },
+            user: { ...toPublicUser(localUser), recentDiscordAuth: true },
             guilds: allGuilds,
         });
     } catch (error) {

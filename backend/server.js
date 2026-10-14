@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { testConnection } from './config/db.js';
+import { testConnection, ensureSchema } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import botRoutes from './routes/bot.routes.js';
@@ -12,8 +12,10 @@ import adminRoutes from './routes/admin.routes.js';
 import feedbackRoutes from './routes/feedback.routes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
-// Connexion BDD
-testConnection();
+// Connexion BDD puis mise à jour du schéma si besoin
+testConnection().then((ok) => {
+    if (ok) ensureSchema().catch((error) => console.error('Migration impossible:', error.message));
+});
 // Middlewares
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json({ limit: '50mb' }));

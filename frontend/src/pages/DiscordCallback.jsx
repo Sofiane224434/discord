@@ -42,7 +42,9 @@ function DiscordCallback() {
                 setSession(data.user, data.token);
                 localStorage.setItem('discord_guilds', JSON.stringify(data.guilds || []));
                 sessionStorage.removeItem('discord_oauth_redirect_uri');
-                navigate('/dashboard', { replace: true });
+                const returnTo = sessionStorage.getItem('post_login_redirect') || '/dashboard';
+                sessionStorage.removeItem('post_login_redirect');
+                navigate(returnTo.startsWith('/') ? returnTo : '/dashboard', { replace: true });
             } catch (apiError) {
                 if (mounted) {
                     setError(formatApiError(apiError, t('oauth.error_exchange')));

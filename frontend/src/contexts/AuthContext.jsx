@@ -42,6 +42,12 @@ export function AuthProvider({ children }) {
         setUser(data.user);
         return data;
     };
+    // Recharge le profil après un changement (email, mot de passe…)
+    const refreshUser = async () => {
+        const data = await authService.getProfile();
+        setUser(data.user);
+        return data.user;
+    };
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('discord_guilds');
@@ -50,7 +56,7 @@ export function AuthProvider({ children }) {
     return (
         <AuthContext.Provider value={{
             user, loading, isAuthenticated: !!user,
-            login, register, logout, setSession
+            login, register, logout, setSession, refreshUser
         }}>
             {children}
         </AuthContext.Provider>

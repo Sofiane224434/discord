@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import Icon from '../components/Icon.jsx';
+import AccountSettings from '../components/AccountSettings.jsx';
 
 const THEMES = [
     {
@@ -29,59 +30,33 @@ const LANGUAGES = [
 
 function Settings() {
     const { theme, setTheme, isIslamUnlocked } = useTheme();
-    const { user, isAuthenticated, logout } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const { i18n } = useTranslation();
     const currentLanguage = (i18n.resolvedLanguage || i18n.language || 'fr').slice(0, 2);
 
-    const avatarUrl = user?.avatarUrl || (user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128` : null);
-    const displayName = user?.global_name || user?.firstname || user?.username;
     const themes = THEMES.filter((t) => !t.locked || isIslamUnlocked);
 
     return (
         <main className="pg pg--narrow" id="main" tabIndex="-1">
             <header className="pg-head">
                 <h1>Paramètres</h1>
-                <p>Votre compte et l’apparence du site. Ces réglages sont enregistrés sur cet appareil.</p>
+                <p>Votre compte, sa sécurité et l’apparence du site.</p>
             </header>
 
             <div className="set-stack">
-                {/* Compte */}
-                <section className="ui-card set-section">
-                    <div className="set-section__head">
-                        <span className="set-section__icon" style={{ '--c': 'var(--azim-accent)' }}><Icon name="users" size={20} /></span>
-                        <div>
-                            <h2>Compte</h2>
-                            <p>Votre connexion Discord.</p>
-                        </div>
-                    </div>
-
-                    {isAuthenticated && user ? (
-                        <div className="set-account">
-                            {avatarUrl ? (
-                                <img src={avatarUrl} alt="" className="set-account__avatar" />
-                            ) : (
-                                <span className="set-account__avatar set-account__avatar--fallback">{(displayName || 'U').charAt(0).toUpperCase()}</span>
-                            )}
-                            <div className="set-account__who">
-                                <strong>{displayName}</strong>
-                                <small>@{user.username}</small>
-                            </div>
-                            <div className="set-account__actions">
-                                <button type="button" onClick={logout} className="ui-btn ui-btn--danger">
-                                    <Icon name="logout" size={16} /> Déconnexion
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
+                {isAuthenticated && user ? (
+                    <AccountSettings />
+                ) : (
+                    <section className="ui-card set-section">
                         <div className="set-account set-account--guest">
                             <div className="set-account__who">
                                 <strong>Vous n’êtes pas connecté</strong>
-                                <small>Connectez-vous avec Discord pour gérer vos serveurs.</small>
+                                <small>Connectez-vous avec Discord pour gérer vos serveurs et votre compte.</small>
                             </div>
-                            <Link to="/login" className="ui-btn ui-btn--primary">Se connecter avec Discord</Link>
+                            <Link to="/login" className="ui-btn ui-btn--primary">Se connecter</Link>
                         </div>
-                    )}
-                </section>
+                    </section>
+                )}
 
                 {/* Apparence */}
                 <section className="ui-card set-section">

@@ -23,6 +23,7 @@ async function fetchAPI(endpoint, options = {}) {
                     : `Erreur du serveur (${response.status}).`),
                 hint: data?.hint,
                 details: data?.details,
+                code: data?.code,
             };
         }
         return data || {};
@@ -42,7 +43,20 @@ export const authService = {
         method: 'POST',
         body: JSON.stringify({ email, password })
     }),
-    getProfile: () => fetchAPI('/auth/me')
+    getProfile: () => fetchAPI('/auth/me'),
+    // Les actions sensibles demandent le mot de passe actuel (ou une connexion Discord récente)
+    changePassword: (payload) => fetchAPI('/auth/password', { method: 'PUT', body: JSON.stringify(payload) }),
+    changeEmail: (payload) => fetchAPI('/auth/email', { method: 'PUT', body: JSON.stringify(payload) }),
+    deleteAccount: (payload) => fetchAPI('/auth/me', { method: 'DELETE', body: JSON.stringify(payload) }),
+}
+
+// Lance la connexion Discord, puis revient sur la page `returnTo`
+export async function startDiscordLogin(returnTo = '/dashboard') {
+    const redirectUri = `${window.location.origin}/oauth/discord/callback`;
+    const data = await discordService.getAuthUrl(redirectUri);
+    sessionStorage.setItem('discord_oauth_redirect_uri', data.redirectUri || redirectUri);
+    sessionStorage.setItem('post_login_redirect', returnTo);
+    window.location.href = data.url;
 }
 
 export const emailService = {

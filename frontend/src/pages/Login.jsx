@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { useAuth } from "../hooks/useAuth.js";
-import { discordService } from '../services/api.js';
+import { startDiscordLogin } from '../services/api.js';
 
 function formatApiError(err, fallback) {
     if (!err) return fallback;
@@ -41,10 +41,7 @@ function Login() {
     const handleDiscordLogin = async () => {
         setError('');
         try {
-            const redirectUri = `${window.location.origin}/oauth/discord/callback`;
-            const data = await discordService.getAuthUrl(redirectUri);
-            sessionStorage.setItem('discord_oauth_redirect_uri', data.redirectUri || redirectUri);
-            window.location.href = data.url;
+            await startDiscordLogin(from);
         } catch (err) {
             setError(formatApiError(err, t('oauth.error_exchange')));
         }

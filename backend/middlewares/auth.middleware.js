@@ -11,14 +11,17 @@ const authMiddleware = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         let user = null;
+        let dbUnavailable = false;
         try {
             user = await User.findById(decoded.id);
         } catch (dbError) {
             // Si la base MySQL est momentanément indisponible, on utilise les claims du token JWT valide
+            dbUnavailable = true;
             console.warn('MySQL non accessible, utilisation du profil JWT:', dbError.message);
         }
 
-        if (!user && decoded?.id) {
+        // Seulement si la base est injoignable : un compte supprimé ne doit plus être accepté
+        if (!user && dbUnavailable && decoded?.id) {
             user = {
                 id: decoded.id,
                 email: decoded.email || null,
@@ -33,6 +36,8 @@ const authMiddleware = async (req, res, next) => {
 
         user.discord_guild_ids = Array.isArray(decoded.discordGuildIds) ? decoded.discordGuildIds : [];
         req.user = user;
+        // Méthode et date de connexion : servent à confirmer les actions sensibles
+        req.auth = { method: decoded.auth || 'password', issuedAt: decoded.iat };
         next();
     } catch (error) {
         if (error.name === 'TokenExpiredError') {

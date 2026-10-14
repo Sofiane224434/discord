@@ -9,11 +9,11 @@
 const now = Date.now();
 const ago = (minutes) => new Date(now - minutes * 60_000).toISOString();
 
-const USER = { id: '000000000000000001', username: 'claude-apercu', firstname: 'Claude', email: 'apercu@azim.local', avatarUrl: null };
+let USER = { id: 1, username: 'claude-apercu', firstname: 'Claude', email: null, createdAt: '2026-03-02T10:00:00Z', avatarUrl: '/icon.png', hasDiscord: true, hasPassword: false, recentDiscordAuth: true };
 
 const DISCORD_GUILDS = [
-    { id: '111', name: 'Azim HQ', owner: true, permissions: '8' },
-    { id: '112', name: 'Studio Créa', owner: false, permissions: '32' },
+    { id: '111', name: 'Azim HQ', owner: true, permissions: '8', iconUrl: '/icon.png' },
+    { id: '112', name: 'Studio Créa', owner: false, permissions: '32', iconUrl: '/icon-islam.png' },
     { id: '113', name: 'Les Codeurs', owner: true, permissions: '8' },
     { id: '333', name: 'Projet Perso', owner: true, permissions: '8' },
     { id: '222', name: 'Gaming FR', owner: false, permissions: '0' },
@@ -86,7 +86,16 @@ export function installMockApi() {
         const path = url.pathname.replace(/^\/api/, '');
         await new Promise((r) => setTimeout(r, 120));
 
-        if (path === '/auth/me') return loggedIn ? json({ user: USER }) : json({ error: 'Non connecté' }, 401);
+        if (path === '/auth/me' && method === 'GET') return loggedIn ? json({ user: USER }) : json({ error: 'Non connecté' }, 401);
+        if (path === '/auth/me' && method === 'DELETE') return json({ message: 'Compte supprimé.' });
+        if (path === '/auth/email') {
+            USER = { ...USER, email: JSON.parse(init.body || '{}').email };
+            return json({ message: 'Adresse email mise à jour.', user: USER });
+        }
+        if (path === '/auth/password') {
+            USER = { ...USER, hasPassword: true };
+            return json({ message: 'Mot de passe enregistré.' });
+        }
         if (path === '/bot/overview') return json(overview(islam, empty));
         if (/^\/admin\/guild\/[^/]+\/config$/.test(path)) return json(method === 'GET' ? GUILD_CONFIG : { success: true });
         if (path === '/system/health') {

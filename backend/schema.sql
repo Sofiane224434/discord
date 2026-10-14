@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     firstname VARCHAR(100),
     lastname VARCHAR(100),
+    discord_id VARCHAR(32) NULL UNIQUE,
+    discord_username VARCHAR(100) NULL,
+    discord_avatar VARCHAR(255) NULL,
+    has_password TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

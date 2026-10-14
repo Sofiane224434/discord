@@ -53,6 +53,10 @@ jobs:
               git checkout -B main FETCH_HEAD
             fi
 
+            # Construit d'abord les images et vérifie la config nginx : en cas d'erreur, l'ancien site reste en ligne
+            docker compose -p "$PROJECT" build
+            docker run --rm --add-host api:127.0.0.1 "$PROJECT-app" nginx -t
+
             docker compose -p "$PROJECT" down || true
             docker rm -f discord-dashboard-db discord-dashboard-api discord-dashboard-app 2>/dev/null || true
             # Si le bot est en train de se déployer en même temps, son réseau peut manquer quelques secondes

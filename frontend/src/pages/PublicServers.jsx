@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { systemService } from '../services/api.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
-import { ADD_BOT_URL } from '../config/links.js';
+import { openAddBot } from '../config/links.js';
 
 function PublicServers() {
     const { theme } = useTheme();
@@ -47,7 +47,7 @@ function PublicServers() {
 
             <section className="module-cta site-panel">
                 <div><h2>{t('bots.cta_title')}</h2><p>{t('bots.cta_lead')}</p></div>
-                <a href={ADD_BOT_URL} target="_blank" rel="noreferrer" className="btn btn-primary">{t('bots.cta')} <span aria-hidden="true">↗</span></a>
+                <button type="button" onClick={openAddBot} className="btn btn-primary">{t('bots.cta')} <span aria-hidden="true">↗</span></button>
             </section>
         </main>
     );

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
 import { staffService } from '../services/api.js';
 import Icon from '../components/Icon.jsx';
+import { useConfirm } from '../hooks/useConfirm.jsx';
 
 // Administration du site : comptes (bannir, nommer admin) et serveurs (suspendre le bot)
 export default function Admin() {
@@ -11,6 +12,7 @@ export default function Admin() {
     const { t, i18n } = useTranslation();
     const locale = i18n.resolvedLanguage || i18n.language || 'fr';
     const isSuperAdmin = user?.role === 'superadmin';
+    const [confirm, confirmDialog] = useConfirm();
 
     const [tab, setTab] = useState('users');
     const [users, setUsers] = useState([]);
@@ -66,32 +68,59 @@ export default function Admin() {
         }
     };
 
-    const toggleBan = (target) => run(`ban-${target.id}`, async () => {
+    // Raison facultative demandée dans une fenêtre du site ; null = annulé
+    const askReason = (title, message, confirmLabel) => confirm({
+        title,
+        message,
+        confirmLabel,
+        danger: true,
+        input: { label: t('admin.reason_label'), placeholder: t('admin.reason_ph') },
+    });
+
+    const toggleBan = async (target) => {
+        const name = target.username || target.email;
         let reason = '';
         if (!target.banned) {
-            reason = window.prompt(t('admin.ban_reason', { name: target.username || target.email }));
+            reason = await askReason(t('admin.ban_title', { name }), t('admin.ban_message'), t('admin.ban'));
             if (reason === null) return;
+        } else if (!(await confirm({ title: t('admin.unban_title', { name }), confirmLabel: t('admin.unban') }))) {
+            return;
         }
-        const res = await staffService.setBan(target.id, !target.banned, reason);
-        setUsers((prev) => prev.map((u) => (u.id === target.id ? res.user : u)));
-    });
+        run(`ban-${target.id}`, async () => {
+            const res = await staffService.setBan(target.id, !target.banned, reason);
+            setUsers((prev) => prev.map((u) => (u.id === target.id ? res.user : u)));
+        });
+    };
 
-    const toggleAdmin = (target) => run(`role-${target.id}`, async () => {
+    const toggleAdmin = async (target) => {
+        const name = target.username || target.email;
         const role = target.role === 'admin' ? 'user' : 'admin';
-        if (!window.confirm(t(role === 'admin' ? 'admin.promote_confirm' : 'admin.demote_confirm', { name: target.username || target.email }))) return;
-        const res = await staffService.setRole(target.id, role);
-        setUsers((prev) => prev.map((u) => (u.id === target.id ? res.user : u)));
-    });
+        const ok = await confirm({
+            title: t(role === 'admin' ? 'admin.promote_confirm' : 'admin.demote_confirm', { name }),
+            message: t(role === 'admin' ? 'admin.promote_message' : 'admin.demote_message'),
+            confirmLabel: role === 'admin' ? t('admin.promote') : t('admin.demote'),
+            danger: role !== 'admin',
+        });
+        if (!ok) return;
+        run(`role-${target.id}`, async () => {
+            const res = await staffService.setRole(target.id, role);
+            setUsers((prev) => prev.map((u) => (u.id === target.id ? res.user : u)));
+        });
+    };
 
-    const toggleSuspend = (guild) => run(`guild-${guild.id}`, async () => {
+    const toggleSuspend = async (guild) => {
         let reason = '';
         if (!guild.suspended) {
-            reason = window.prompt(t('admin.suspend_reason', { name: guild.name }));
+            reason = await askReason(t('admin.suspend_title', { name: guild.name }), t('admin.suspend_message'), t('admin.suspend'));
             if (reason === null) return;
+        } else if (!(await confirm({ title: t('admin.resume_title', { name: guild.name }), confirmLabel: t('admin.resume') }))) {
+            return;
         }
-        await staffService.setSuspended(guild.id, !guild.suspended, reason);
-        setGuilds((prev) => prev.map((g) => (g.id === guild.id ? { ...g, suspended: !guild.suspended } : g)));
-    });
+        run(`guild-${guild.id}`, async () => {
+            await staffService.setSuspended(guild.id, !guild.suspended, reason);
+            setGuilds((prev) => prev.map((g) => (g.id === guild.id ? { ...g, suspended: !guild.suspended } : g)));
+        });
+    };
 
     if (!['admin', 'superadmin'].includes(user?.role)) return <Navigate to="/dashboard" replace />;
 
@@ -194,6 +223,7 @@ export default function Admin() {
                     {filteredGuilds.length === 0 ? <li className="pnl-muted">{t('admin.no_guilds')}</li> : null}
                 </ul>
             ) : null}
+            {confirmDialog}
         </main>
     );
 }

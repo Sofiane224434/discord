@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation, Trans } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from '../components/Icon.jsx';
-import { ADD_BOT_URL } from '../config/links.js';
+import { openAddBot } from '../config/links.js';
 
 
 function DiscordIcon() {
@@ -106,9 +106,9 @@ function Home() {
                             {t('home.lead')}
                         </p>
                         <div className="azh-cta">
-                            <a className="azh-btn azh-btn--primary" href={ADD_BOT_URL} target="_blank" rel="noreferrer">
+                            <button type="button" className="azh-btn azh-btn--primary" onClick={openAddBot}>
                                 <DiscordIcon /> {t('home.cta_add')}
-                            </a>
+                            </button>
                             <Link className="azh-btn azh-btn--ghost" to="/#features">
                                 {t('home.cta_features')} <Icon name="arrowRight" size={17} />
                             </Link>
@@ -144,7 +144,7 @@ function Home() {
                                     </div>
                                 </div>
                                 <div className="azh-msg azh-msg--system">
-                                    <span className="azh-levelup">🎉</span>
+                                    <span className="azh-levelup"><Icon name="sparkles" size={16} /></span>
                                     <div><Trans i18nKey="home.chat_levelup" components={{ b: <b />, lvl: <b className="azh-accent" /> }} /></div>
                                 </div>
                             </div>
@@ -305,9 +305,9 @@ function Home() {
                     <h2>{t('home.final_title')}</h2>
                     <p>{t('home.final_lead')}</p>
                     <div className="azh-cta">
-                        <a className="azh-btn azh-btn--light" href={ADD_BOT_URL} target="_blank" rel="noreferrer">
+                        <button type="button" className="azh-btn azh-btn--light" onClick={openAddBot}>
                             <DiscordIcon /> {t('home.cta_add')}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </section>

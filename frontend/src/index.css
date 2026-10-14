@@ -4616,7 +4616,6 @@ html.theme-transitioning::after {
 .gc-nav__item.is-active {
 	background: color-mix(in srgb, var(--azim-accent) 16%, transparent);
 	color: var(--azim-ink);
-	box-shadow: inset 3px 0 0 var(--azim-accent);
 }
 
 .gc-nav__item.is-active .azim-icon {
@@ -4841,8 +4840,11 @@ html.theme-transitioning::after {
 
 /* Grand nom en filigrane */
 .ft__word {
-	margin: 36px 0 -18px;
-	font-size: clamp(90px, 19vw, 260px);
+	display: block;
+	text-decoration: none;
+	white-space: nowrap;
+	margin: 36px 0 -10px;
+	font-size: clamp(40px, 10.6vw, 150px);
 	font-weight: 800;
 	line-height: 0.8;
 	letter-spacing: -0.06em;
@@ -4852,7 +4854,13 @@ html.theme-transitioning::after {
 	background-clip: text;
 	color: transparent;
 	user-select: none;
-	pointer-events: none;
+	transition: background 0.3s ease;
+}
+
+.ft__word:hover {
+	background: linear-gradient(180deg, color-mix(in srgb, var(--azim-accent) 32%, transparent), transparent 85%);
+	-webkit-background-clip: text;
+	background-clip: text;
 }
 
 .ft__bottom {
@@ -7103,7 +7111,6 @@ select.ui-input {
 .dc-nav__link.is-active {
 	background: color-mix(in srgb, var(--azim-accent) 15%, transparent);
 	color: var(--azim-ink);
-	box-shadow: inset 3px 0 0 var(--azim-accent);
 }
 
 .dc-nav__link.is-active .azim-icon {
@@ -7598,14 +7605,12 @@ select.ui-input {
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	border-left: 2px solid color-mix(in srgb, var(--azim-line) 60%, transparent);
 }
 
 .dc-toc a {
 	display: block;
-	margin-left: -2px;
-	padding: 6px 0 6px 14px;
-	border-left: 2px solid transparent;
+	padding: 6px 10px;
+	border-radius: 8px;
 	color: var(--azim-ink-muted);
 	font-size: 14px;
 	text-decoration: none;
@@ -7616,7 +7621,7 @@ select.ui-input {
 }
 
 .dc-toc a.is-active {
-	border-left-color: var(--azim-accent);
+	background: color-mix(in srgb, var(--azim-accent) 12%, transparent);
 	color: var(--azim-accent);
 	font-weight: 700;
 }
@@ -7804,7 +7809,7 @@ select.ui-input {
 	margin-top: 14px;
 	padding: 12px 14px;
 	border-radius: 14px;
-	border-left: 3px solid var(--azim-accent);
+	border: 1px solid color-mix(in srgb, var(--azim-accent) 30%, transparent);
 	background: color-mix(in srgb, var(--azim-accent) 8%, var(--azim-surface-2));
 }
 
@@ -7969,4 +7974,334 @@ select.ui-input {
 .ft__logo img.ft__wordmark {
 	width: auto;
 	height: 34px;
+}
+
+/* ===== Fenêtre de confirmation (remplace les alertes du navigateur) ===== */
+.ui-confirm {
+	max-width: 460px;
+	padding: 26px;
+}
+
+.ui-confirm__body {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.ui-confirm__icon {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 46px;
+	height: 46px;
+	border-radius: 14px;
+	color: var(--azim-accent-strong);
+	background: color-mix(in srgb, var(--azim-accent) 14%, transparent);
+}
+
+.ui-confirm__icon.is-danger {
+	color: var(--azim-coral);
+	background: color-mix(in srgb, var(--azim-coral) 14%, transparent);
+}
+
+.ui-confirm h2 {
+	margin: 2px 0 6px;
+	font-size: 1.15rem;
+}
+
+.ui-confirm p {
+	margin: 0;
+	color: var(--azim-ink-soft);
+	line-height: 1.55;
+}
+
+.ui-confirm__field {
+	margin-top: 18px;
+}
+
+.ui-confirm .ui-modal__foot {
+	margin-top: 22px;
+	padding: 0;
+	border: 0;
+}
+
+/* ===== Documentation : liste des commandes en direct ===== */
+.dc-live__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.dc-live__bar .ui-search {
+	flex: 1 1 260px;
+	max-width: 420px;
+}
+
+.dc-live__count,
+.dc-live__state {
+	color: var(--azim-ink-muted);
+	font-size: 0.9rem;
+}
+
+.dc-live__list {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dc-live__item {
+	border-radius: 16px;
+	border: 1px solid color-mix(in srgb, var(--azim-line) 70%, transparent);
+	background: var(--azim-surface-2);
+	overflow: hidden;
+	transition: border-color 0.2s ease;
+}
+
+.dc-live__item.is-open {
+	border-color: color-mix(in srgb, var(--azim-accent) 45%, transparent);
+}
+
+.dc-live__head {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 14px;
+	width: 100%;
+	padding: 14px 16px;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.dc-live__head:disabled {
+	cursor: default;
+}
+
+.dc-live__head code,
+.dc-live__sub-head code,
+.dc-live__params code {
+	color: var(--azim-accent-strong);
+	font-weight: 600;
+}
+
+.dc-live__head span {
+	color: var(--azim-ink-soft);
+	font-size: 0.92rem;
+}
+
+.dc-live__head small {
+	color: var(--azim-ink-muted);
+	font-size: 0.78rem;
+	white-space: nowrap;
+}
+
+.dc-live__chevron {
+	color: var(--azim-ink-muted);
+	transition: transform 0.2s ease;
+}
+
+.dc-live__item.is-open .dc-live__chevron {
+	transform: rotate(180deg);
+}
+
+.dc-live__body {
+	display: grid;
+	gap: 12px;
+	padding: 0 16px 16px;
+}
+
+.dc-live__sub {
+	padding: 12px 14px;
+	border-radius: 12px;
+	background: color-mix(in srgb, var(--azim-panel) 70%, transparent);
+}
+
+.dc-live__sub-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 12px;
+	align-items: baseline;
+}
+
+.dc-live__sub-head span {
+	color: var(--azim-ink-soft);
+	font-size: 0.9rem;
+}
+
+.dc-live__params {
+	display: grid;
+	gap: 6px;
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 0.86rem;
+}
+
+.dc-live__params li {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	align-items: baseline;
+}
+
+.dc-live__params em {
+	font-style: normal;
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: var(--azim-warm);
+}
+
+.dc-live__params span {
+	color: var(--azim-ink-muted);
+}
+
+@media (max-width: 640px) {
+	.dc-live__head {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.dc-live__head span {
+		grid-column: 1 / -1;
+		grid-row: 2;
+	}
+
+	.dc-live__head small {
+		display: none;
+	}
+}
+
+/* Boutons « Ajouter Azim » : mêmes styles que les anciens liens */
+button.az-header__cta,
+button.azh-btn,
+button.btn,
+button.ft__linkbtn {
+	font: inherit;
+	cursor: pointer;
+}
+
+button.ft__linkbtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	text-align: left;
+}
+
+button.ft__linkbtn:hover {
+	color: var(--azim-ink);
+}
+
+/* ===== Panel : chaînes YouTube et comptes TikTok suivis ===== */
+.cf-social {
+	display: grid;
+	gap: 10px;
+}
+
+.cf-social__list {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.cf-social__item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 10px;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--azim-line) 70%, transparent);
+	background: var(--azim-surface-2);
+}
+
+.cf-social__item img,
+.cf-social__avatar {
+	flex: none;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.cf-social__avatar {
+	display: grid;
+	place-items: center;
+	color: var(--azim-ink-muted);
+	background: var(--azim-panel-raised);
+}
+
+.cf-social__text {
+	flex: 1;
+	min-width: 0;
+	display: grid;
+}
+
+.cf-social__text strong,
+.cf-social__text small {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cf-social__text small {
+	color: var(--azim-ink-muted);
+}
+
+.cf-social__add {
+	display: flex;
+	gap: 8px;
+}
+
+.cf-social__add .ui-input {
+	flex: 1;
+	min-width: 0;
+}
+
+/* En-tête : les liens restent sur une ligne, l'espace se resserre avant de passer au menu mobile */
+.az-nav-link {
+	white-space: nowrap;
+}
+
+@media (max-width: 1500px) {
+	.az-header__nav {
+		gap: 0;
+		margin-left: 4px;
+	}
+
+	.az-nav-link {
+		padding: 0 11px;
+	}
+}
+
+/* Panel : la carte Serveurs garde sa hauteur naturelle (sinon elle s'étire avec la colonne de droite) */
+.pnl-grid > .pnl-servers {
+	align-self: start;
+}
+
+/* Blocs côte à côte : pas d'espace vertical entre eux */
+.cf-grid-2 > .cf-card + .cf-card,
+.cf-grid-3 > .cf-card + .cf-card {
+	margin-top: 0;
+}
+
+/* Accueil sur mobile : le texte d'accroche occupe le premier écran, centré */
+@media (max-width: 980px) {
+	.azh-hero-copy {
+		min-height: calc(100svh - var(--azim-header-h) - 60px);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
 }

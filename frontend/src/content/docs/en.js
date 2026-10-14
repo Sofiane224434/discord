@@ -495,7 +495,7 @@ const DOCS_EN = [
                 content: {
                     badge: 'Full reference',
                     heading: 'Every AzimBot command',
-                    lead: 'All the commands available on your server, with their syntax and what they do.',
+                    lead: 'Every Azim command with its subcommands and options. The list is read straight from the bot, so it is always up to date.',
                     blocks: [
                         {
                             type: 'section',

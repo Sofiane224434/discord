@@ -495,7 +495,7 @@ const DOCS_FR = [
                 content: {
                     badge: 'Répertoire complet',
                     heading: 'Toutes les commandes d’AzimBot',
-                    lead: 'Retrouvez l’ensemble des commandes disponibles sur votre serveur, leur syntaxe et leur utilité.',
+                    lead: 'Toutes les commandes d’Azim avec leurs sous-commandes et options. La liste est lue directement sur le bot : elle est toujours à jour.',
                     blocks: [
                         {
                             type: 'section',

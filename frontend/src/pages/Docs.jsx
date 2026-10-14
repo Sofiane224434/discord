@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from '../components/Icon.jsx';
+import LiveCommands from '../components/LiveCommands.jsx';
 import { SUPPORT_URL } from '../config/links.js';
 import DOCS_FR from '../content/docs/fr.js';
 import DOCS_EN from '../content/docs/en.js';
@@ -131,6 +132,8 @@ function Docs() {
     const prev = index > 0 ? articles[index - 1] : null;
     const next = index < articles.length - 1 ? articles[index + 1] : null;
     const isHome = article.slug === 'accueil';
+    // Page « Toutes les commandes » : liste lue en direct sur le bot
+    const isCommands = article.slug === 'commandes';
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -239,7 +242,7 @@ function Docs() {
                 ) : null}
 
                 <div className="dc-body">
-                    {blocks.map((block, i) => <Block key={`${article.slug}-${i}`} block={block} />)}
+                    {isCommands ? <LiveCommands /> : blocks.map((block, i) => <Block key={`${article.slug}-${i}`} block={block} />)}
                 </div>
 
                 <nav className="dc-pager">
@@ -270,7 +273,7 @@ function Docs() {
                 </aside>
             </article>
 
-            {article.sections?.length ? (
+            {article.sections?.length && !isCommands ? (
                 <aside className="dc-toc" aria-label={t('docs.on_this_page')}>
                     <h4>{t('docs.on_this_page')}</h4>
                     <ul>

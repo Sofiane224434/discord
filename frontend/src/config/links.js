@@ -5,4 +5,10 @@
 export const SUPPORT_URL = 'https://discord.gg/XZmM6BZR8';
 
 // Ajout du bot sur un serveur
-export const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
+// (permissions : celles d'avant + bannir, expulser, exclure, gérer les salons, créer une invitation)
+export const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=1099780451415&scope=bot%20applications.commands';
+
+// Ouvre l'ajout du bot par un bouton : l'adresse Discord n'apparaît pas en bas du navigateur au survol
+export function openAddBot() {
+    window.open(ADD_BOT_URL, '_blank', 'noopener,noreferrer');
+}

@@ -44,7 +44,8 @@ const GUILD_CONFIG = {
     ],
     rank: { enabled: true, announceChannelId: 'c1', rewards: [{ level: 5, roleId: 'r2' }] },
     welcome: { enabled: true, channelId: 'c1' },
-    youtube: { channels: [{ handle: '@exemple', id: 'UC123' }], targetChannelId: 'c2' },
+    youtube: { channels: ['UCWeg2Pkate69NFdBeuRFTAw', 'UCxxxxxxxxxxxxxxxxxxxxxx'], profiles: [{ id: 'UCWeg2Pkate69NFdBeuRFTAw', name: 'SQUEEZIE', handle: '@Squeezie', avatarUrl: '/icon.png', url: 'https://www.youtube.com/@Squeezie' }, { id: 'UCxxxxxxxxxxxxxxxxxxxxxx', name: null, handle: null, avatarUrl: null, url: 'https://www.youtube.com/channel/UCxxxxxxxxxxxxxxxxxxxxxx' }], targetChannelId: 'c2' },
+    tiktok: { enabled: true, username: 'khaby.lame', accounts: ['khaby.lame'], profiles: [{ id: 'khaby.lame', name: 'Khabane lame', handle: '@khaby.lame', avatarUrl: '/icon-islam.png', url: 'https://www.tiktok.com/@khaby.lame' }], targetChannelId: 'c2' },
 };
 
 let reports = [
@@ -59,6 +60,16 @@ const STAFF_USERS = [
     { id: 2, username: 'ines', email: 'ines@example.com', role: 'admin', createdAt: '2026-05-11T10:00:00Z', discordId: '1002' },
     { id: 3, username: 'yanis', email: 'yanis@example.com', role: 'user', createdAt: '2026-06-20T10:00:00Z' },
     { id: 4, username: 'spam-bot', email: 'spam@example.com', role: 'user', banned: true, banReason: 'Spam dans les retours', createdAt: '2026-09-01T10:00:00Z' },
+];
+
+const MOCK_COMMANDS = [
+    { name: 'mod', islamic: false, fr: { name: 'mod', description: 'Outils de modération : sanctions, avertissements et salons', options: [
+        { name: 'bannir', type: 1, description: 'Bannir un membre du serveur', options: [{ name: 'membre', type: 6, required: true, description: 'Membre concerné' }, { name: 'raison', type: 3, description: 'Raison (visible dans le journal de modération)' }] },
+        { name: 'exclure', type: 1, description: 'Exclure temporairement un membre', options: [{ name: 'duree', type: 4, required: true, description: 'Durée de l’exclusion', choices: ['60 secondes', '5 minutes', '1 heure', '1 jour'] }] },
+    ] }, en: { name: 'mod', description: 'Moderation tools: sanctions, warnings and channels', options: [{ name: 'ban', type: 1, description: 'Ban a member from the server', options: [{ name: 'member', type: 6, required: true, description: 'Member concerned' }] }] } },
+    { name: 'purge', islamic: false, fr: { name: 'purge', description: 'Supprimer des messages ou vider entièrement un salon', options: [{ name: 'messages', type: 1, description: 'Supprimer jusqu’à 1000 messages', options: [{ name: 'nombre', type: 4, required: true, description: 'Nombre de messages (1 à 1000)' }] }, { name: 'salon', type: 1, description: 'Vider entièrement ce salon' }] }, en: { name: 'purge', description: 'Delete messages or fully clear a channel', options: [] } },
+    { name: 'ping', islamic: false, fr: { name: 'ping', description: 'Teste la latence du bot', options: [] }, en: { name: 'ping', description: 'Check the bot’s latency', options: [] } },
+    { name: 'coran', islamic: true, fr: { name: 'coran', description: 'Consulter le Noble Coran', options: [] }, en: { name: 'quran', description: 'Read the Noble Quran', options: [] } },
 ];
 
 function json(body, status = 200) {
@@ -131,6 +142,7 @@ export function installMockApi() {
         if (path === '/staff/users') return json({ users: STAFF_USERS });
         if (path === '/staff/guilds') return json({ guilds: overview(islam, empty).guilds.map((g) => ({ ...g, iconUrl: null, suspended: g.id === '444' })) });
         if (path.startsWith('/staff/')) return json({ success: true, user: STAFF_USERS[1] });
+        if (path === '/system/commands') return json({ commands: MOCK_COMMANDS });
         if (path === '/discord/bot-invite') return json({ url: 'https://discord.com/oauth2/authorize' });
         return json({});
     };

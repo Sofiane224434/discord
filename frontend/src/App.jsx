@@ -1,33 +1,33 @@
 // App.jsx
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth.js';
 import MainLayout from './layouts/MainLayout.jsx';
 import AuthLayout from './layouts/AuthLayout.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import Home from './pages/Home.jsx';
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import EmailPage from './pages/EmailPage.jsx';
-import DiscordCallback from './pages/DiscordCallback.jsx';
-import PublicServers from './pages/PublicServers.jsx';
-import Commands from './pages/Commands.jsx';
-import Help from './pages/Help.jsx';
-import Status from './pages/Status.jsx';
-import CommandHistory from './pages/CommandHistory.jsx';
-import GuildConfig from './pages/GuildConfig.jsx';
-import Modules from './pages/Modules.jsx';
-import Feedback from './pages/Feedback.jsx';
-import Settings from './pages/Settings.jsx';
-import Docs from './pages/Docs.jsx';
-import Admin from './pages/Admin.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
-import StylePreviewPage from './pages/StylePreviewPage.jsx';
+
+// Pages chargées à la demande : le premier chargement du site est plus léger
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Register = lazy(() => import('./pages/Register.jsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const EmailPage = lazy(() => import('./pages/EmailPage.jsx'));
+const DiscordCallback = lazy(() => import('./pages/DiscordCallback.jsx'));
+const PublicServers = lazy(() => import('./pages/PublicServers.jsx'));
+const Status = lazy(() => import('./pages/Status.jsx'));
+const CommandHistory = lazy(() => import('./pages/CommandHistory.jsx'));
+const GuildConfig = lazy(() => import('./pages/GuildConfig.jsx'));
+const Feedback = lazy(() => import('./pages/Feedback.jsx'));
+const Settings = lazy(() => import('./pages/Settings.jsx'));
+const Docs = lazy(() => import('./pages/Docs.jsx'));
+const Admin = lazy(() => import('./pages/Admin.jsx'));
 
 function App() {
   const { loading } = useAuth();
   if (loading) return <LoadingScreen fullScreen />;
   return (
+    <Suspense fallback={<LoadingScreen fullScreen />}>
     <Routes>
       {/* Routes AVEC Header + Footer */}
       <Route element={<MainLayout />}>
@@ -69,9 +69,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/oauth/discord/callback" element={<DiscordCallback />} />
       </Route>
-      <Route path="/styles-preview" element={<StylePreviewPage />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
+    </Suspense>
   );
 }
 export default App;

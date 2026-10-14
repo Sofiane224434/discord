@@ -269,7 +269,7 @@ export const getBotInviteUrl = (req, res) => {
 
     const params = new URLSearchParams({
         client_id: clientId,
-        permissions: '268823632', // permissions minimales utiles
+        permissions: '1099780451415', // utiles + modération (bannir, expulser, exclure, gérer les salons, invitations)
         scope: 'bot applications.commands',
     });
 

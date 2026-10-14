@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
+import { useConfirm } from '../hooks/useConfirm.jsx';
 import { feedbackService } from '../services/api.js';
 import { useAuth } from '../hooks/useAuth.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
@@ -18,6 +19,7 @@ export default function Feedback() {
     const locale = i18n.resolvedLanguage || i18n.language || 'fr';
     const [searchParams, setSearchParams] = useSearchParams();
     const isStaff = ['admin', 'superadmin'].includes(user?.role);
+    const [confirm, confirmDialog] = useConfirm();
 
     const [reports, setReports] = useState([]);
     const [scope, setScope] = useState(user ? 'mine' : 'guest');
@@ -106,7 +108,13 @@ export default function Feedback() {
     };
 
     const removeReport = async (id) => {
-        if (!window.confirm(t('feedback.delete_confirm'))) return;
+        const ok = await confirm({
+            title: t('feedback.delete_confirm'),
+            message: t('feedback.delete_message'),
+            confirmLabel: t('feedback.delete'),
+            danger: true,
+        });
+        if (!ok) return;
         setBusyId(id);
         try {
             await feedbackService.deleteFeedback(id);
@@ -613,6 +621,7 @@ export default function Feedback() {
                     </div>
                 </div>
             )}
+            {confirmDialog}
         </main>
     );
 }

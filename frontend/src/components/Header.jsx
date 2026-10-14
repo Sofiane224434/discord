@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import { useTranslation } from 'react-i18next';
 import Icon from './Icon.jsx';
 import LanguageSwitch from './LanguageSwitch.jsx';
-import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
+import { SUPPORT_URL, openAddBot } from '../config/links.js';
 
 
 function Header() {
@@ -48,13 +48,14 @@ function Header() {
     };
 
     const navItems = [
-        { label: t('header.docs'), to: '/docs/accueil', match: '/docs' },
+        { label: t('header.commands'), to: '/docs/commandes', match: '/docs/commandes' },
+        { label: t('header.docs'), to: '/docs/accueil', match: '/docs', exclude: '/docs/commandes' },
         ...(isAuthenticated ? [{ label: t('header.panel'), to: '/dashboard', match: '/dashboard' }] : []),
         { label: t('header.status'), to: '/status', match: '/status' },
         { label: t('header.feedback'), to: '/feedback', match: '/feedback' },
     ];
 
-    const isActive = (item) => location.pathname.startsWith(item.match);
+    const isActive = (item) => location.pathname.startsWith(item.match) && !(item.exclude && location.pathname.startsWith(item.exclude));
 
     return (
         <header className={`az-header${scrolled ? ' is-scrolled' : ''}`} role="banner">
@@ -134,9 +135,9 @@ function Header() {
                     ) : (
                         <>
                             <Link to="/login" className="az-header__ghost az-header__login">{t('header.login')}</Link>
-                            <a href={ADD_BOT_URL} target="_blank" rel="noreferrer" className="az-header__cta">
+                            <button type="button" onClick={openAddBot} className="az-header__cta">
                                 <Icon name="plus" size={17} /> {t('header.add_bot')}
-                            </a>
+                            </button>
                         </>
                     )}
 

@@ -5,6 +5,7 @@ import LoadingScreen from '../components/LoadingScreen.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.jsx';
+import { useConfirm } from '../hooks/useConfirm.jsx';
 
 const PRAYER_METHODS = [
     { value: 12, label: 'UOIF - Union des Organisations Islamiques de France (12°)' },
@@ -61,10 +62,14 @@ const EMPTY_CONFIG = {
         botUsername: 'AzimBot',
         botTag: 'AzimBot',
     },
-    youtube: { channels: [], targetChannelId: '' },
-    tiktok: { enabled: false, username: '', targetChannelId: '' },
+    youtube: { channels: [], profiles: [], targetChannelId: '' },
+    tiktok: { enabled: false, username: '', accounts: [], profiles: [], targetChannelId: '' },
     rank: { enabled: false, announceChannelId: '', silent: false, rewards: [] },
     features: { islamModeEnabled: false },
+    // Langue du bot (commandes et réponses), modération et vitrine : mêmes réglages que /langue, /mod et /vitrine
+    language: 'fr',
+    moderation: { logChannelId: '', dmOnSanction: true },
+    showcase: { enabled: false, url: null, channelId: '' },
     islam: {
         prayerCity: 'Paris',
         prayerMethod: 12,
@@ -128,6 +133,9 @@ function mergeConfig(data) {
         tiktok: { ...EMPTY_CONFIG.tiktok, ...data?.tiktok },
         rank: { ...EMPTY_CONFIG.rank, ...data?.rank },
         features: { ...EMPTY_CONFIG.features, ...data?.features },
+        language: data?.language === 'en' ? 'en' : 'fr',
+        moderation: { ...EMPTY_CONFIG.moderation, ...data?.moderation, logChannelId: data?.moderation?.logChannelId || '' },
+        showcase: { ...EMPTY_CONFIG.showcase, ...data?.showcase, channelId: data?.showcase?.channelId || '' },
         islam: {
             ...EMPTY_CONFIG.islam,
             ...(data?.islam || {}),
@@ -179,6 +187,62 @@ function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
                 <option value={option.value} key={option.value}>{option.label}</option>
             ))}
         </select>
+    );
+}
+
+// Chaînes YouTube / comptes TikTok suivis : photo, nom, @pseudo, lien, suppression et ajout
+function SocialAccounts({ items, profiles, onChange, platform, placeholder, t }) {
+    const [draft, setDraft] = useState('');
+    const byId = Object.fromEntries((profiles || []).map((profile) => [profile.id, profile]));
+    const add = () => {
+        const value = draft.trim();
+        if (!value || items.includes(value)) return;
+        onChange([...items, value]);
+        setDraft('');
+    };
+    return (
+        <div className="cf-social">
+            {items.length ? (
+                <ul className="cf-social__list">
+                    {items.map((id) => {
+                        const profile = byId[id];
+                        return (
+                            <li key={id} className="cf-social__item">
+                                {profile?.avatarUrl ? (
+                                    <img src={profile.avatarUrl} alt="" referrerPolicy="no-referrer" loading="lazy" />
+                                ) : (
+                                    <span className="cf-social__avatar"><Icon name={platform === 'youtube' ? 'play' : 'music'} size={18} /></span>
+                                )}
+                                <div className="cf-social__text">
+                                    <strong>{profile?.name || profile?.handle || id}</strong>
+                                    <small>{profile ? (profile.handle || id) : t('config.social_pending')}</small>
+                                </div>
+                                {profile?.url ? (
+                                    <a href={profile.url} target="_blank" rel="noreferrer" className="ui-icon-btn" aria-label={t('config.social_open', { name: profile.name || profile.handle || id })}>
+                                        <Icon name="external" size={15} />
+                                    </a>
+                                ) : null}
+                                <button type="button" className="ui-icon-btn cf-danger" aria-label={t('config.social_remove')} onClick={() => onChange(items.filter((item) => item !== id))}>
+                                    <Icon name="close" size={15} />
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : <p className="cf-empty">{t('config.social_empty')}</p>}
+            <div className="cf-social__add">
+                <input
+                    className="ui-input"
+                    value={draft}
+                    placeholder={placeholder}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+                />
+                <button type="button" className="ui-btn" onClick={add} disabled={!draft.trim()}>
+                    <Icon name="plus" size={16} /> {t('config.social_add')}
+                </button>
+            </div>
+        </div>
     );
 }
 
@@ -246,6 +310,7 @@ function GuildConfig() {
     const { setIsIslamUnlocked } = useTheme();
     const { t, i18n } = useTranslation();
     const locale = i18n.resolvedLanguage || i18n.language || 'fr';
+    const [confirm, confirmDialog] = useConfirm();
     const [form, setForm] = useState(EMPTY_CONFIG);
     // Dernière version enregistrée côté serveur : sert à détecter les modifications en cours
     const [savedForm, setSavedForm] = useState(null);
@@ -400,6 +465,9 @@ function GuildConfig() {
                 rank: form.rank,
                 islam: form.islam,
                 commands: commandsPayload,
+                language: form.language,
+                moderation: { logChannelId: form.moderation.logChannelId || null, dmOnSanction: form.moderation.dmOnSanction },
+                showcase: { enabled: form.showcase.enabled, channelId: form.showcase.channelId || null },
             });
             await refresh();
             setNotice(t('config.n_saved'));
@@ -432,7 +500,13 @@ function GuildConfig() {
     };
 
     const disableIslamMode = async () => {
-        if (!window.confirm(t('config.disable_confirm'))) return;
+        const ok = await confirm({
+            title: t('config.disable_confirm'),
+            message: t('config.disable_message'),
+            confirmLabel: t('config.disable_islam'),
+            danger: true,
+        });
+        if (!ok) return;
         setActivatingIslam(true);
         setError('');
         setNotice('');
@@ -616,6 +690,7 @@ function GuildConfig() {
         { id: 'welcome', label: t('config.tab_welcome'), icon: 'hand', on: form.welcome.enabled },
         { id: 'levels', label: t('config.tab_levels'), icon: 'activity', on: form.rank.enabled },
         { id: 'social', label: t('config.tab_social'), icon: 'megaphone', on: (form.youtube.channels || []).length > 0 || form.tiktok.enabled },
+        { id: 'server', label: t('config.tab_server'), icon: 'shield' },
         { id: 'profile', label: t('config.tab_profile'), icon: 'fileText' },
         { id: 'islam', label: isIslamActive ? t('config.tab_islam') : t('config.tab_code'), icon: isIslamActive ? 'moon' : 'key', on: isIslamActive ? true : undefined },
     ];
@@ -843,10 +918,14 @@ function GuildConfig() {
                                             <button
                                                 type="button"
                                                 className="ui-btn ui-btn--ghost"
-                                                onClick={() => {
-                                                    if (window.confirm(t('config.replace_confirm', { count: detectedGroqKeys.length }))) {
-                                                        manageKey({ setKeys: detectedGroqKeys });
-                                                    }
+                                                onClick={async () => {
+                                                    const ok = await confirm({
+                                                        title: t('config.replace_confirm', { count: detectedGroqKeys.length }),
+                                                        message: t('config.replace_message'),
+                                                        confirmLabel: t('config.replace_keys'),
+                                                        danger: true,
+                                                    });
+                                                    if (ok) manageKey({ setKeys: detectedGroqKeys });
                                                 }}
                                             >
                                                 {t('config.replace_keys')}
@@ -1095,14 +1174,18 @@ function GuildConfig() {
                             <div className="cf-grid-2">
                                 <Card title="YouTube" desc={t('config.yt_desc')}>
                                     <div className="cf-stack">
-                                        <Field label={t('config.yt_channels')} hint={t('config.yt_channels_hint')}>
-                                            <textarea
-                                                className="ui-input cf-mono"
-                                                rows={4}
-                                                value={(form.youtube.channels || []).join('\n')}
-                                                onChange={(e) => update('youtube', 'channels', e.target.value.split(/\r?\n/).map((id) => id.trim()).filter(Boolean))}
+                                        <div className="ui-field">
+                                            <span className="ui-field__label">{t('config.yt_channels')}</span>
+                                            <SocialAccounts
+                                                t={t}
+                                                platform="youtube"
+                                                items={form.youtube.channels || []}
+                                                profiles={form.youtube.profiles}
+                                                placeholder={t('config.yt_add_ph')}
+                                                onChange={(channels) => update('youtube', 'channels', channels)}
                                             />
-                                        </Field>
+                                            <span className="cf-hint">{t('config.yt_channels_hint')}</span>
+                                        </div>
                                         <Field label={t('config.alerts_channel')}>
                                             <SelectInput value={form.youtube.targetChannelId} onChange={(e) => update('youtube', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                         </Field>
@@ -1111,9 +1194,17 @@ function GuildConfig() {
 
                                 <Card title="TikTok Live" desc={t('config.tiktok_desc')} aside={<Switch checked={form.tiktok.enabled} onChange={(v) => update('tiktok', 'enabled', v)} />}>
                                     <div className={`cf-stack${form.tiktok.enabled ? '' : ' cf-disabled'}`}>
-                                        <Field label={t('config.tiktok_handle')}>
-                                            <TextInput placeholder="@pseudo" value={form.tiktok.username || ''} onChange={(e) => update('tiktok', 'username', e.target.value)} />
-                                        </Field>
+                                        <div className="ui-field">
+                                            <span className="ui-field__label">{t('config.tiktok_accounts')}</span>
+                                            <SocialAccounts
+                                                t={t}
+                                                platform="tiktok"
+                                                items={form.tiktok.accounts?.length ? form.tiktok.accounts : (form.tiktok.username ? [form.tiktok.username] : [])}
+                                                profiles={form.tiktok.profiles}
+                                                placeholder="@pseudo"
+                                                onChange={(accounts) => setForm((prev) => ({ ...prev, tiktok: { ...prev.tiktok, accounts, username: accounts[0] || '' } }))}
+                                            />
+                                        </div>
                                         <Field label={t('config.alerts_channel')}>
                                             <SelectInput value={form.tiktok.targetChannelId} onChange={(e) => update('tiktok', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                         </Field>
@@ -1124,6 +1215,51 @@ function GuildConfig() {
                     ) : null}
 
                     {/* PROFIL & LOGS */}
+                    {activeTab === 'server' ? (
+                        <>
+                            <div className="cf-title">
+                                <h2>{t('config.server_title')}</h2>
+                                <p>{t('config.server_lead')}</p>
+                            </div>
+
+                            <Card title={t('config.language_title')} desc={t('config.language_desc')}>
+                                <div className="cf-grid-2">
+                                    <Field label={t('config.language_label')} hint={t('config.language_hint')}>
+                                        <SelectInput
+                                            value={form.language}
+                                            onChange={(e) => setForm((prev) => ({ ...prev, language: e.target.value }))}
+                                            options={[{ value: 'fr', label: 'Français' }, { value: 'en', label: 'English' }]}
+                                        />
+                                    </Field>
+                                </div>
+                            </Card>
+
+                            <Card title={t('config.moderation_title')} desc={t('config.moderation_desc')}>
+                                <div className="cf-grid-2 cf-align-end">
+                                    <Field label={t('config.moderation_channel')} hint={t('config.moderation_channel_hint')}>
+                                        <SelectInput value={form.moderation.logChannelId} onChange={(e) => update('moderation', 'logChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.moderation_channel_default')} />
+                                    </Field>
+                                    <Switch checked={form.moderation.dmOnSanction} onChange={(v) => update('moderation', 'dmOnSanction', v)} label={t('config.moderation_dm')} desc={t('config.moderation_dm_desc')} />
+                                </div>
+                            </Card>
+
+                            <Card
+                                title={t('config.showcase_title')}
+                                desc={t('config.showcase_desc')}
+                                aside={<Switch checked={form.showcase.enabled} onChange={(v) => update('showcase', 'enabled', v)} label={form.showcase.enabled ? t('config.enabled') : t('config.disabled')} />}
+                            >
+                                <div className={`cf-grid-2 cf-align-end${form.showcase.enabled ? '' : ' cf-disabled'}`}>
+                                    <Field label={t('config.showcase_channel')} hint={t('config.showcase_channel_hint')}>
+                                        <SelectInput value={form.showcase.channelId} onChange={(e) => update('showcase', 'channelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
+                                    </Field>
+                                    {form.showcase.url ? (
+                                        <p className="cf-hint">{t('config.showcase_current')} <a href={form.showcase.url} target="_blank" rel="noreferrer">{form.showcase.url}</a></p>
+                                    ) : null}
+                                </div>
+                            </Card>
+                        </>
+                    ) : null}
+
                     {activeTab === 'profile' ? (
                         <>
                             <div className="cf-title">
@@ -1278,6 +1414,7 @@ function GuildConfig() {
                     </div>
                 </form>
             </div>
+            {confirmDialog}
         </main>
     );
 }

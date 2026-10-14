@@ -35,6 +35,8 @@ const PATHS = {
     ban: <><circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" /></>,
     pause: <path d="M10 4H6v16h4zM18 4h-4v16h4z" />,
     crown: <path d="m2 7 5 5 5-8 5 8 5-5-2 12H4z" />,
+    play: <><rect x="2" y="5" width="20" height="14" rx="4" /><path d="m10 9 5 3-5 3z" /></>,
+    music: <><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></>,
 };
 
 function Icon({ name, size = 18, strokeWidth = 2, className = '', ...rest }) {

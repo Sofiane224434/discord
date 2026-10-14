@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from './Icon.jsx';
 import LanguageSwitch from './LanguageSwitch.jsx';
-import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
+import { SUPPORT_URL, openAddBot } from '../config/links.js';
 
 function Footer() {
     const { t } = useTranslation();
@@ -14,7 +14,7 @@ function Footer() {
             title: t('footer.product'),
             links: [
                 { label: t('footer.features'), to: '/#features' },
-                { label: t('footer.add_azim'), href: ADD_BOT_URL },
+                { label: t('footer.add_azim'), onClick: openAddBot },
                 { label: t('footer.commands'), to: '/docs/commandes' },
                 { label: t('footer.docs'), to: '/docs/accueil' },
                 { label: t('footer.status'), to: '/status' },
@@ -59,7 +59,11 @@ function Footer() {
                             <ul>
                                 {col.links.map((link) => (
                                     <li key={link.label}>
-                                        {link.href ? (
+                                        {link.onClick ? (
+                                            <button type="button" className="ft__linkbtn" onClick={link.onClick}>
+                                                {link.label} <Icon name="external" size={13} />
+                                            </button>
+                                        ) : link.href ? (
                                             <a href={link.href} target="_blank" rel="noreferrer">
                                                 {link.label} <Icon name="external" size={13} />
                                             </a>
@@ -73,7 +77,8 @@ function Footer() {
                     ))}
                 </div>
 
-                <div className="ft__word" aria-hidden="true">AZIM</div>
+                {/* Le domaine du site, en grand */}
+                <a href="https://azim404.com" className="ft__word" target="_blank" rel="noreferrer" aria-label="azim404.com">AZIM404.COM</a>
 
                 <div className="ft__bottom">
                     <p>{t('footer.legal', { year: new Date().getFullYear() })}</p>

@@ -330,7 +330,7 @@
     "panel": "Panel",
     "settings": "Paramètres",
     "help": "Centre d’aide",
-    "legal": "© 2024 – {{year}} AzimBot · Non affilié à Discord Inc.",
+    "legal": "© {{year}} AzimBot · azim404.com · Non affilié à Discord Inc.",
     "site_language": "Langue du site"
   },
   "common": {
@@ -349,7 +349,8 @@
     "french": "Français",
     "english": "English",
     "unknown_error": "Une erreur est survenue.",
-    "back_home": "← Retour à l’accueil"
+    "back_home": "← Retour à l’accueil",
+    "confirm": "Confirmer"
   },
   "header": {
     "docs": "Documentation",
@@ -367,7 +368,8 @@
     "support_discord": "Support Discord",
     "home_label": "Accueil AzimBot",
     "main_nav": "Navigation principale",
-    "admin": "Administration"
+    "admin": "Administration",
+    "commands": "Commandes"
   },
   "panel": {
     "hello": "Bonjour {{name}}",
@@ -488,7 +490,8 @@
     "reply_send": "Publier la réponse",
     "delete": "Supprimer",
     "delete_confirm": "Supprimer définitivement ce retour ?",
-    "err_admin": "Action impossible pour le moment."
+    "err_admin": "Action impossible pour le moment.",
+    "delete_message": "Le retour et sa réponse seront supprimés pour tout le monde."
   },
   "settings": {
     "title": "Paramètres",
@@ -566,7 +569,15 @@
     "join_support": "Rejoindre le support",
     "suggest_edit": "Proposer une correction",
     "articles": "{{count}} articles",
-    "menu": "Sommaire"
+    "menu": "Sommaire",
+    "commands_label": "Liste des commandes",
+    "commands_search": "Rechercher une commande ou une option…",
+    "commands_count": "{{count}} commandes",
+    "commands_subs": "{{count}} sous-commandes",
+    "commands_required": "obligatoire",
+    "commands_loading": "Chargement des commandes…",
+    "commands_error": "Impossible de charger la liste des commandes pour le moment.",
+    "commands_none": "Aucune commande ne correspond à votre recherche."
   },
   "config": {
     "back": "Mes serveurs",
@@ -693,7 +704,7 @@
     "social_lead": "Prévenez votre serveur des nouvelles vidéos et des lives.",
     "yt_desc": "Une alerte à chaque nouvelle vidéo.",
     "yt_channels": "Chaînes suivies",
-    "yt_channels_hint": "Un identifiant UC… ou un @handle par ligne.",
+    "yt_channels_hint": "Ajoutez une chaîne avec son @pseudo ou son lien : Azim retrouve la chaîne à l’enregistrement.",
     "alerts_channel": "Salon des alertes",
     "tiktok_desc": "Une alerte quand le créateur lance un live.",
     "tiktok_handle": "Pseudo TikTok",
@@ -767,7 +778,36 @@
     "e_rename": "Impossible de modifier le nom du bot.",
     "method_12": "UOIF - Union des organisations islamiques de France (12°)",
     "method_3": "MWL - Ligue islamique mondiale (18°)",
-    "method_13": "Diyanet İşleri Başkanlığı, Turquie"
+    "method_13": "Diyanet İşleri Başkanlığı, Turquie",
+    "tab_server": "Serveur & modération",
+    "server_title": "Serveur & modération",
+    "server_lead": "Langue du bot, journal des sanctions et lien public du serveur.",
+    "language_title": "Langue du bot",
+    "language_desc": "Noms des commandes, descriptions et réponses d’Azim sur ce serveur. Même réglage que /langue.",
+    "language_label": "Langue",
+    "language_hint": "Les commandes changent de langue juste après l’enregistrement.",
+    "moderation_title": "Modération",
+    "moderation_desc": "Réglages des commandes /mod et /purge.",
+    "moderation_channel": "Journal des sanctions",
+    "moderation_channel_hint": "Chaque bannissement, exclusion, avertissement ou nettoyage y est publié.",
+    "moderation_channel_default": "Salon des logs du bot",
+    "moderation_dm": "Prévenir le membre en message privé",
+    "moderation_dm_desc": "Il reçoit la sanction et sa raison.",
+    "showcase_title": "Lien public du serveur",
+    "showcase_desc": "Affiche une carte cliquable vers ce serveur dans « Autres serveurs » sur le site. Même réglage que /vitrine.",
+    "showcase_channel": "Salon d’arrivée",
+    "showcase_channel_hint": "Azim crée une invitation permanente vers ce salon.",
+    "showcase_current": "Lien actuel :",
+    "disable_message": "Les commandes islamiques disparaîtront de ce serveur et la photo du bot redeviendra neutre.",
+    "disable_islam": "Désactiver le mode Islam",
+    "replace_message": "Les clés actuelles seront supprimées et remplacées par celles que vous avez collées.",
+    "social_pending": "Sera vérifiée à l’enregistrement",
+    "social_open": "Ouvrir {{name}}",
+    "social_remove": "Retirer",
+    "social_empty": "Aucun compte suivi pour le moment.",
+    "social_add": "Ajouter",
+    "yt_add_ph": "@pseudo, lien de la chaîne ou ID UC…",
+    "tiktok_accounts": "Comptes suivis"
   },
   "loading": {
     "default": "Chargement en cours…",
@@ -815,12 +855,20 @@
     "demote": "Retirer admin",
     "suspend": "Suspendre le bot",
     "resume": "Réactiver le bot",
-    "ban_reason": "Raison du bannissement de {{name}} (facultatif) :",
-    "suspend_reason": "Raison de la suspension sur {{name}} (facultatif) :",
     "promote_confirm": "Nommer {{name}} administrateur ?",
     "demote_confirm": "Retirer les droits d’administration de {{name}} ?",
     "no_users": "Aucun compte trouvé.",
     "no_guilds": "Aucun serveur trouvé.",
-    "error": "Action impossible pour le moment."
+    "error": "Action impossible pour le moment.",
+    "reason_label": "Raison (facultatif)",
+    "reason_ph": "Visible dans l’administration",
+    "ban_title": "Bannir {{name}} ?",
+    "ban_message": "Ce compte ne pourra plus se connecter au site.",
+    "unban_title": "Lever le bannissement de {{name}} ?",
+    "promote_message": "Il pourra gérer les retours, bannir des comptes et suspendre le bot sur un serveur.",
+    "demote_message": "Il perdra l’accès à l’administration.",
+    "suspend_title": "Suspendre Azim sur {{name}} ?",
+    "suspend_message": "Le bot ne répondra plus à aucune commande sur ce serveur.",
+    "resume_title": "Réactiver Azim sur {{name}} ?"
   }
 }

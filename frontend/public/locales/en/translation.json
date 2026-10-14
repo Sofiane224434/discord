@@ -330,7 +330,7 @@
     "panel": "Panel",
     "settings": "Settings",
     "help": "Help center",
-    "legal": "© 2024 – {{year}} AzimBot · Not affiliated with Discord Inc.",
+    "legal": "© {{year}} AzimBot · azim404.com · Not affiliated with Discord Inc.",
     "site_language": "Site language"
   },
   "common": {
@@ -349,7 +349,8 @@
     "french": "Français",
     "english": "English",
     "unknown_error": "Something went wrong.",
-    "back_home": "← Back to home"
+    "back_home": "← Back to home",
+    "confirm": "Confirm"
   },
   "header": {
     "docs": "Docs",
@@ -367,7 +368,8 @@
     "support_discord": "Discord support",
     "home_label": "AzimBot home",
     "main_nav": "Main navigation",
-    "admin": "Admin"
+    "admin": "Admin",
+    "commands": "Commands"
   },
   "panel": {
     "hello": "Hi {{name}}",
@@ -488,7 +490,8 @@
     "reply_send": "Post reply",
     "delete": "Delete",
     "delete_confirm": "Delete this report for good?",
-    "err_admin": "This action is not possible right now."
+    "err_admin": "This action is not possible right now.",
+    "delete_message": "The report and its reply will be deleted for everyone."
   },
   "settings": {
     "title": "Settings",
@@ -566,7 +569,15 @@
     "join_support": "Join support",
     "suggest_edit": "Suggest an edit",
     "articles": "{{count}} articles",
-    "menu": "Contents"
+    "menu": "Contents",
+    "commands_label": "Command list",
+    "commands_search": "Search a command or option…",
+    "commands_count": "{{count}} commands",
+    "commands_subs": "{{count}} subcommands",
+    "commands_required": "required",
+    "commands_loading": "Loading commands…",
+    "commands_error": "The command list cannot be loaded right now.",
+    "commands_none": "No command matches your search."
   },
   "config": {
     "back": "My servers",
@@ -693,7 +704,7 @@
     "social_lead": "Let your server know about new videos and lives.",
     "yt_desc": "An alert for every new video.",
     "yt_channels": "Tracked channels",
-    "yt_channels_hint": "One UC… ID or @handle per line.",
+    "yt_channels_hint": "Add a channel with its @handle or link: Azim finds the channel when you save.",
     "alerts_channel": "Alerts channel",
     "tiktok_desc": "An alert when the creator goes live.",
     "tiktok_handle": "TikTok handle",
@@ -767,7 +778,36 @@
     "e_rename": "Couldn’t rename the bot.",
     "method_12": "UOIF - Union of Islamic Organisations of France (12°)",
     "method_3": "MWL - Muslim World League (18°)",
-    "method_13": "Diyanet İşleri Başkanlığı, Turkey"
+    "method_13": "Diyanet İşleri Başkanlığı, Turkey",
+    "tab_server": "Server & moderation",
+    "server_title": "Server & moderation",
+    "server_lead": "Bot language, sanction log and public server link.",
+    "language_title": "Bot language",
+    "language_desc": "Command names, descriptions and Azim’s replies on this server. Same setting as /language.",
+    "language_label": "Language",
+    "language_hint": "Commands switch language right after saving.",
+    "moderation_title": "Moderation",
+    "moderation_desc": "Settings for the /mod and /purge commands.",
+    "moderation_channel": "Sanction log",
+    "moderation_channel_hint": "Every ban, timeout, warning or clean-up is posted there.",
+    "moderation_channel_default": "Bot log channel",
+    "moderation_dm": "Notify the member by DM",
+    "moderation_dm_desc": "They receive the sanction and its reason.",
+    "showcase_title": "Public server link",
+    "showcase_desc": "Shows a clickable card to this server in “Other servers” on the website. Same setting as /showcase.",
+    "showcase_channel": "Landing channel",
+    "showcase_channel_hint": "Azim creates a permanent invite to this channel.",
+    "showcase_current": "Current link:",
+    "disable_message": "Islamic commands will disappear from this server and the bot’s picture will go back to neutral.",
+    "disable_islam": "Turn off Islam mode",
+    "replace_message": "The current keys will be deleted and replaced with the ones you pasted.",
+    "social_pending": "Checked when you save",
+    "social_open": "Open {{name}}",
+    "social_remove": "Remove",
+    "social_empty": "No account followed yet.",
+    "social_add": "Add",
+    "yt_add_ph": "@handle, channel link or UC… ID",
+    "tiktok_accounts": "Followed accounts"
   },
   "loading": {
     "default": "Loading…",
@@ -815,12 +855,20 @@
     "demote": "Remove admin",
     "suspend": "Suspend the bot",
     "resume": "Resume the bot",
-    "ban_reason": "Reason for banning {{name}} (optional):",
-    "suspend_reason": "Reason for suspending on {{name}} (optional):",
     "promote_confirm": "Make {{name}} an admin?",
     "demote_confirm": "Remove admin rights from {{name}}?",
     "no_users": "No account found.",
     "no_guilds": "No server found.",
-    "error": "This action is not possible right now."
+    "error": "This action is not possible right now.",
+    "reason_label": "Reason (optional)",
+    "reason_ph": "Visible in the admin area",
+    "ban_title": "Ban {{name}}?",
+    "ban_message": "This account will no longer be able to log in to the website.",
+    "unban_title": "Lift {{name}}’s ban?",
+    "promote_message": "They will be able to manage reports, ban accounts and suspend the bot on a server.",
+    "demote_message": "They will lose access to the admin area.",
+    "suspend_title": "Suspend Azim on {{name}}?",
+    "suspend_message": "The bot will no longer answer any command on this server.",
+    "resume_title": "Resume Azim on {{name}}?"
   }
 }

@@ -62,3 +62,33 @@ export const getHealth = async (_req, res) => {
         services: { db, botApi, oauth },
     });
 };
+
+// Liste des commandes du bot pour la documentation (publique, mise en cache 5 minutes)
+let commandsCache = { at: 0, data: null };
+const COMMANDS_TTL_MS = 5 * 60 * 1000;
+
+export const getCommands = async (_req, res) => {
+    if (commandsCache.data && Date.now() - commandsCache.at < COMMANDS_TTL_MS) {
+        return res.json(commandsCache.data);
+    }
+    const baseUrl = (process.env.BOT_API_URL || '').trim().replace(/\/+$/, '');
+    if (!baseUrl) return res.status(503).json({ error: 'Bot API non configurée' });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), Number(process.env.BOT_API_TIMEOUT_MS || 5000));
+    try {
+        const headers = { Accept: 'application/json' };
+        if (process.env.BOT_API_TOKEN) headers['x-dashboard-token'] = process.env.BOT_API_TOKEN;
+        const response = await fetch(`${baseUrl}/commands`, { headers, signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        commandsCache = { at: Date.now(), data };
+        return res.json(data);
+    } catch (error) {
+        // Le bot ne répond pas : on sert la dernière liste connue plutôt qu'une erreur
+        if (commandsCache.data) return res.json(commandsCache.data);
+        return res.status(502).json({ error: 'Liste des commandes indisponible', details: process.env.NODE_ENV === 'production' ? undefined : error.message });
+    } finally {
+        clearTimeout(timeout);
+    }
+};

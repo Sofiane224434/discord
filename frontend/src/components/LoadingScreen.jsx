@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Icon from './Icon.jsx';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 
@@ -77,7 +78,7 @@ function LoadingScreen({
                             className="absolute text-3xl select-none animate-pulse"
                             aria-hidden="true"
                         >
-                            {isIslam ? '🕌' : '🤖'}
+                            <Icon name={isIslam ? 'moon' : 'sparkles'} size={28} />
                         </span>
                     )}
                 </div>

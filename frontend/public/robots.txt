@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /settings
+Disallow: /api/
+
+Sitemap: https://discord.azim404.com/sitemap.xml

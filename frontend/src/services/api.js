@@ -120,6 +120,8 @@ export const systemService = {
         if (!data) throw { status: response.status, message: 'Réponse de statut illisible.' };
         return { ...data, responseMs: Math.round(performance.now() - startedAt) };
     },
+    // Liste des commandes du bot (toujours à jour, sans connexion)
+    getCommands: () => fetchAPI('/system/commands'),
 };
 
 export const feedbackService = {

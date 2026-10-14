@@ -12,5 +12,6 @@ FROM nginx:alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY deploy/nginx/site.conf /etc/nginx/conf.d/default.conf
+COPY deploy/nginx/security-headers.inc /etc/nginx/snippets/security-headers.inc
 
 EXPOSE 80

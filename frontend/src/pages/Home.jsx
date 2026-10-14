@@ -16,6 +16,9 @@ function DiscordIcon() {
 }
 
 // Couleurs des modules (cyclées dans le bandeau)
+// t(..., { returnObjects: true }) renvoie la clé (texte) tant que les traductions ne sont pas chargées
+const asList = (value) => (Array.isArray(value) ? value : []);
+
 const HUES = ['#20b9f2', '#b5a0ff', '#ffc46c', '#ff917e', '#51d6a5', '#f472b6'];
 
 function Home() {
@@ -24,10 +27,11 @@ function Home() {
     const logoSrc = theme === 'islam' ? '/icon-islam.png' : '/icon.png';
 
     // Mot qui change dans le titre du hero
-    const words = [...t('home.words', { returnObjects: true }), ...(isIslamUnlocked ? [t('home.word_islam')] : [])];
+    const words = [...asList(t('home.words', { returnObjects: true })), ...(isIslamUnlocked ? [t('home.word_islam')] : [])];
     const [wordIdx, setWordIdx] = useState(0);
 
     useEffect(() => {
+        if (words.length < 2) return undefined;
         const timer = setInterval(() => setWordIdx((prev) => (prev + 1) % words.length), 2600);
         return () => clearInterval(timer);
     }, [words.length]);
@@ -73,7 +77,7 @@ function Home() {
     const rows = [modules.slice(0, half), modules.slice(half)];
 
     const stepIcons = ['plus', 'settings', 'check'];
-    const steps = t('home.steps', { returnObjects: true }).map((step, i) => ({ ...step, icon: stepIcons[i] }));
+    const steps = asList(t('home.steps', { returnObjects: true })).map((step, i) => ({ ...step, icon: stepIcons[i] }));
 
     return (
         <div className="azh" id="main" role="main" tabIndex="-1">
@@ -91,7 +95,7 @@ function Home() {
                             {t('home.title')}
                             <span className="azh-word-slot">
                                 {words.map((w, i) => (
-                                    <span key={w} className={`azh-word${i === wordIdx ? ' is-on' : ''}`} aria-hidden={i !== wordIdx}>
+                                    <span key={w} className={`azh-word${i === wordIdx % words.length ? ' is-on' : ''}`} aria-hidden={i !== wordIdx % words.length}>
                                         {w}
                                     </span>
                                 ))}

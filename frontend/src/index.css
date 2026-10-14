@@ -7964,3 +7964,9 @@ select.ui-input {
 .fb-scope svg {
 	flex: none;
 }
+
+/* Pied de page : même logo texte que l'en-tête */
+.ft__logo img.ft__wordmark {
+	width: auto;
+	height: 34px;
+}

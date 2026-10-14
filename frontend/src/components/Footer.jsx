@@ -46,8 +46,9 @@ function Footer() {
                 <div className="ft__top">
                     <div className="ft__brand">
                         <Link to="/" className="ft__logo" aria-label={t('header.home_label')}>
-                            <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="" />
-                            <span>AzimBot</span>
+                            <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="" className="ft__icon" />
+                            {/* Même logo texte que l'en-tête */}
+                            <img src={theme === 'islam' ? '/logo-islam.png' : '/logo.png'} alt="AzimBot" className="ft__wordmark" />
                         </Link>
                         <p>{theme === 'islam' ? t('footer.tagline_islam') : t('footer.tagline')}</p>
                     </div>

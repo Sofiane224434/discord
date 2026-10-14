@@ -23,6 +23,9 @@ services:
     environment:
       DB_HOST: db
       BOT_API_URL: http://azim-bot:3005
+    volumes:
+      # Retours enregistrés localement quand le bot ne répond pas : conservés entre les déploiements
+      - apidata:/app/data
     networks:
       - default
       - azim_bot_bridge
@@ -42,6 +45,7 @@ services:
 
 volumes:
   dbdata:
+  apidata:
 
 networks:
   azim_bot_bridge:

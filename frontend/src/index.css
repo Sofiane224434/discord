@@ -8295,13 +8295,3 @@ button.ft__linkbtn:hover {
 .cf-grid-3 > .cf-card + .cf-card {
 	margin-top: 0;
 }
-
-/* Accueil sur mobile : le texte d'accroche occupe le premier écran, centré */
-@media (max-width: 980px) {
-	.azh-hero-copy {
-		min-height: calc(100svh - var(--azim-header-h) - 60px);
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-	}
-}

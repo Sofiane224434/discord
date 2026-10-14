@@ -1,18 +1,65 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AzimBot — bot Discord français et gratuit</title>
     <meta name="description" content="AzimBot, le bot Discord français et gratuit : IA dans vos salons, modération, niveaux, bienvenue, alertes YouTube et TikTok. Panel web pour tout configurer." />
+    <meta http-equiv="content-language" content="fr" />
+    <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#0a1728" />
     <link rel="canonical" href="https://discord.azim404.com/" />
-    <script src="/boot.js"></script>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="preload" href="/fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AzimBot" />
+    <meta property="og:title" content="AzimBot — bot Discord français et gratuit" />
+    <meta property="og:description" content="IA, modération, niveaux, bienvenue et alertes YouTube et TikTok dans un seul bot. Panel web pour tout configurer." />
+    <meta property="og:url" content="https://discord.azim404.com/" />
+    <meta property="og:image" content="https://discord.azim404.com/icon.png" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AzimBot",
+        "applicationCategory": "CommunicationApplication",
+        "operatingSystem": "Discord",
+        "url": "https://discord.azim404.com/",
+        "inLanguage": ["fr", "en"],
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+      }
+    </script>
+    <script src="/boot.js" defer></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Contenu lisible sans JavaScript (moteurs de recherche, outils d'analyse), remplacé dès que le site démarre -->
+      <div class="boot-shell">
+        <header>
+          <a href="/">AzimBot</a>
+          <nav aria-label="Navigation principale">
+            <a href="/docs/commandes">Commandes</a>
+            <a href="/docs/accueil">Documentation</a>
+            <a href="/dashboard">Panel</a>
+            <a href="/status">Statuts</a>
+            <a href="/feedback">Retours &amp; idées</a>
+          </nav>
+        </header>
+        <main>
+          <h1>AzimBot, le bot Discord français et gratuit</h1>
+          <p>IA, niveaux, modération et alertes YouTube et TikTok dans un seul bot. Un panel web pour tout configurer.</p>
+        </main>
+        <footer>
+          <a href="/confidentialite">Confidentialité</a>
+          <a href="/docs/faq">Centre d’aide</a>
+          <p>© 2026 AzimBot · azim404.com · Non affilié à Discord Inc.</p>
+        </footer>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

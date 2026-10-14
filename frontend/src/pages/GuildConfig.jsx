@@ -655,12 +655,12 @@ function GuildConfig() {
 
     if (loading) {
         return (
-            <main className="gc">
+            <div className="gc">
                 <LoadingScreen
                     label={t('config.loading')}
                     subtext={getGuildName(guildId)}
                 />
-            </main>
+            </div>
         );
     }
 
@@ -712,7 +712,7 @@ function GuildConfig() {
     ]);
 
     return (
-        <main className="gc">
+        <div className="gc">
             <header className="gc-head">
                 <Link to="/dashboard" className="gc-back"><Icon name="arrowLeft" size={16} /> {t('config.back')}</Link>
                 <div className="gc-head__id">
@@ -772,8 +772,9 @@ function GuildConfig() {
                                         <ol className="pnl-bars">
                                             {commandUsage.slice(0, 6).map((c) => (
                                                 <li key={c.name}>
-                                                    <div className="pnl-bars__label"><code>/{c.name}</code><strong>{c.count}</strong></div>
+                                                    <code>/{c.name}</code>
                                                     <span className="pnl-bars__track"><i style={{ width: `${Math.max(4, (c.count / maxRuns) * 100)}%` }} /></span>
+                                                    <strong>{c.count}</strong>
                                                 </li>
                                             ))}
                                         </ol>
@@ -1273,7 +1274,7 @@ function GuildConfig() {
                                         <img
                                             src={form.profile.hasServerAvatar && form.profile.currentAvatarUrl
                                                 ? form.profile.currentAvatarUrl
-                                                : (isIslamActive ? '/icon-islam.png' : (form.profile.globalAvatarUrl || '/icon.png'))}
+                                                : (isIslamActive ? '/icon-islam.webp' : (form.profile.globalAvatarUrl || '/icon.webp'))}
                                             alt=""
                                         />
                                         <span>{form.profile.hasServerAvatar ? t('config.server_avatar') : t('config.default_avatar')}</span>
@@ -1415,7 +1416,7 @@ function GuildConfig() {
                 </form>
             </div>
             {confirmDialog}
-        </main>
+        </div>
     );
 }
 

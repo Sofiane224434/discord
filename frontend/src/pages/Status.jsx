@@ -99,7 +99,7 @@ function Status() {
     const matchedShard = searched?.shardId != null ? shards.find((s) => s.id === searched.shardId) : null;
 
     return (
-        <main className="pg pg--narrow" id="main" tabIndex="-1">
+        <div className="pg pg--narrow" id="main" tabIndex="-1">
             <header className="pg-head">
                 <h1>{t('status.title')}</h1>
                 <p>{t('status.lead')}</p>
@@ -207,7 +207,7 @@ function Status() {
             <p className="st-help">
                 <Trans i18nKey="status.help" components={{ link: <Link to="/feedback" /> }} />
             </p>
-        </main>
+        </div>
     );
 }
 

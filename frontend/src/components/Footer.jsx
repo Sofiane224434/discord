@@ -36,6 +36,7 @@ function Footer() {
                 { label: t('footer.panel'), to: '/dashboard' },
                 { label: t('footer.settings'), to: '/settings' },
                 { label: t('footer.help'), to: '/docs/faq' },
+                { label: t('footer.privacy'), to: '/confidentialite' },
             ],
         },
     ];
@@ -46,16 +47,16 @@ function Footer() {
                 <div className="ft__top">
                     <div className="ft__brand">
                         <Link to="/" className="ft__logo" aria-label={t('header.home_label')}>
-                            <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="" className="ft__icon" />
+                            <img src={theme === 'islam' ? '/icon-islam.webp' : '/icon.webp'} alt="" width="46" height="46" loading="lazy" className="ft__icon" />
                             {/* Même logo texte que l'en-tête */}
-                            <img src={theme === 'islam' ? '/logo-islam.png' : '/logo.png'} alt="AzimBot" className="ft__wordmark" />
+                            <img src={theme === 'islam' ? '/logo-islam.webp' : '/logo.webp'} alt="AzimBot" width="177" height="34" loading="lazy" className="ft__wordmark" />
                         </Link>
                         <p>{theme === 'islam' ? t('footer.tagline_islam') : t('footer.tagline')}</p>
                     </div>
 
                     {columns.map((col) => (
                         <nav key={col.title} className="ft__col" aria-label={col.title}>
-                            <h4>{col.title}</h4>
+                            <h2 className="ft__col-title">{col.title}</h2>
                             <ul>
                                 {col.links.map((link) => (
                                     <li key={link.label}>

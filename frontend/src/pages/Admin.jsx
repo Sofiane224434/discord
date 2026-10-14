@@ -130,7 +130,7 @@ export default function Admin() {
     ];
 
     return (
-        <main className="pg" id="main" tabIndex="-1">
+        <div className="pg" id="main" tabIndex="-1">
             <header className="pg-head pg-head--row">
                 <div>
                     <h1>{t('admin.title')}</h1>
@@ -224,6 +224,6 @@ export default function Admin() {
                 </ul>
             ) : null}
             {confirmDialog}
-        </main>
+        </div>
     );
 }

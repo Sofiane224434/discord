@@ -5,13 +5,13 @@ function EmailPage() {
     const { t } = useTranslation();
 
     return (
-        <main className="site-page site-section-page email-page">
+        <div className="site-page site-section-page email-page">
             <div className="email-page-heading">
                     <h1>{t('email.title')}</h1>
                     <p>{t('email.subtitle')}</p>
                 </div>
                 <EmailComposer />
-        </main>
+        </div>
     );
 }
 

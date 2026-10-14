@@ -62,13 +62,17 @@ function Header() {
             <div className="az-header__inner">
                 <Link to="/" className="az-header__brand" aria-label={t('header.home_label')}>
                     <img
-                        src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
+                        src={theme === 'islam' ? '/icon-islam.webp' : '/icon.webp'}
                         alt=""
+                        width="46"
+                        height="46"
                         className="az-header__icon"
                     />
                     <img
-                        src={theme === 'islam' ? '/logo-islam.png' : '/logo.png'}
+                        src={theme === 'islam' ? '/logo-islam.webp' : '/logo.webp'}
                         alt="AzimBot"
+                        width="177"
+                        height="34"
                         className="az-header__wordmark"
                     />
                 </Link>

@@ -316,7 +316,7 @@ export default function Feedback() {
     ];
 
     return (
-        <main className="pg" id="main" tabIndex="-1">
+        <div className="pg" id="main" tabIndex="-1">
             <header className="pg-head pg-head--row">
                 <div>
                     <h1>{t('feedback.title')}</h1>
@@ -622,6 +622,6 @@ export default function Feedback() {
                 </div>
             )}
             {confirmDialog}
-        </main>
+        </div>
     );
 }

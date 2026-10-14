@@ -22,6 +22,7 @@ const Feedback = lazy(() => import('./pages/Feedback.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
 const Docs = lazy(() => import('./pages/Docs.jsx'));
 const Admin = lazy(() => import('./pages/Admin.jsx'));
+const Privacy = lazy(() => import('./pages/Privacy.jsx'));
 
 function App() {
   const { loading } = useAuth();
@@ -42,6 +43,8 @@ function App() {
         <Route path="/help" element={<Navigate to="/docs/faq" replace />} />
         <Route path="/faq" element={<Navigate to="/docs/faq" replace />} />
         <Route path="/status" element={<Status />} />
+        <Route path="/confidentialite" element={<Privacy />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/parametres" element={<Settings />} />
         <Route path="/feedback" element={<Feedback />} />

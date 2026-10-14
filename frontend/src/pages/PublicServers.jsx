@@ -23,7 +23,7 @@ function PublicServers() {
     const services = health?.services || {};
 
     return (
-        <main className="site-page site-section-page">
+        <div className="site-page site-section-page">
             <header className="site-page-heading">
                 <h1>{t('bots.title')}</h1>
                 <p>{t('bots.lead')}</p>
@@ -39,7 +39,7 @@ function PublicServers() {
             {!loading && !health ? <p className="site-empty-state">{t('bots.down')}</p> : null}
             <section className="public-server-list" aria-label={t('bots.list_label')}>
                 <article className="public-server-row">
-                    <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="AzimBot" />
+                    <img src={theme === 'islam' ? '/icon-islam.webp' : '/icon.webp'} alt="AzimBot" />
                     <div><h2>AzimBot</h2><p>{t('bots.bot_desc')}</p></div>
                     <span className={`public-server-tag ${services.botApi?.status === 'ok' ? 'is-online' : 'is-offline'}`}><i />{loading ? t('bots.checking') : services.botApi?.status === 'ok' ? t('bots.online') : t('bots.unavailable')}</span>
                 </article>
@@ -49,7 +49,7 @@ function PublicServers() {
                 <div><h2>{t('bots.cta_title')}</h2><p>{t('bots.cta_lead')}</p></div>
                 <button type="button" onClick={openAddBot} className="btn btn-primary">{t('bots.cta')} <span aria-hidden="true">↗</span></button>
             </section>
-        </main>
+        </div>
     );
 }
 

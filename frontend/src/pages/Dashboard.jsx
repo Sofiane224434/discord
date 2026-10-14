@@ -121,7 +121,7 @@ function Dashboard() {
             .map(([name, count]) => ({ name, count }))
             .filter((c) => c.count > 0)
             .sort((a, b) => b.count - a.count)
-            .slice(0, 6);
+            .slice(0, 5);
     }, [manageableGuilds, overview]);
 
     // Erreurs récentes (strictement isolées aux serveurs gérés par cet utilisateur)
@@ -134,7 +134,7 @@ function Dashboard() {
         }
         return errors
             .sort((a, b) => new Date(b.ts || 0) - new Date(a.ts || 0))
-            .slice(0, 5);
+            .slice(0, 2);
     }, [manageableGuilds, overview]);
 
     const errorTotal = useMemo(() => {
@@ -289,7 +289,7 @@ function Dashboard() {
     };
 
     return (
-        <main className="pnl">
+        <div className="pnl">
             <header className="pnl-head">
                 <div className="pnl-head__who">
                     {user?.avatarUrl ? <img src={user.avatarUrl} alt="" className="pnl-head__avatar" /> : (
@@ -382,11 +382,9 @@ function Dashboard() {
                             <ol className="pnl-bars">
                                 {topCommands.map((command) => (
                                     <li key={command.name}>
-                                        <div className="pnl-bars__label">
-                                            <code>/{command.name}</code>
-                                            <strong>{Number(command.count || 0).toLocaleString(locale)}</strong>
-                                        </div>
+                                        <code>/{command.name}</code>
                                         <span className="pnl-bars__track"><i style={{ width: `${Math.max(4, (Number(command.count || 0) / maxCommandCount) * 100)}%` }} /></span>
+                                        <strong>{Number(command.count || 0).toLocaleString(locale)}</strong>
                                     </li>
                                 ))}
                             </ol>
@@ -405,7 +403,7 @@ function Dashboard() {
                                         <span className="pnl-errors__icon"><Icon name="alert" size={15} /></span>
                                         <div>
                                             <strong>{item.type || t('panel.error_default')}</strong>
-                                            <small>{String(item.message || '').slice(0, 90)}</small>
+                                            <small title={String(item.message || '')}>{String(item.message || '').slice(0, 90)}</small>
                                         </div>
                                         <time>{item.ts ? new Date(item.ts).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : ''}</time>
                                     </li>
@@ -418,7 +416,7 @@ function Dashboard() {
                 </aside>
             </div>
 
-        </main>
+        </div>
     );
 }
 

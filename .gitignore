@@ -25,3 +25,24 @@ ai-context/
 .agents/
 /AGENTS.md
 /GEMINI.md
+
+# Secrets et fichiers sensibles (règles standard)
+.env
+.env.*
+!.env.example
+!frontend/.env.mock
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa*
+*.sqlite
+*.db
+
+# Journaux, couverture et fichiers système
+*.log
+npm-debug.log*
+coverage/
+.DS_Store
+Thumbs.db

@@ -331,7 +331,8 @@
     "settings": "Paramètres",
     "help": "Centre d’aide",
     "legal": "© {{year}} AzimBot · azim404.com · Non affilié à Discord Inc.",
-    "site_language": "Langue du site"
+    "site_language": "Langue du site",
+    "privacy": "Confidentialité"
   },
   "common": {
     "save": "Enregistrer",
@@ -870,5 +871,11 @@
     "suspend_title": "Suspendre Azim sur {{name}} ?",
     "suspend_message": "Le bot ne répondra plus à aucune commande sur ce serveur.",
     "resume_title": "Réactiver Azim sur {{name}} ?"
+  },
+  "privacy": {
+    "notice_label": "Information sur les données",
+    "notice": "Ce site ne dépose aucun cookie : il garde seulement votre session, votre langue et votre thème dans le navigateur.",
+    "notice_link": "Confidentialité",
+    "notice_ok": "Compris"
   }
 }

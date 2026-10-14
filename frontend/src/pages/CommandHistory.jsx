@@ -64,7 +64,7 @@ function CommandHistory() {
     const maxCount = filtered[0]?.count || 1;
 
     return (
-        <main className="site-page site-section-page history-page">
+        <div className="site-page site-section-page history-page">
             <div className="history-wrapper">
                 <div className="history-heading site-panel">
                     <div>
@@ -137,7 +137,7 @@ function CommandHistory() {
                     )}
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
 

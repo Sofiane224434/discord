@@ -16,7 +16,7 @@ function LoadingScreen({
     const [imgLoaded, setImgLoaded] = useState(false);
     const [imgError, setImgError] = useState(false);
 
-    const imgSrc = isIslam ? '/icon-islam.png' : '/icon.png';
+    const imgSrc = isIslam ? '/icon-islam.webp' : '/icon.webp';
 
     const containerClasses = fullScreen
         ? `fixed inset-0 z-50 flex flex-col items-center justify-center ${

@@ -11,14 +11,14 @@ const THEMES = [
         id: 'cyber',
         nameKey: 'settings.theme_cyber',
         descKey: 'settings.theme_cyber_desc',
-        icon: '/icon.png',
+        icon: '/icon.webp',
         swatches: ['#0a1728', '#102239', '#20b9f2', '#b5a0ff'],
     },
     {
         id: 'islam',
         nameKey: 'settings.theme_islam',
         descKey: 'settings.theme_islam_desc',
-        icon: '/icon-islam.png',
+        icon: '/icon-islam.webp',
         swatches: ['#03140e', '#07261a', '#10b981', '#fbbf24'],
         locked: true,
     },
@@ -33,7 +33,7 @@ function Settings() {
     const themes = THEMES.filter((th) => !th.locked || isIslamUnlocked);
 
     return (
-        <main className="pg pg--narrow" id="main" tabIndex="-1">
+        <div className="pg pg--narrow" id="main" tabIndex="-1">
             <header className="pg-head">
                 <h1>{t('settings.title')}</h1>
                 <p>{t('settings.lead')}</p>
@@ -106,7 +106,7 @@ function Settings() {
                     <LanguageSwitch variant="long" />
                 </section>
             </div>
-        </main>
+        </div>
     );
 }
 

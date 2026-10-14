@@ -25,7 +25,7 @@ const HUES = ['var(--azim-accent)', 'var(--azim-warm)', 'var(--azim-success)', '
 function Home() {
     const { theme, isIslamUnlocked } = useTheme();
     const { t } = useTranslation();
-    const logoSrc = theme === 'islam' ? '/icon-islam.png' : '/icon.png';
+    const logoSrc = theme === 'islam' ? '/icon-islam.webp' : '/icon.webp';
 
     // Mot qui change dans le titre du hero
     const words = [...asList(t('home.words', { returnObjects: true })), ...(isIslamUnlocked ? [t('home.word_islam')] : [])];

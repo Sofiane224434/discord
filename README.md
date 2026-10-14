@@ -152,6 +152,7 @@ starter-kit/
 │   └── nginx/
 ├── docker-compose.yml
 ├── frontend/
+│   ├── capture-refs.js
 │   ├── deploy/
 │   │   └── nginx/
 │   ├── Dockerfile

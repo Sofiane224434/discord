@@ -21,6 +21,7 @@ import Feedback from './pages/Feedback.jsx';
 import Settings from './pages/Settings.jsx';
 import Docs from './pages/Docs.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
+import StylePreviewPage from './pages/StylePreviewPage.jsx';
 
 function App() {
   const { loading } = useAuth();
@@ -64,6 +65,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/oauth/discord/callback" element={<DiscordCallback />} />
       </Route>
+      <Route path="/styles-preview" element={<StylePreviewPage />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

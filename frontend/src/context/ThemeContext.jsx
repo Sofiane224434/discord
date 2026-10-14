@@ -1,207 +1,73 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
-import i18n from 'i18next';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useAuth } from '../hooks/useAuth.js';
+import { managesIslamGuild } from './islamAccess.js';
 
 const ThemeContext = createContext();
 
 // Choix fait par l'utilisateur lui-même ('cyber' ou 'islam'). Absent = pas de choix :
 // le thème islam devient alors le thème par défaut dès qu'il est débloqué.
 const CHOICE_KEY = 'azim_theme_choice';
+const ISLAM_KEY = 'azim_has_islam_bot';
 const readChoice = () => localStorage.getItem(CHOICE_KEY);
 
-const KONAMI_SEQUENCE = [
-    'ArrowUp', 'ArrowUp',
-    'ArrowDown', 'ArrowDown',
-    'ArrowLeft', 'ArrowRight',
-    'ArrowLeft', 'ArrowRight',
-    'b', 'a'
-];
+// Anciennes façons de débloquer le thème (code secret, Konami) : supprimées
+localStorage.removeItem('azim_konami_unlocked');
 
 export function ThemeProvider({ children }) {
-    // 1. Détecter si le code Konami a déjà été débloqué localement
-    const [konamiUnlocked, setKonamiUnlocked] = useState(() => {
-        return localStorage.getItem('azim_konami_unlocked') === 'true';
-    });
+    const { user } = useAuth();
+    const [hasBotWithIslam, setHasBotWithIslam] = useState(() => localStorage.getItem(ISLAM_KEY) === 'true');
+    const [choice, setChoice] = useState(readChoice);
 
-    // 2. Détecter si l'utilisateur possède au moins un bot en mode Islam sur un de ses serveurs (mémoire rapide)
-    const [hasBotWithIslam, setHasBotWithIslam] = useState(() => {
-        return localStorage.getItem('azim_has_islam_bot') === 'true';
-    });
+    const isIslamUnlocked = Boolean(user && hasBotWithIslam);
+    // Islam par défaut quand il est débloqué, sauf si la personne a choisi le thème Cyber
+    const activeTheme = isIslamUnlocked && choice !== 'cyber' ? 'islam' : 'cyber';
 
-    // L'accès au mode Islam est autorisé UNIQUEMENT si l'utilisateur a un bot Islam OU a tapé le Konami code
-    const isIslamUnlocked = Boolean(hasBotWithIslam || konamiUnlocked);
-
-    // 3. Gestion du thème actif (visuel)
-    // "Quand on a un serveur islam, il faut que ça le garde en mémoire rapide car si c'est le cas, de base il faut mettre le thème islam sauf si on a mit l'autre."
-    const [theme, setThemeState] = useState(() => {
-        const hasIslamBot = localStorage.getItem('azim_has_islam_bot') === 'true';
-        const isKonami = localStorage.getItem('azim_konami_unlocked') === 'true';
-        if (hasIslamBot || isKonami) {
-            return readChoice() === 'cyber' ? 'cyber' : 'islam';
-        }
-        return 'cyber';
-    });
-
-    const [konamiToast, setKonamiToast] = useState(null);
-    const keyHistoryRef = useRef([]);
-    const wordBufferRef = useRef('');
-
-    // Vérifier les serveurs de l'utilisateur au montage et après connexion
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setHasBotWithIslam(false);
-            if (!konamiUnlocked) {
-                setThemeState('cyber');
-            }
-            return;
-        }
-
-        fetch('/api/bot/overview', {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data) => {
-                const hasIslamServer = (data?.guilds || []).some((g) => g.islamModeEnabled);
-                if (hasIslamServer) {
-                    localStorage.setItem('azim_has_islam_bot', 'true');
-                    setHasBotWithIslam(true);
-                    // Islam par défaut, sauf si l'utilisateur a choisi le thème Cyber
-                    setThemeState(readChoice() === 'cyber' ? 'cyber' : 'islam');
-                } else {
-                    localStorage.removeItem('azim_has_islam_bot');
-                    setHasBotWithIslam(false);
-                    if (!konamiUnlocked) {
-                        setThemeState('cyber');
-                    }
-                }
-            })
-            .catch(() => {
-                // En cas d'erreur réseau, on ne réinitialise pas brutalement pour préserver la mémoire rapide
-            });
-    }, [konamiUnlocked]);
-
-    // Application du thème au document avec belle transition fluide
-    useEffect(() => {
-        const activeTheme = isIslamUnlocked ? theme : 'cyber';
-        
-        // Activer la transition fluide
-        document.documentElement.classList.add('theme-transitioning');
-        document.documentElement.setAttribute('data-theme', activeTheme);
-
-        const timer = setTimeout(() => {
-            document.documentElement.classList.remove('theme-transitioning');
-        }, 600);
-
-        // Favicon dynamique
-        const favicon = document.querySelector("link[rel*='icon']");
-        if (favicon) {
-            favicon.href = activeTheme === 'islam' ? '/favicon-islam.png' : '/favicon.png';
-        }
-
-        return () => clearTimeout(timer);
-    }, [theme, isIslamUnlocked]);
-
-    // ÉCOUTEUR GLOBAL CODE KONAMI & MOT-CLÉ "ISLAM"
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            // Ignorer la saisie si l'utilisateur tape dans un input, textarea ou contentEditable
-            const tag = event.target?.tagName?.toLowerCase();
-            if (tag === 'input' || tag === 'textarea' || event.target?.isContentEditable) {
-                return;
-            }
-
-            const key = event.key;
-
-            // 1. Détection de la séquence Konami classique : ↑ ↑ ↓ ↓ ← → ← → B A
-            const history = keyHistoryRef.current;
-            history.push(key.toLowerCase());
-            if (history.length > 20) {
-                history.shift();
-            }
-
-            const konamiSlice = history.slice(-KONAMI_SEQUENCE.length);
-            const matchesKonami = KONAMI_SEQUENCE.every(
-                (targetKey, index) => targetKey.toLowerCase() === konamiSlice[index]
-            );
-
-            // 2. Détection du mot tapé "islam"
-            wordBufferRef.current = (wordBufferRef.current + key.toLowerCase()).slice(-10);
-            const matchesWordIslam = wordBufferRef.current.includes('islam');
-
-            if (matchesKonami || matchesWordIslam) {
-                wordBufferRef.current = '';
-                keyHistoryRef.current = [];
-
-                // Débloquer le mode Islam via Konami
-                setKonamiUnlocked(true);
-                localStorage.setItem('azim_konami_unlocked', 'true');
-
-                // Si on était en cyber, basculer sur islam, sinon basculer ou confirmer
-                setThemeState((prev) => {
-                    const next = prev === 'islam' ? 'cyber' : 'islam';
-                    localStorage.setItem(CHOICE_KEY, next);
-                    triggerKonamiToast(
-                        next === 'islam' ? i18n.t('unlock.toast_islam') : i18n.t('unlock.toast_cyber')
-                    );
-                    return next;
-                });
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+    const setIsIslamUnlocked = useCallback((unlocked) => {
+        if (unlocked) localStorage.setItem(ISLAM_KEY, 'true');
+        else localStorage.removeItem(ISLAM_KEY);
+        setHasBotWithIslam(Boolean(unlocked));
     }, []);
 
-    const triggerKonamiToast = (message) => {
-        setKonamiToast(message);
-        setTimeout(() => {
-            setKonamiToast(null);
-        }, 4500);
-    };
+    // Recalcule l'accès à chaque connexion / déconnexion
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!user || !token) {
+            // Déconnecté : le thème islam est déjà coupé (isIslamUnlocked dépend de user)
+            localStorage.removeItem(ISLAM_KEY);
+            return undefined;
+        }
+        let cancelled = false;
+        fetch('/api/bot/overview', { headers: { Authorization: `Bearer ${token}` } })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!cancelled && data) setIsIslamUnlocked(managesIslamGuild(data.guilds));
+            })
+            .catch(() => {
+                // Erreur réseau : on garde la dernière valeur connue
+            });
+        return () => { cancelled = true; };
+    }, [user, setIsIslamUnlocked]);
+
+    // Application du thème au document avec transition fluide
+    useEffect(() => {
+        document.documentElement.classList.add('theme-transitioning');
+        document.documentElement.setAttribute('data-theme', activeTheme);
+        const timer = setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 600);
+
+        const favicon = document.querySelector("link[rel*='icon']");
+        if (favicon) favicon.href = activeTheme === 'islam' ? '/favicon-islam.png' : '/favicon.png';
+
+        return () => clearTimeout(timer);
+    }, [activeTheme]);
 
     const setTheme = (newTheme) => {
-        if (!isIslamUnlocked) {
-            setThemeState('cyber');
-            return;
-        }
-        const chosen = newTheme === 'islam' ? 'islam' : 'cyber';
-        setThemeState(chosen);
-        localStorage.setItem(CHOICE_KEY, chosen);
-    };
-
-    const toggleTheme = () => {
         if (!isIslamUnlocked) return;
-        setTheme(theme === 'islam' ? 'cyber' : 'islam');
+        const chosen = newTheme === 'islam' ? 'islam' : 'cyber';
+        localStorage.setItem(CHOICE_KEY, chosen);
+        setChoice(chosen);
     };
 
-    const unlockIslam = (code) => {
-        const normalized = String(code || '').trim().toLowerCase();
-        if (normalized === 'islam' || normalized === 'konami' || normalized === 'islammode') {
-            setKonamiUnlocked(true);
-            localStorage.setItem('azim_konami_unlocked', 'true');
-            setThemeState('islam');
-            localStorage.setItem(CHOICE_KEY, 'islam');
-            triggerKonamiToast(i18n.t('unlock.toast_code'));
-            return { success: true };
-        }
-        return { success: false, error: i18n.t('unlock.wrong') };
-    };
-
-    const activeTheme = isIslamUnlocked && theme === 'islam' ? 'islam' : 'cyber';
-
-    const setIsIslamUnlocked = (unlocked) => {
-        if (unlocked) {
-            localStorage.setItem('azim_has_islam_bot', 'true');
-            setHasBotWithIslam(true);
-            setThemeState(readChoice() === 'cyber' ? 'cyber' : 'islam');
-        } else {
-            localStorage.removeItem('azim_has_islam_bot');
-            setHasBotWithIslam(false);
-            if (!konamiUnlocked) {
-                setThemeState('cyber');
-            }
-        }
-    };
+    const toggleTheme = () => setTheme(activeTheme === 'islam' ? 'cyber' : 'islam');
 
     return (
         <ThemeContext.Provider
@@ -209,24 +75,12 @@ export function ThemeProvider({ children }) {
                 theme: activeTheme,
                 isIslamUnlocked,
                 hasBotWithIslam,
-                konamiUnlocked,
                 setTheme,
                 setIsIslamUnlocked,
                 toggleTheme,
-                unlockIslam,
             }}
         >
             {children}
-
-            {/* Notification Toast Konami flottante et élégante */}
-            {konamiToast && (
-                <div className="konami-toast" role="status" aria-live="polite">
-                    <div className="konami-toast__content">
-                        <span className="konami-toast__icon">✨</span>
-                        <span className="konami-toast__message">{konamiToast}</span>
-                    </div>
-                </div>
-            )}
         </ThemeContext.Provider>
     );
 }

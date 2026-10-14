@@ -29,6 +29,12 @@ const PATHS = {
     search: <><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></>,
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
     close: <path d="M18 6 6 18M6 6l12 12" />,
+    lock: <><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></>,
+    message: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+    trash: <><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /></>,
+    ban: <><circle cx="12" cy="12" r="10" /><path d="m4.9 4.9 14.2 14.2" /></>,
+    pause: <path d="M10 4H6v16h4zM18 4h-4v16h4z" />,
+    crown: <path d="m2 7 5 5 5-8 5 8 5-5-2 12H4z" />,
 };
 
 function Icon({ name, size = 18, strokeWidth = 2, className = '', ...rest }) {

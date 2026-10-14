@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
+import { Link, useSearchParams } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
 import { feedbackService } from '../services/api.js';
 import { useAuth } from '../hooks/useAuth.js';
@@ -9,14 +10,22 @@ const MAX_TITLE_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 2000;
 const MAX_IMAGES = 3;
 
+const TYPE_PARAMS = { bug: 'bug', bugs: 'bug', idea: 'suggestion', ideas: 'suggestion', suggestion: 'suggestion' };
+
 export default function Feedback() {
     const { user } = useAuth();
     const { t, i18n } = useTranslation();
     const locale = i18n.resolvedLanguage || i18n.language || 'fr';
+    const [searchParams, setSearchParams] = useSearchParams();
+    const isStaff = ['admin', 'superadmin'].includes(user?.role);
 
     const [reports, setReports] = useState([]);
+    const [scope, setScope] = useState(user ? 'mine' : 'guest');
     const [loading, setLoading] = useState(true);
-    const [filterType, setFilterType] = useState('all'); // 'all' | 'bug' | 'suggestion'
+    // ?type=idea ouvre directement les idées
+    const [filterType, setFilterType] = useState(() => TYPE_PARAMS[searchParams.get('type')] || 'all'); // 'all' | 'bug' | 'suggestion'
+    const [replyDrafts, setReplyDrafts] = useState({});
+    const [busyId, setBusyId] = useState(null);
     const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'open' | 'in_progress' | 'resolved'
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -51,6 +60,7 @@ export default function Feedback() {
         try {
             const data = await feedbackService.getFeedbacks();
             setReports(Array.isArray(data.reports) ? data.reports : []);
+            setScope(data.scope || (user ? 'mine' : 'guest'));
         } catch (err) {
             console.error('Erreur chargement feedback:', err);
         } finally {
@@ -60,7 +70,53 @@ export default function Feedback() {
 
     useEffect(() => {
         loadReports();
-    }, []);
+    }, [user?.id]);
+
+    // Garde le filtre dans l'adresse : un lien « Idées » ramène bien aux idées
+    const selectType = (type) => {
+        setFilterType(type);
+        const next = new URLSearchParams(searchParams);
+        if (type === 'all') next.delete('type');
+        else next.set('type', type === 'suggestion' ? 'idea' : 'bug');
+        setSearchParams(next, { replace: true });
+    };
+
+    useEffect(() => {
+        const fromUrl = TYPE_PARAMS[searchParams.get('type')] || 'all';
+        setFilterType(fromUrl);
+        if (searchParams.get('new') !== null) {
+            setFormType(fromUrl === 'suggestion' ? 'suggestion' : 'bug');
+            setShowForm(true);
+        }
+    }, [searchParams]);
+
+    // Administration : statut, réponse, suppression
+    const applyReportChange = async (id, changes) => {
+        setBusyId(id);
+        setSubmitError('');
+        try {
+            const res = await feedbackService.updateFeedback(id, changes);
+            if (res.report) setReports((prev) => prev.map((r) => (r.id === id ? { ...r, ...res.report } : r)));
+            if (changes.reply !== undefined) setReplyDrafts((prev) => { const next = { ...prev }; delete next[id]; return next; });
+        } catch (err) {
+            setSubmitError(err.message || t('feedback.err_admin'));
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const removeReport = async (id) => {
+        if (!window.confirm(t('feedback.delete_confirm'))) return;
+        setBusyId(id);
+        try {
+            await feedbackService.deleteFeedback(id);
+            setReports((prev) => prev.filter((r) => r.id !== id));
+        } catch (err) {
+            setSubmitError(err.message || t('feedback.err_admin'));
+        } finally {
+            setBusyId(null);
+        }
+    };
 
     // Compression automatique des captures d'écran pour éviter les surcharges (erreur 413)
     const compressImage = (file, maxDimension = 1600, quality = 0.82) => {
@@ -223,7 +279,8 @@ export default function Feedback() {
         closed: t('feedback.status_closed'),
     };
 
-    const openForm = (type = formType) => {
+    // Le formulaire s'ouvre sur le type affiché (onglet Idées -> une idée)
+    const openForm = (type = filterType === 'suggestion' ? 'suggestion' : filterType === 'bug' ? 'bug' : formType) => {
         setFormType(type);
         setSubmitSuccess('');
         setSubmitError('');
@@ -238,10 +295,10 @@ export default function Feedback() {
     };
 
     const statCards = [
-        { label: t('feedback.stat_total'), value: stats.total, icon: 'fileText', color: 'var(--azim-accent)' },
-        { label: t('feedback.stat_bugs'), value: stats.bugs, icon: 'bug', color: 'var(--azim-coral)' },
-        { label: t('feedback.stat_ideas'), value: stats.suggestions, icon: 'sparkles', color: 'var(--azim-lilac)' },
-        { label: t('feedback.stat_resolved'), value: stats.resolved, icon: 'check', color: 'var(--azim-success)' },
+        { label: t('feedback.stat_total'), value: stats.total, icon: 'fileText', color: 'var(--azim-accent)', onClick: () => { selectType('all'); setStatusFilter('all'); } },
+        { label: t('feedback.stat_bugs'), value: stats.bugs, icon: 'bug', color: 'var(--azim-coral)', onClick: () => selectType('bug') },
+        { label: t('feedback.stat_ideas'), value: stats.suggestions, icon: 'sparkles', color: 'var(--azim-accent)', onClick: () => selectType('suggestion') },
+        { label: t('feedback.stat_resolved'), value: stats.resolved, icon: 'check', color: 'var(--azim-success)', onClick: () => { selectType('all'); setStatusFilter('resolved'); } },
     ];
 
     const typeTabs = [
@@ -267,15 +324,24 @@ export default function Feedback() {
 
             <section className="ui-stats" aria-label={t('feedback.stats_label')}>
                 {statCards.map((card) => (
-                    <article key={card.label} className="ui-stat" style={{ '--c': card.color }}>
+                    <button type="button" key={card.label} className="ui-stat ui-stat--btn" style={{ '--c': card.color }} onClick={card.onClick}>
                         <span className="ui-stat__icon"><Icon name={card.icon} size={20} /></span>
                         <div>
                             <small>{card.label}</small>
                             <strong>{loading ? '—' : card.value}</strong>
                         </div>
-                    </article>
+                    </button>
                 ))}
             </section>
+
+            {scope !== 'all' ? (
+                <p className="fb-scope">
+                    <Icon name="lock" size={15} />
+                    {scope === 'guest'
+                        ? <Trans i18nKey="feedback.scope_guest" components={{ link: <Link to="/login" state={{ from: { pathname: '/feedback' } }} /> }} />
+                        : t('feedback.scope_mine')}
+                </p>
+            ) : null}
 
             <div className="fb-toolbar">
                 <div className="ui-seg" role="tablist" aria-label={t('feedback.type_label')}>
@@ -286,7 +352,7 @@ export default function Feedback() {
                             role="tab"
                             aria-selected={filterType === tab.id}
                             className={filterType === tab.id ? 'is-active' : ''}
-                            onClick={() => setFilterType(tab.id)}
+                            onClick={() => selectType(tab.id)}
                         >
                             {tab.label} <span>{tab.count}</span>
                         </button>
@@ -320,7 +386,7 @@ export default function Feedback() {
                     <span className="ui-empty__icon"><Icon name="fileText" size={26} /></span>
                     <h3>{t('feedback.empty_title')}</h3>
                     <p>{t('feedback.empty_lead')}</p>
-                    <button type="button" className="ui-btn ui-btn--primary" onClick={() => { setFilterType('all'); setStatusFilter('all'); setSearchQuery(''); openForm(); }}>
+                    <button type="button" className="ui-btn ui-btn--primary" onClick={() => { setStatusFilter('all'); setSearchQuery(''); openForm(); }}>
                         {t('feedback.write')}
                     </button>
                 </div>
@@ -360,6 +426,54 @@ export default function Feedback() {
                                         </time>
                                         <code>{item.id}</code>
                                     </div>
+
+                                    {item.reply?.text ? (
+                                        <div className="fb-reply">
+                                            <strong><Icon name="message" size={14} /> {t('feedback.team_reply')}</strong>
+                                            <p>{item.reply.text}</p>
+                                        </div>
+                                    ) : null}
+
+                                    {isStaff ? (
+                                        <div className="fb-admin">
+                                            <select
+                                                className="ui-input"
+                                                value={item.status || 'open'}
+                                                disabled={busyId === item.id}
+                                                onChange={(e) => applyReportChange(item.id, { status: e.target.value })}
+                                                aria-label={t('feedback.status_filter')}
+                                            >
+                                                {Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                                            </select>
+                                            {replyDrafts[item.id] === undefined ? (
+                                                <button type="button" className="ui-btn ui-btn--ghost" onClick={() => setReplyDrafts((prev) => ({ ...prev, [item.id]: item.reply?.text || '' }))}>
+                                                    <Icon name="message" size={15} /> {item.reply?.text ? t('feedback.edit_reply') : t('feedback.reply')}
+                                                </button>
+                                            ) : null}
+                                            <button type="button" className="ui-btn ui-btn--ghost fb-admin__danger" disabled={busyId === item.id} onClick={() => removeReport(item.id)}>
+                                                <Icon name="trash" size={15} /> {t('feedback.delete')}
+                                            </button>
+                                            {replyDrafts[item.id] !== undefined ? (
+                                                <form
+                                                    className="fb-admin__reply"
+                                                    onSubmit={(e) => { e.preventDefault(); applyReportChange(item.id, { reply: replyDrafts[item.id] }); }}
+                                                >
+                                                    <textarea
+                                                        className="ui-input"
+                                                        rows={3}
+                                                        maxLength={2000}
+                                                        value={replyDrafts[item.id]}
+                                                        placeholder={t('feedback.reply_ph')}
+                                                        onChange={(e) => setReplyDrafts((prev) => ({ ...prev, [item.id]: e.target.value }))}
+                                                    />
+                                                    <div>
+                                                        <button type="button" className="ui-btn ui-btn--ghost" onClick={() => setReplyDrafts((prev) => { const next = { ...prev }; delete next[item.id]; return next; })}>{t('common.cancel')}</button>
+                                                        <button type="submit" className="ui-btn ui-btn--primary" disabled={busyId === item.id}>{t('feedback.reply_send')}</button>
+                                                    </div>
+                                                </form>
+                                            ) : null}
+                                        </div>
+                                    ) : null}
                                 </div>
                             </article>
                         );

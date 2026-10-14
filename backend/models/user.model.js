@@ -2,7 +2,19 @@
 import { query } from '../config/db.js'; // Extension .js obligatoire ! ⬅️
 import bcrypt from 'bcrypt';
 
-const PUBLIC_COLUMNS = 'id, email, firstname, lastname, created_at, discord_id, discord_username, discord_avatar, has_password';
+const PUBLIC_COLUMNS = 'id, email, firstname, lastname, created_at, discord_id, discord_username, discord_avatar, has_password, role, banned_at, ban_reason';
+
+// Compte propriétaire du site : toujours super administrateur
+export const SUPERADMIN_EMAIL = String(process.env.SUPERADMIN_EMAIL || 'sofiane.kherarfa@laplateforme.io').toLowerCase();
+export const ROLES = ['user', 'admin', 'superadmin'];
+
+export function resolveRole(row) {
+    if (!row) return 'user';
+    if (String(row.email || '').toLowerCase() === SUPERADMIN_EMAIL) return 'superadmin';
+    return ROLES.includes(row.role) ? row.role : 'user';
+}
+
+export const isStaff = (row) => ['admin', 'superadmin'].includes(resolveRole(row));
 
 // Les comptes Discord sans email reçoivent une adresse technique : on ne l'affiche jamais
 export function isPlaceholderEmail(email) {
@@ -36,6 +48,7 @@ export function toPublicUser(row) {
         avatarUrl: discordAvatarUrl(row.discord_id, row.discord_avatar),
         hasDiscord: Boolean(row.discord_id),
         hasPassword: row.has_password === undefined ? true : Boolean(row.has_password),
+        role: resolveRole(row),
     };
 }
 
@@ -92,6 +105,23 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     },
     async setEmail(id, email) {
         await query('UPDATE users SET email = ? WHERE id = ?', [email.toLowerCase(), id]);
+    },
+    // Administration du site
+    async list({ search = '', limit = 50 } = {}) {
+        const like = `%${String(search).trim()}%`;
+        const safeLimit = Math.min(200, Math.max(1, Number(limit) || 50));
+        return query(
+            `SELECT ${PUBLIC_COLUMNS} FROM users
+             WHERE email LIKE ? OR firstname LIKE ? OR discord_username LIKE ? OR discord_id LIKE ?
+             ORDER BY (role = 'user'), created_at DESC LIMIT ${safeLimit}`,
+            [like, like, like, like]
+        );
+    },
+    async setRole(id, role) {
+        await query('UPDATE users SET role = ? WHERE id = ?', [role, id]);
+    },
+    async setBanned(id, banned, reason = null) {
+        await query('UPDATE users SET banned_at = ?, ban_reason = ? WHERE id = ?', [banned ? new Date() : null, banned ? reason : null, id]);
     },
     async remove(id) {
         await query('DELETE FROM users WHERE id = ?', [id]);

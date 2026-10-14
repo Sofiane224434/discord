@@ -131,8 +131,18 @@ export const feedbackService = {
         method: 'POST',
         body: JSON.stringify(payload),
     }),
-    updateStatus: (id, status) => fetchAPI(`/feedback/${encodeURIComponent(id)}`, {
+    // Administration : statut, réponse et suppression d'un retour
+    updateFeedback: (id, changes) => fetchAPI(`/feedback/${encodeURIComponent(id)}`, {
         method: 'PATCH',
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(changes),
     }),
+    deleteFeedback: (id) => fetchAPI(`/feedback/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+};
+
+export const staffService = {
+    getUsers: (search = '') => fetchAPI(`/staff/users?search=${encodeURIComponent(search)}`),
+    setBan: (id, banned, reason = '') => fetchAPI(`/staff/users/${id}/ban`, { method: 'PATCH', body: JSON.stringify({ banned, reason }) }),
+    setRole: (id, role) => fetchAPI(`/staff/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+    getGuilds: () => fetchAPI('/staff/guilds'),
+    setSuspended: (guildId, suspended, reason = '') => fetchAPI(`/staff/guilds/${guildId}/suspend`, { method: 'POST', body: JSON.stringify({ suspended, reason }) }),
 };

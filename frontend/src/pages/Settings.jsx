@@ -57,7 +57,7 @@ function Settings() {
                 {/* Apparence */}
                 <section className="ui-card set-section">
                     <div className="set-section__head">
-                        <span className="set-section__icon" style={{ '--c': 'var(--azim-lilac)' }}><Icon name="sparkles" size={20} /></span>
+                        <span className="set-section__icon" style={{ '--c': 'var(--azim-accent)' }}><Icon name="sparkles" size={20} /></span>
                         <div>
                             <h2>{t('settings.appearance')}</h2>
                             <p>{t('settings.appearance_lead')}</p>

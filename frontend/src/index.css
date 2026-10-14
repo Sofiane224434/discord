@@ -11,10 +11,11 @@
 	--azim-line: #285373;
 	--azim-accent: #20b9f2;
 	--azim-accent-strong: #68ddff;
-	--azim-warm: #ffc46c;
-	--azim-success: #51d6a5;
-	--azim-coral: #ff917e;
-	--azim-lilac: #b5a0ff;
+	/* Couleurs secondaires adoucies de 25 % (moins de couleurs à l’écran) */
+	--azim-warm: color-mix(in srgb, #ffc46c 75%, #7f97b0);
+	--azim-success: color-mix(in srgb, #51d6a5 75%, #7f97b0);
+	--azim-coral: color-mix(in srgb, #ff917e 75%, #7f97b0);
+	--azim-lilac: var(--azim-accent);
 	--azim-ink-muted: #7f97b0;
 	--azim-surface-2: #0d1d31;
 	--azim-radius: 14px;
@@ -33,10 +34,10 @@
 	--azim-line: #17543d;
 	--azim-accent: #10b981;
 	--azim-accent-strong: #fbbf24;
-	--azim-warm: #f59e0b;
-	--azim-success: #34d399;
-	--azim-coral: #f87171;
-	--azim-lilac: #d97706;
+	--azim-warm: color-mix(in srgb, #f59e0b 75%, #8fb3a3);
+	--azim-success: color-mix(in srgb, #34d399 75%, #8fb3a3);
+	--azim-coral: color-mix(in srgb, #f87171 75%, #8fb3a3);
+	--azim-lilac: var(--azim-warm);
 	--azim-ink-muted: #8fb3a3;
 	--azim-surface-2: #051c14;
 }
@@ -1089,7 +1090,7 @@ body {
 .module-tone-coral .module-number { color: #ffae9e; }
 .module-tone-coral::before { background: #ff917e; }
 .module-tone-violet .module-number { color: #c8b9ff; }
-.module-tone-violet::before { background: #b5a0ff; }
+.module-tone-violet::before { background: var(--azim-accent); }
 
 .module-cta {
 	display: flex;
@@ -7769,4 +7770,197 @@ select.ui-input {
 	.st-metric small {
 		font-size: 12px;
 	}
+}
+
+/* ===== Retours : cartes-filtres, réponses et outils d'administration ===== */
+.ui-stat--btn {
+	width: 100%;
+	text-align: left;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+.ui-stat--btn:focus-visible {
+	outline: 2px solid var(--c);
+	outline-offset: 3px;
+}
+
+.fb-scope {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 18px;
+	color: var(--azim-ink-muted);
+	font-size: 0.9rem;
+}
+
+.fb-scope a {
+	color: var(--azim-accent-strong);
+	font-weight: 600;
+}
+
+.fb-reply {
+	margin-top: 14px;
+	padding: 12px 14px;
+	border-radius: 14px;
+	border-left: 3px solid var(--azim-accent);
+	background: color-mix(in srgb, var(--azim-accent) 8%, var(--azim-surface-2));
+}
+
+.fb-reply strong {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.8rem;
+	color: var(--azim-accent-strong);
+}
+
+.fb-reply p {
+	margin: 6px 0 0;
+	white-space: pre-wrap;
+}
+
+.fb-admin {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-top: 14px;
+	padding-top: 14px;
+	border-top: 1px dashed color-mix(in srgb, var(--azim-line) 80%, transparent);
+}
+
+.fb-admin select.ui-input {
+	width: auto;
+	min-width: 150px;
+}
+
+.fb-admin__danger {
+	color: var(--azim-coral);
+}
+
+.fb-admin__reply {
+	flex-basis: 100%;
+	display: grid;
+	gap: 8px;
+}
+
+.fb-admin__reply > div {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+/* ===== Administration ===== */
+.adm-list {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.adm-row {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 14px 16px;
+	border-radius: 18px;
+	border: 1px solid color-mix(in srgb, var(--azim-line) 70%, transparent);
+	background: var(--azim-surface-2);
+}
+
+.adm-row.is-banned {
+	opacity: 0.7;
+	border-style: dashed;
+}
+
+.adm-row__avatar {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	object-fit: cover;
+	background: var(--azim-panel-raised);
+	font-weight: 700;
+}
+
+.adm-row__main {
+	flex: 1;
+	min-width: 0;
+	display: grid;
+	gap: 3px;
+}
+
+.adm-row__main strong {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.adm-row__main small {
+	color: var(--azim-ink-muted);
+	overflow-wrap: anywhere;
+}
+
+.adm-row__reason {
+	font-style: italic;
+}
+
+.adm-role {
+	font-style: normal;
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: var(--azim-accent-strong);
+}
+
+.adm-role.is-superadmin { color: var(--azim-warm); }
+.adm-role.is-banned { color: var(--azim-coral); }
+
+.adm-row__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+	.adm-row {
+		flex-wrap: wrap;
+	}
+
+	.adm-row__actions {
+		width: 100%;
+		justify-content: flex-start;
+	}
+}
+
+/* Carte d'un serveur ayant partagé son lien (/vitrine) : toute la carte est cliquable */
+.pnl-guild__link {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	border-radius: inherit;
+}
+
+.pnl-guild__link:focus-visible {
+	outline: 2px solid var(--azim-accent);
+	outline-offset: -2px;
+}
+
+/* Configurer : les blocs empilés ne doivent jamais se toucher */
+.cf-card + .cf-card {
+	margin-top: 18px;
+}
+
+.cf-modules {
+	gap: 16px;
+}
+
+.fb-scope svg {
+	flex: none;
 }

@@ -120,6 +120,11 @@ function Header() {
                                     <Link to="/settings" onClick={() => setUserMenuOpen(false)} className="az-user__item" role="menuitem">
                                         <Icon name="settings" size={16} /> {t('header.settings')}
                                     </Link>
+                                    {['admin', 'superadmin'].includes(user.role) ? (
+                                        <Link to="/admin" onClick={() => setUserMenuOpen(false)} className="az-user__item" role="menuitem">
+                                            <Icon name="shield" size={16} /> {t('header.admin')}
+                                        </Link>
+                                    ) : null}
                                     <button type="button" onClick={handleLogout} className="az-user__item az-user__item--danger" role="menuitem">
                                         <Icon name="logout" size={16} /> {t('header.logout')}
                                     </button>

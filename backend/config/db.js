@@ -34,6 +34,9 @@ const USER_COLUMNS = {
     discord_username: 'VARCHAR(100) NULL',
     discord_avatar: 'VARCHAR(255) NULL',
     has_password: 'TINYINT(1) NOT NULL DEFAULT 1',
+    role: "VARCHAR(20) NOT NULL DEFAULT 'user'",
+    banned_at: 'DATETIME NULL',
+    ban_reason: 'VARCHAR(300) NULL',
 };
 
 export async function ensureSchema() {

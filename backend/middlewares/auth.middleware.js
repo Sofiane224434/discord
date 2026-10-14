@@ -1,6 +1,6 @@
 // middlewares/auth.middleware.js
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js'; // .js ! ⬅️
+import User, { resolveRole } from '../models/user.model.js'; // .js ! ⬅️
 const authMiddleware = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -34,6 +34,11 @@ const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ error: 'Utilisateur non trouvé' });
         }
 
+        if (user.banned_at) {
+            return res.status(403).json({ error: 'Ce compte a été suspendu.', hint: user.ban_reason || undefined, banned: true });
+        }
+
+        user.role = resolveRole(user);
         user.discord_guild_ids = Array.isArray(decoded.discordGuildIds) ? decoded.discordGuildIds : [];
         req.user = user;
         // Méthode et date de connexion : servent à confirmer les actions sensibles
@@ -46,4 +51,20 @@ const authMiddleware = async (req, res, next) => {
         return res.status(401).json({ error: 'Token invalide' });
     }
 };
+// Connexion facultative : renseigne req.user si un jeton valide est fourni
+export const optionalAuth = (req, res, next) => {
+    if (!req.headers.authorization?.startsWith('Bearer ')) return next();
+    return authMiddleware(req, res, next);
+};
+
+export const requireStaff = (req, res, next) => {
+    if (!['admin', 'superadmin'].includes(req.user?.role)) return res.status(403).json({ error: 'Accès réservé à l’administration.' });
+    next();
+};
+
+export const requireSuperAdmin = (req, res, next) => {
+    if (req.user?.role !== 'superadmin') return res.status(403).json({ error: 'Accès réservé au super administrateur.' });
+    next();
+};
+
 export default authMiddleware;

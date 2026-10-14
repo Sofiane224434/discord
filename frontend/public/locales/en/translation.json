@@ -366,7 +366,8 @@
     "close_menu": "Close menu",
     "support_discord": "Discord support",
     "home_label": "AzimBot home",
-    "main_nav": "Main navigation"
+    "main_nav": "Main navigation",
+    "admin": "Admin"
   },
   "panel": {
     "hello": "Hi {{name}}",
@@ -413,7 +414,8 @@
     "invite_error": "Couldn’t prepare the invite link.",
     "days": "{{d}} d {{h}} h",
     "hours": "{{h}} h {{m}} min",
-    "minutes": "{{m}} min"
+    "minutes": "{{m}} min",
+    "join": "Join {{name}}"
   },
   "feedback": {
     "title": "Feedback & ideas",
@@ -476,7 +478,17 @@
     "err_send": "Couldn’t send your feedback. Please try again later.",
     "err_max_images": "You can add up to {{max}} screenshots.",
     "err_format": "Unsupported format. Choose a PNG, JPEG or WebP image.",
-    "err_size": "Image too large (20 MB max)."
+    "err_size": "Image too large (20 MB max).",
+    "scope_guest": "<link>Log in</link> to follow your reports and read the team’s replies. You can also send one without an account.",
+    "scope_mine": "Only your own reports are shown here.",
+    "team_reply": "Team reply",
+    "reply": "Reply",
+    "edit_reply": "Edit reply",
+    "reply_ph": "Your reply, visible to the author",
+    "reply_send": "Post reply",
+    "delete": "Delete",
+    "delete_confirm": "Delete this report for good?",
+    "err_admin": "This action is not possible right now."
   },
   "settings": {
     "title": "Settings",
@@ -783,16 +795,32 @@
     "cta": "Add Azim",
     "list_label": "AzimBot"
   },
-  "unlock": {
-    "badge": "Secret extension",
-    "title": "Unlock a module",
-    "lead": "Enter your access code to turn on the matching features on the website.",
-    "label": "Secret code",
-    "placeholder": "Enter the secret code…",
-    "submit": "Unlock",
-    "wrong": "Wrong secret code.",
-    "toast_islam": "Islam & spirituality theme turned on.",
-    "toast_cyber": "Back to the Cyber theme.",
-    "toast_code": "Code accepted: Islam theme unlocked."
+  "admin": {
+    "title": "Admin",
+    "lead": "Azim accounts and servers.",
+    "lead_super": "Azim accounts, admins and servers.",
+    "feedbacks": "Manage reports",
+    "tab_users": "Accounts",
+    "tab_guilds": "Servers",
+    "search_users": "Username, email or Discord ID…",
+    "search_guilds": "Server name or ID…",
+    "loading": "Loading…",
+    "role_admin": "Admin",
+    "role_superadmin": "Owner",
+    "banned": "Banned",
+    "suspended": "Suspended",
+    "ban": "Ban",
+    "unban": "Lift ban",
+    "promote": "Make admin",
+    "demote": "Remove admin",
+    "suspend": "Suspend the bot",
+    "resume": "Resume the bot",
+    "ban_reason": "Reason for banning {{name}} (optional):",
+    "suspend_reason": "Reason for suspending on {{name}} (optional):",
+    "promote_confirm": "Make {{name}} an admin?",
+    "demote_confirm": "Remove admin rights from {{name}}?",
+    "no_users": "No account found.",
+    "no_guilds": "No server found.",
+    "error": "This action is not possible right now."
   }
 }

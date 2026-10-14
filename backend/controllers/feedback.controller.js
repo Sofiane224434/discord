@@ -43,7 +43,26 @@ function saveLocalReports(reports) {
     }
 }
 
+const isStaffUser = (user) => ['admin', 'superadmin'].includes(user?.role);
+
+// Un retour appartient à la personne qui l'a envoyé depuis son compte (ou avec la même adresse email)
+function isOwnReport(report, user) {
+    if (!user) return false;
+    if (report.authorUserId && String(report.authorUserId) === String(user.id)) return true;
+    if (user.discord_id && report.authorId && String(report.authorId) === String(user.discord_id)) return true;
+    return Boolean(user.email && report.authorEmail && report.authorEmail.toLowerCase() === String(user.email).toLowerCase());
+}
+
+function visibleReports(reports, user) {
+    if (isStaffUser(user)) return reports;
+    return reports
+        .filter((report) => isOwnReport(report, user))
+        .map(({ authorEmail, ...rest }) => rest);
+}
+
 export const getFeedbacks = async (req, res) => {
+    if (!req.user) return res.json({ reports: [], scope: 'guest' });
+    const scope = isStaffUser(req.user) ? 'all' : 'mine';
     const baseUrl = getBaseUrl();
     const { type, guildId } = req.query;
 
@@ -64,7 +83,7 @@ export const getFeedbacks = async (req, res) => {
 
             if (response.ok) {
                 const data = await response.json();
-                return res.json(data);
+                return res.json({ reports: visibleReports(Array.isArray(data.reports) ? data.reports : [], req.user), scope });
             }
         } catch (err) {
             console.warn('[Feedback] Impossible de joindre le bot, repli local:', err.message);
@@ -79,7 +98,7 @@ export const getFeedbacks = async (req, res) => {
     if (guildId) {
         reports = reports.filter((r) => !r.guildId || r.guildId === String(guildId));
     }
-    return res.json({ reports });
+    return res.json({ reports: visibleReports(reports, req.user), scope });
 };
 
 export const createFeedback = async (req, res) => {
@@ -95,6 +114,8 @@ export const createFeedback = async (req, res) => {
         description: description.trim().slice(0, 2000),
         authorName: authorName?.trim() || req.user?.username || 'Utilisateur Web',
         authorEmail: authorEmail?.trim() || req.user?.email || null,
+        authorUserId: req.user?.id ? String(req.user.id) : null,
+        authorId: req.user?.discord_id || null,
         guildId: guildId || null,
         guildName: guildName || null,
         images: Array.isArray(images) ? images.slice(0, 5) : [],
@@ -139,11 +160,14 @@ export const createFeedback = async (req, res) => {
     return res.status(201).json({ success: true, report: newReport });
 };
 
+const STATUSES = ['open', 'in_progress', 'resolved', 'closed'];
+
 export const updateFeedbackStatus = async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body || {};
+    const { status, reply } = req.body || {};
 
-    if (!status) return res.status(400).json({ error: 'Nouveau statut requis' });
+    if (status && !STATUSES.includes(status)) return res.status(400).json({ error: 'Statut inconnu' });
+    if (!status && reply === undefined) return res.status(400).json({ error: 'Statut ou réponse requis' });
 
     const baseUrl = getBaseUrl();
     if (baseUrl) {
@@ -153,7 +177,7 @@ export const updateFeedbackStatus = async (req, res) => {
             const response = await fetch(`${baseUrl}/reports/${id}`, {
                 method: 'PATCH',
                 headers: getBotHeaders(),
-                body: JSON.stringify({ status }),
+                body: JSON.stringify({ status, reply }),
                 signal: controller.signal,
             });
             clearTimeout(timeout);
@@ -170,9 +194,38 @@ export const updateFeedbackStatus = async (req, res) => {
     const reports = loadLocalReports();
     const target = reports.find((r) => r.id === id);
     if (!target) return res.status(404).json({ error: 'Signalement introuvable' });
-    target.status = status;
+    if (status) target.status = status;
+    if (reply !== undefined) {
+        const text = String(reply || '').trim().slice(0, 2000);
+        target.reply = text ? { text, at: new Date().toISOString() } : null;
+    }
     target.updatedAt = new Date().toISOString();
     saveLocalReports(reports);
 
     return res.json({ success: true, report: target });
+};
+
+export const deleteFeedback = async (req, res) => {
+    const { id } = req.params;
+    const baseUrl = getBaseUrl();
+    if (baseUrl) {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), BOT_TIMEOUT_MS);
+            const response = await fetch(`${baseUrl}/reports/${encodeURIComponent(id)}`, {
+                method: 'DELETE',
+                headers: getBotHeaders(),
+                signal: controller.signal,
+            });
+            clearTimeout(timeout);
+            if (response.ok || response.status === 404) return res.status(response.status === 404 ? 404 : 200).json(await response.json().catch(() => ({})));
+        } catch (err) {
+            console.warn('[Feedback] Échec suppression via bot, repli local:', err.message);
+        }
+    }
+    const reports = loadLocalReports();
+    const next = reports.filter((r) => r.id !== id);
+    if (next.length === reports.length) return res.status(404).json({ error: 'Signalement introuvable' });
+    saveLocalReports(next);
+    return res.json({ success: true });
 };

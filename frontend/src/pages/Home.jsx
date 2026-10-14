@@ -19,7 +19,8 @@ function DiscordIcon() {
 // t(..., { returnObjects: true }) renvoie la clé (texte) tant que les traductions ne sont pas chargées
 const asList = (value) => (Array.isArray(value) ? value : []);
 
-const HUES = ['#20b9f2', '#b5a0ff', '#ffc46c', '#ff917e', '#51d6a5', '#f472b6'];
+// Palette réduite : accent + 3 teintes adoucies
+const HUES = ['var(--azim-accent)', 'var(--azim-warm)', 'var(--azim-success)', 'var(--azim-coral)'];
 
 function Home() {
     const { theme, isIslamUnlocked } = useTheme();
@@ -66,9 +67,9 @@ function Home() {
         { label: t('home.modules.youtube'), icon: 'megaphone' },
         { label: t('home.modules.tiktok'), icon: 'megaphone' },
         { label: t('home.modules.reminders'), icon: 'refresh' },
-        { label: t('home.modules.quiz'), icon: 'help' },
         { label: t('home.modules.serverinfo'), icon: 'server' },
         ...(isIslamUnlocked ? [
+            { label: t('home.modules.quiz'), icon: 'help' },
             { label: t('home.modules.prayers'), icon: 'moon' },
             { label: t('home.modules.radio'), icon: 'moon' },
         ] : []),
@@ -177,7 +178,7 @@ function Home() {
                 </header>
 
                 <div className={`azh-bento${isIslamUnlocked ? ' has-islam' : ''}`}>
-                    <article ref={reveal} className="azh-card azh-card--ai" style={{ '--c': '#b5a0ff' }}>
+                    <article ref={reveal} className="azh-card azh-card--ai" style={{ '--c': 'var(--azim-accent)' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="sparkles" size={22} /></span>
                             <h3>{t('home.ai_title')}</h3>
@@ -192,7 +193,7 @@ function Home() {
                         </div>
                     </article>
 
-                    <article ref={reveal} className="azh-card azh-card--lvl" style={{ '--c': '#ffc46c' }}>
+                    <article ref={reveal} className="azh-card azh-card--lvl" style={{ '--c': 'var(--azim-warm)' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="activity" size={22} /></span>
                             <h3>{t('home.levels_title')}</h3>
@@ -218,7 +219,7 @@ function Home() {
                         </div>
                     </article>
 
-                    <article ref={reveal} className="azh-card azh-card--mod" style={{ '--c': '#51d6a5' }}>
+                    <article ref={reveal} className="azh-card azh-card--mod" style={{ '--c': 'var(--azim-success)' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="shield" size={22} /></span>
                             <h3>{t('home.mod_title')}</h3>
@@ -230,7 +231,7 @@ function Home() {
                         </div>
                     </article>
 
-                    <article ref={reveal} className="azh-card azh-card--yt" style={{ '--c': '#ff917e' }}>
+                    <article ref={reveal} className="azh-card azh-card--yt" style={{ '--c': 'var(--azim-coral)' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="megaphone" size={22} /></span>
                             <h3>{t('home.yt_title')}</h3>
@@ -245,7 +246,7 @@ function Home() {
                         </div>
                     </article>
 
-                    <article ref={reveal} className="azh-card azh-card--wel" style={{ '--c': '#20b9f2' }}>
+                    <article ref={reveal} className="azh-card azh-card--wel" style={{ '--c': 'var(--azim-accent)' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="hand" size={22} /></span>
                             <h3>{t('home.welcome_title')}</h3>

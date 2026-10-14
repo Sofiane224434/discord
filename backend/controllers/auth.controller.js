@@ -68,6 +68,9 @@ export const login = async (req, res) => {
         if (!user || !user.has_password || !(await User.verifyPassword(password, user.password))) {
             return res.status(401).json({ error: 'Identifiants incorrects' });
         }
+        if (user.banned_at) {
+            return res.status(403).json({ error: 'Ce compte a été suspendu.', hint: user.ban_reason || undefined });
+        }
         const token = generateToken(user);
         res.json({ user: toPublicUser(user), token });
     } catch (error) {

@@ -366,7 +366,8 @@
     "close_menu": "Fermer le menu",
     "support_discord": "Support Discord",
     "home_label": "Accueil AzimBot",
-    "main_nav": "Navigation principale"
+    "main_nav": "Navigation principale",
+    "admin": "Administration"
   },
   "panel": {
     "hello": "Bonjour {{name}}",
@@ -413,7 +414,8 @@
     "invite_error": "Impossible de préparer le lien d’invitation.",
     "days": "{{d}} j {{h}} h",
     "hours": "{{h}} h {{m}} min",
-    "minutes": "{{m}} min"
+    "minutes": "{{m}} min",
+    "join": "Rejoindre {{name}}"
   },
   "feedback": {
     "title": "Retours & idées",
@@ -476,7 +478,17 @@
     "err_send": "Impossible d’envoyer le retour. Réessayez plus tard.",
     "err_max_images": "Vous pouvez ajouter au maximum {{max}} captures.",
     "err_format": "Format non supporté. Choisissez une image PNG, JPEG ou WebP.",
-    "err_size": "Image trop volumineuse (20 Mo maximum)."
+    "err_size": "Image trop volumineuse (20 Mo maximum).",
+    "scope_guest": "<link>Connectez-vous</link> pour suivre vos retours et lire les réponses de l’équipe. Vous pouvez aussi en envoyer sans compte.",
+    "scope_mine": "Seuls vos propres retours sont affichés ici.",
+    "team_reply": "Réponse de l’équipe",
+    "reply": "Répondre",
+    "edit_reply": "Modifier la réponse",
+    "reply_ph": "Votre réponse, visible par l’auteur du retour",
+    "reply_send": "Publier la réponse",
+    "delete": "Supprimer",
+    "delete_confirm": "Supprimer définitivement ce retour ?",
+    "err_admin": "Action impossible pour le moment."
   },
   "settings": {
     "title": "Paramètres",
@@ -783,16 +795,32 @@
     "cta": "Ajouter Azim",
     "list_label": "Bot AzimBot"
   },
-  "unlock": {
-    "badge": "Extension secrète",
-    "title": "Débloquer un module",
-    "lead": "Entrez votre code d’accès pour activer les fonctionnalités correspondantes sur le site.",
-    "label": "Code secret",
-    "placeholder": "Entrez le code secret…",
-    "submit": "Débloquer",
-    "wrong": "Code secret incorrect.",
-    "toast_islam": "Thème Islam & spiritualité activé.",
-    "toast_cyber": "Retour au thème Cyber.",
-    "toast_code": "Code validé : thème Islam débloqué."
+  "admin": {
+    "title": "Administration",
+    "lead": "Comptes et serveurs d’Azim.",
+    "lead_super": "Comptes, administrateurs et serveurs d’Azim.",
+    "feedbacks": "Gérer les retours",
+    "tab_users": "Comptes",
+    "tab_guilds": "Serveurs",
+    "search_users": "Pseudo, email ou ID Discord…",
+    "search_guilds": "Nom ou ID du serveur…",
+    "loading": "Chargement…",
+    "role_admin": "Admin",
+    "role_superadmin": "Propriétaire",
+    "banned": "Banni",
+    "suspended": "Suspendu",
+    "ban": "Bannir",
+    "unban": "Lever le bannissement",
+    "promote": "Nommer admin",
+    "demote": "Retirer admin",
+    "suspend": "Suspendre le bot",
+    "resume": "Réactiver le bot",
+    "ban_reason": "Raison du bannissement de {{name}} (facultatif) :",
+    "suspend_reason": "Raison de la suspension sur {{name}} (facultatif) :",
+    "promote_confirm": "Nommer {{name}} administrateur ?",
+    "demote_confirm": "Retirer les droits d’administration de {{name}} ?",
+    "no_users": "Aucun compte trouvé.",
+    "no_guilds": "Aucun serveur trouvé.",
+    "error": "Action impossible pour le moment."
   }
 }

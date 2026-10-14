@@ -20,6 +20,7 @@ import Modules from './pages/Modules.jsx';
 import Feedback from './pages/Feedback.jsx';
 import Settings from './pages/Settings.jsx';
 import Docs from './pages/Docs.jsx';
+import Admin from './pages/Admin.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import StylePreviewPage from './pages/StylePreviewPage.jsx';
 
@@ -54,6 +55,9 @@ function App() {
         } />
         <Route path="/email" element={
           <PrivateRoute><EmailPage /></PrivateRoute>
+        } />
+        <Route path="/admin" element={
+          <PrivateRoute><Admin /></PrivateRoute>
         } />
         <Route path="/command-history" element={
           <PrivateRoute><CommandHistory /></PrivateRoute>

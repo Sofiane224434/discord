@@ -622,11 +622,11 @@ function GuildConfig() {
 
     // Cartes de modules de la vue d'ensemble : état + accès direct à l'onglet
     const modules = [
-        { tab: 'ai', title: t('config.mod_ai'), icon: 'sparkles', color: 'var(--azim-lilac)', state: form.ai.keysCount > 0 ? 'on' : 'todo', detail: form.ai.keysCount > 0 ? t('config.mod_ai_keys', { count: form.ai.keysCount }) : t('config.mod_ai_none') },
+        { tab: 'ai', title: t('config.mod_ai'), icon: 'sparkles', color: 'var(--azim-accent)', state: form.ai.keysCount > 0 ? 'on' : 'todo', detail: form.ai.keysCount > 0 ? t('config.mod_ai_keys', { count: form.ai.keysCount }) : t('config.mod_ai_none') },
         { tab: 'welcome', title: t('config.mod_welcome'), icon: 'hand', color: 'var(--azim-accent)', state: form.welcome.enabled ? (form.welcome.channelId ? 'on' : 'todo') : 'off', detail: form.welcome.enabled ? (channelName(form.welcome.channelId) ? `#${channelName(form.welcome.channelId)}` : t('config.mod_choose_channel')) : t('config.disabled') },
         { tab: 'levels', title: t('config.mod_levels'), icon: 'activity', color: 'var(--azim-warm)', state: form.rank.enabled ? 'on' : 'off', detail: form.rank.enabled ? t('config.mod_rewards', { count: form.rank.rewards.length }) : t('config.disabled') },
         { tab: 'social', title: t('config.mod_youtube'), icon: 'megaphone', color: 'var(--azim-coral)', state: (form.youtube.channels || []).length ? (form.youtube.targetChannelId ? 'on' : 'todo') : 'off', detail: (form.youtube.channels || []).length ? t('config.mod_channels', { count: form.youtube.channels.length }) : t('config.mod_no_channel') },
-        { tab: 'social', title: t('config.mod_tiktok'), icon: 'megaphone', color: '#f472b6', state: form.tiktok.enabled ? (form.tiktok.username ? 'on' : 'todo') : 'off', detail: form.tiktok.enabled ? (form.tiktok.username || t('config.mod_add_handle')) : t('config.disabled') },
+        { tab: 'social', title: t('config.mod_tiktok'), icon: 'megaphone', color: 'var(--azim-coral)', state: form.tiktok.enabled ? (form.tiktok.username ? 'on' : 'todo') : 'off', detail: form.tiktok.enabled ? (form.tiktok.username || t('config.mod_add_handle')) : t('config.disabled') },
         { tab: 'profile', title: t('config.mod_logs'), icon: 'fileText', color: 'var(--azim-success)', state: form.logs.channelId ? 'on' : 'off', detail: form.logs.channelId ? `#${channelName(form.logs.channelId) || t('config.mod_channel_fallback')}` : t('config.mod_no_logs') },
     ];
     const STATE_LABEL = { on: t('config.active'), off: t('config.inactive'), todo: t('config.todo') };

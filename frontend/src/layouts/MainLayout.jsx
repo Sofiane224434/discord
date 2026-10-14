@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header.jsx';
 import Footer from '../components/Footer.jsx';
-import ThemeUnlockModal from '../components/ThemeUnlockModal.jsx';
 import ScrollManager from '../components/ScrollManager.jsx';
 
 function MainLayout() {
@@ -13,7 +12,6 @@ function MainLayout() {
                 <Outlet />
             </main>
             <Footer />
-            <ThemeUnlockModal />
         </div>
     );
 }

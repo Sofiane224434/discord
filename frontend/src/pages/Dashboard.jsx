@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { managesIslamGuild } from '../context/islamAccess.js';
 import { botService, discordService } from '../services/api.js';
 import Icon from '../components/Icon.jsx';
 
@@ -49,11 +50,8 @@ function Dashboard() {
             setOverview(data);
             setError('');
 
-            // "Dès qu'il y a un serveur en mode islam tu as le thème islam directement"
-            const hasIslamActive = (data?.guilds || []).some((bg) => bg.islamModeEnabled);
-            if (hasIslamActive) {
-                setIsIslamUnlocked(true);
-            }
+            // Thème islam : uniquement si la personne gère un serveur où le mode islam est actif
+            setIsIslamUnlocked(managesIslamGuild(data?.guilds));
         } catch (apiError) {
             setError(apiError.message || t('panel.load_error'));
         } finally {
@@ -167,6 +165,7 @@ function Dashboard() {
                     ...g,
                     iconUrl: g.iconUrl || botGuild?.iconUrl || getDiscordGuildIcon(g),
                     memberCount: g.memberCount || botGuild?.memberCount || null,
+                    publicInviteUrl: botGuild?.publicInviteUrl || null,
                     connected: true,
                     canManage: false,
                     isMember: true,
@@ -189,6 +188,7 @@ function Dashboard() {
                         name: bg.name,
                         iconUrl: bg.iconUrl,
                         memberCount: bg.memberCount,
+                        publicInviteUrl: bg.publicInviteUrl || null,
                         connected: true,
                         canManage: false,
                         fromBotList: true,
@@ -197,7 +197,8 @@ function Dashboard() {
                 }
             }
         }
-        return result;
+        // Serveurs ayant autorisé leur lien (/vitrine) en premier, l'ordre reste stable sinon
+        return result.sort((a, b) => Number(Boolean(b.publicInviteUrl)) - Number(Boolean(a.publicInviteUrl)));
     }, [userGuildMap, connectedGuildIds, manageableGuilds, overview]);
 
     // 3. Serveurs où l'utilisateur a la perm de gérer, mais le bot n'est pas encore présent (à inviter)
@@ -257,6 +258,9 @@ function Dashboard() {
         const initial = (guild.name || '?').slice(0, 1).toUpperCase();
         return (
             <article className={`pnl-guild${guild.connected ? '' : ' is-pending'}`} key={guild.id}>
+                {guild.publicInviteUrl && !guild.canManage ? (
+                    <a className="pnl-guild__link" href={guild.publicInviteUrl} target="_blank" rel="noopener noreferrer" aria-label={t('panel.join', { name: guild.name })} />
+                ) : null}
                 <div className="pnl-guild__banner" style={icon ? { backgroundImage: `url(${icon})` } : undefined} />
                 <div className="pnl-guild__body">
                     {icon ? <img className="pnl-guild__icon" src={icon} alt="" /> : <span className="pnl-guild__icon pnl-guild__icon--fallback">{initial}</span>}

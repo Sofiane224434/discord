@@ -9,7 +9,7 @@
 const now = Date.now();
 const ago = (minutes) => new Date(now - minutes * 60_000).toISOString();
 
-let USER = { id: 1, username: 'claude-apercu', firstname: 'Claude', email: null, createdAt: '2026-03-02T10:00:00Z', avatarUrl: '/icon.png', hasDiscord: true, hasPassword: false, recentDiscordAuth: true };
+let USER = { id: 1, username: 'claude-apercu', firstname: 'Claude', email: null, createdAt: '2026-03-02T10:00:00Z', avatarUrl: '/icon.png', hasDiscord: true, hasPassword: false, recentDiscordAuth: true, role: new URLSearchParams(window.location.search).get('mock_role') || 'superadmin' };
 
 const DISCORD_GUILDS = [
     { id: '111', name: 'Azim HQ', owner: true, permissions: '8', iconUrl: '/icon.png' },
@@ -24,7 +24,8 @@ function overview(islam, empty) {
         { id: '111', name: 'Azim HQ', memberCount: 842, islamModeEnabled: islam, observability: { commandByName: { ask: 40, rank: 22, purge: 5, priere: 12, help: 9, quiz: 7 }, recentErrors: [{ ts: ago(42), type: 'CommandError', message: 'Missing Permissions dans #annonces' }, { ts: ago(180), type: 'GroqTimeout', message: 'Le modèle a mis trop de temps à répondre' }], errorTotal: 3 } },
         { id: '112', name: 'Studio Créa', memberCount: 1290, observability: { commandByName: { ask: 18, youtube: 4 } } },
         { id: '113', name: 'Les Codeurs', memberCount: 311, observability: { commandByName: { ask: 25, code: 14 } } },
-        { id: '222', name: 'Gaming FR', memberCount: 520 },
+        { id: '222', name: 'Gaming FR', memberCount: 520, publicInviteUrl: 'https://discord.gg/exemple' },
+        { id: '444', name: 'Club Lecture', memberCount: 95 },
     ];
     return {
         bot: { status: 'online', latency: 42, uptime: 93_000 },
@@ -48,9 +49,16 @@ const GUILD_CONFIG = {
 
 let reports = [
     { id: 'RPT-1042', type: 'bug', status: 'in_progress', title: 'La radio s’arrête après 20 minutes', description: 'Sur le salon vocal #coran, la radio se coupe toute seule au bout de ~20 min. Il faut relancer /radio.', authorName: 'Yanis', source: 'discord', guildName: 'Azim HQ', createdAt: ago(60 * 26) },
-    { id: 'RPT-1041', type: 'suggestion', status: 'open', title: 'Ajouter une commande météo', description: 'Une commande /meteo <ville> qui affiche la météo du jour serait super pratique.', authorName: 'Inès', source: 'web', createdAt: ago(60 * 50) },
+    { id: 'RPT-1041', type: 'suggestion', status: 'open', title: 'Ajouter une commande météo', description: 'Une commande /meteo <ville> qui affiche la météo du jour serait super pratique.', authorName: 'Inès', source: 'web', createdAt: ago(60 * 50), reply: { text: 'Bonne idée, on la prévoit pour la prochaine version.', at: ago(60) } },
     { id: 'RPT-1038', type: 'bug', status: 'resolved', title: 'Le message de bienvenue mentionne deux fois', description: 'Le membre est mentionné deux fois quand le message privé est activé.', authorName: 'Sami', source: 'web', createdAt: ago(60 * 24 * 6) },
     { id: 'RPT-1033', type: 'suggestion', status: 'resolved', title: 'Alertes de lives TikTok', description: 'Prévenir quand un créateur lance un live TikTok.', authorName: 'Léa', source: 'discord', guildName: 'Studio Créa', createdAt: ago(60 * 24 * 12) },
+];
+
+const STAFF_USERS = [
+    { id: 1, username: 'claude-apercu', email: 'sofiane.kherarfa@laplateforme.io', role: 'superadmin', isOwner: true, createdAt: '2026-03-02T10:00:00Z', discordId: '1001' },
+    { id: 2, username: 'ines', email: 'ines@example.com', role: 'admin', createdAt: '2026-05-11T10:00:00Z', discordId: '1002' },
+    { id: 3, username: 'yanis', email: 'yanis@example.com', role: 'user', createdAt: '2026-06-20T10:00:00Z' },
+    { id: 4, username: 'spam-bot', email: 'spam@example.com', role: 'user', banned: true, banReason: 'Spam dans les retours', createdAt: '2026-09-01T10:00:00Z' },
 ];
 
 function json(body, status = 200) {
@@ -72,8 +80,6 @@ export function installMockApi() {
     }
     if (params.has('mock_theme')) {
         localStorage.setItem('azim_theme_choice', islam ? 'islam' : 'cyber');
-        if (islam) localStorage.setItem('azim_konami_unlocked', 'true');
-        else localStorage.removeItem('azim_konami_unlocked');
     }
     if (empty) reports = [];
 
@@ -105,13 +111,26 @@ export function installMockApi() {
                 services: { db: { status: 'ok' }, botApi: { status: 'ok', responseMs: 38, uptimeSeconds: 93_000, discord: { ready: true, ping: 41, guildCount: 4, shardCount: 1, shards: [{ id: 0, ping: 41, ready: true }] } }, oauth: { status: 'ok' } },
             });
         }
-        if (path === '/feedback' && method === 'GET') return json({ reports });
+        if (path === '/feedback' && method === 'GET') return json({ reports, scope: loggedIn ? 'all' : 'guest' });
         if (path === '/feedback' && method === 'POST') {
             const body = JSON.parse(init.body || '{}');
             const report = { ...body, id: `RPT-${1043 + reports.length}`, status: 'open', source: 'web', createdAt: new Date().toISOString() };
             reports = [report, ...reports];
             return json({ success: true, report });
         }
+        const feedbackMatch = path.match(/^\/feedback\/([^/]+)$/);
+        if (feedbackMatch && method === 'PATCH') {
+            const body = JSON.parse(init.body || '{}');
+            reports = reports.map((r) => (r.id === feedbackMatch[1] ? { ...r, ...(body.status ? { status: body.status } : {}), ...(body.reply !== undefined ? { reply: body.reply ? { text: body.reply, at: new Date().toISOString() } : null } : {}) } : r));
+            return json({ success: true, report: reports.find((r) => r.id === feedbackMatch[1]) });
+        }
+        if (feedbackMatch && method === 'DELETE') {
+            reports = reports.filter((r) => r.id !== feedbackMatch[1]);
+            return json({ success: true });
+        }
+        if (path === '/staff/users') return json({ users: STAFF_USERS });
+        if (path === '/staff/guilds') return json({ guilds: overview(islam, empty).guilds.map((g) => ({ ...g, iconUrl: null, suspended: g.id === '444' })) });
+        if (path.startsWith('/staff/')) return json({ success: true, user: STAFF_USERS[1] });
         if (path === '/discord/bot-invite') return json({ url: 'https://discord.com/oauth2/authorize' });
         return json({});
     };

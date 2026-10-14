@@ -230,6 +230,10 @@ export const exchangeCode = async (req, res) => {
             localUser = await User.findById(localUser.id);
         }
 
+        if (localUser.banned_at) {
+            return res.status(403).json({ error: 'Ce compte a été suspendu.', hint: localUser.ban_reason || undefined });
+        }
+
         const allGuilds = (Array.isArray(guilds) ? guilds : []).map((guild) => ({
             ...guild,
             iconUrl: guild.icon

@@ -55,5 +55,11 @@ jobs:
 
             docker compose -p "$PROJECT" down || true
             docker rm -f discord-dashboard-db discord-dashboard-api discord-dashboard-app 2>/dev/null || true
+            # Si le bot est en train de se déployer en même temps, son réseau peut manquer quelques secondes
+            for i in $(seq 1 30); do
+              docker network inspect azim-bot_default >/dev/null 2>&1 && break
+              echo "⏳ Attente du réseau du bot ($i/30)…"
+              sleep 5
+            done
             docker compose -p "$PROJECT" up -d --build
             docker compose -p "$PROJECT" ps

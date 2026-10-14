@@ -269,9 +269,10 @@ export const getBotInviteUrl = (req, res) => {
         scope: 'bot applications.commands',
     });
 
+    // Présélectionne le serveur sans verrouiller la liste : avec disable_guild_select, Discord
+    // bloque le menu sur un champ vide quand le serveur ne peut pas être choisi.
     if (guild_id && /^\d+$/.test(String(guild_id))) {
         params.set('guild_id', String(guild_id));
-        params.set('disable_guild_select', 'true');
     }
 
     return res.json({ url: `https://discord.com/oauth2/authorize?${params.toString()}` });

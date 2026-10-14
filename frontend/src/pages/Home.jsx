@@ -1,243 +1,281 @@
 // pages/Home.jsx
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
+
+const ADD_TO_SERVER_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
+
+function DiscordIcon() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+        </svg>
+    );
+}
 
 function Home() {
     const { theme, isIslamUnlocked } = useTheme();
+    const logoSrc = theme === 'islam' ? '/icon-islam.png' : '/icon.png';
 
-    const addToServerUrl = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
-
-    // 1. Textes animés façon DraftBot (visibles / masqués en boucle)
-    const activities = [
-        "L'Intelligence Artificielle",
-        "La Modération",
-        "Les Niveaux",
-        "L'Accueil & Rôles",
-        "Les Statistiques",
-        "Les Alertes Vidéo",
-        ...(isIslamUnlocked ? ["Les Prières & Coran"] : [])
-    ];
-
-    const [activeIdx, setActiveIdx] = useState(0);
+    // Mot qui change dans le titre du hero
+    const words = ['intelligent', 'protégé', 'animé', 'connecté', ...(isIslamUnlocked ? ['serein'] : [])];
+    const [wordIdx, setWordIdx] = useState(0);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setActiveIdx((prev) => (prev + 1) % activities.length);
-        }, 3000);
+        const timer = setInterval(() => setWordIdx((prev) => (prev + 1) % words.length), 2600);
         return () => clearInterval(timer);
-    }, [activities.length]);
+    }, [words.length]);
 
-    // 2. Scroll reveal pour les blocs features
-    const featureRefs = useRef([]);
+    // Apparition au scroll
+    const revealRefs = useRef([]);
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
+                        entry.target.classList.add('is-in');
+                        observer.unobserve(entry.target);
                     }
                 });
             },
-            { threshold: 0.15 }
+            { threshold: 0.12 }
         );
-
-        featureRefs.current.forEach((el) => {
-            if (el) observer.observe(el);
-        });
-
+        revealRefs.current.forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, []);
+    }, [isIslamUnlocked]);
 
-    const registerFeatureRef = (el) => {
-        if (el && !featureRefs.current.includes(el)) {
-            featureRefs.current.push(el);
-        }
+    const reveal = (el) => {
+        if (el && !revealRefs.current.includes(el)) revealRefs.current.push(el);
     };
 
-    // Définition des showcases
-    const showcases = [
+    const modules = [
+        '🧠 IA /ask', '🏆 Niveaux & XP', '🛡️ Modération', '👋 Accueil', '📢 YouTube', '🎵 TikTok Live',
+        '⏰ Rappels', '📊 Stats serveur', '🎯 Quiz', '🔔 Rappel bump',
+        ...(isIslamUnlocked ? ['🕌 Horaires de prière', '📖 Coran', '📻 Radio 24/7', '🧭 Qibla'] : []),
+    ];
+
+    const features = [
         {
             key: 'ai',
-            title: "Intelligence Artificielle",
-            desc: "Posez n'importe quelle question avec /ask. Vos réponses sont générées en temps réel par le moteur Groq Llama 3, directement dans votre salon Discord.\nTout est instantané, fluide et intuitif. Alors échangez !",
-            icon: "🧠",
-            badgeText: "Groq Llama 3",
-            subIcon: "🤖"
+            size: 'wide',
+            icon: '🧠',
+            title: 'Une IA dans vos salons',
+            desc: "Posez une question avec /ask : la réponse arrive en quelques secondes, propulsée par Groq. Idéal pour aider vos membres sans quitter Discord.",
+            visual: (
+                <div className="azh-mini-chat">
+                    <div className="azh-mini-bubble is-user">/ask Explique-moi les promesses en JS</div>
+                    <div className="azh-mini-bubble is-bot">
+                        <span className="azh-typing"><i /><i /><i /></span>
+                    </div>
+                </div>
+            ),
         },
         {
             key: 'levels',
-            title: "Level & XP",
-            desc: "Laissez vos membres se démarquer sur votre serveur grâce au système de niveaux et d'expérience personnalisable.\nVous pourrez afficher le classement, proposer des récompenses et attribuer automatiquement des rôles exclusifs aux paliers atteints !",
-            icon: "🏆",
-            badgeText: "Niveaux & Rangs",
-            subIcon: "⭐"
+            icon: '🏆',
+            title: 'Niveaux & XP',
+            desc: 'Classements, paliers et rôles attribués automatiquement aux membres les plus actifs.',
+            visual: (
+                <div className="azh-xp">
+                    <div className="azh-xp-row"><span>Niv. 12</span><span>2 340 / 3 000 XP</span></div>
+                    <div className="azh-xp-bar"><span /></div>
+                </div>
+            ),
         },
         {
             key: 'moderation',
-            title: "Modération",
-            desc: "Qui osera vous tenir tête avec Azim à vos côtés ?\nNettoyage de salon en un éclair avec /purge, journal de bord, gestion des permissions et filtres automatiques seront votre meilleure arme pour protéger votre communauté.",
-            icon: "🛡️",
-            badgeText: "Sécurité & Purge",
-            subIcon: "⚡"
+            icon: '🛡️',
+            title: 'Modération',
+            desc: 'Nettoyez un salon avec /purge, gérez les permissions et gardez une trace de tout.',
+            visual: (
+                <ul className="azh-log">
+                    <li><b>/purge 50</b> · 50 messages supprimés</li>
+                    <li><b>Permissions</b> · rôle Modo mis à jour</li>
+                </ul>
+            ),
         },
         {
             key: 'alerts',
-            title: "Alertes Réseaux",
-            desc: "Ne manquez plus aucune sortie de vos créateurs préférés.\nSoyez notifié en temps réel sur Discord lors de la publication d'une nouvelle vidéo YouTube ou du lancement d'un live TikTok en reliant vos salons d'annonces.",
-            icon: "📢",
-            badgeText: "YouTube & TikTok",
-            subIcon: "📺"
+            icon: '📢',
+            title: 'Alertes YouTube & TikTok',
+            desc: "Une vidéo publiée, un live lancé ? Votre salon d'annonces est prévenu en temps réel.",
+            visual: (
+                <div className="azh-notif">
+                    <span className="azh-notif-dot" />
+                    <div>
+                        <strong>Nouvelle vidéo</strong>
+                        <small>@createur vient de publier</small>
+                    </div>
+                </div>
+            ),
         },
-        ...(isIslamUnlocked ? [
-            {
-                key: 'spiritual',
-                title: "Prières & Coran",
-                desc: "Offrez un espace spirituel et serein à votre serveur.\nHoraires des 5 prières quotidiennes avec notifications automatiques, lecture complète du Coran et diffusion vocale continue 24h/24 parmi 22 récitateurs renommés.",
-                icon: "🕌",
-                badgeText: "Audio 24/7",
-                subIcon: "📖"
-            }
-        ] : [])
+        {
+            key: 'welcome',
+            icon: '👋',
+            title: 'Accueil & outils',
+            desc: 'Messages de bienvenue, rappels, infos serveur et membres : le quotidien de votre communauté, simplifié.',
+        },
+        ...(isIslamUnlocked ? [{
+            key: 'spiritual',
+            size: 'wide',
+            icon: '🕌',
+            title: 'Prières, Coran & radio',
+            desc: 'Horaires des 5 prières avec rappels automatiques, lecture du Coran et radio vocale 24h/24 parmi 22 récitateurs.',
+            visual: (
+                <div className="azh-prayers">
+                    {[['Fajr', '06:42'], ['Dhuhr', '13:51'], ['Asr', '16:48'], ['Maghrib', '19:12'], ['Isha', '20:38']].map(([name, time], i) => (
+                        <div key={name} className={i === 2 ? 'is-next' : ''}><small>{name}</small><b>{time}</b></div>
+                    ))}
+                </div>
+            ),
+        }] : []),
     ];
 
-    // Couleur d'accent selon le thème
-    const accentColor = theme === 'islam' ? '#10b981' : '#20b9f2';
-    const accentDark = theme === 'islam' ? '#059669' : '#0284c7';
-    const sectionBg = theme === 'islam' ? '#062319' : '#272b30';
+    const steps = [
+        { n: '01', title: 'Invitez Azim', desc: 'Un clic sur « Ajouter à Discord » et choisissez votre serveur.' },
+        { n: '02', title: 'Configurez', desc: 'Activez les modules qui vous intéressent depuis le dashboard ou avec /config.' },
+        { n: '03', title: 'Profitez', desc: 'Vos membres découvrent les commandes slash, Azim s’occupe du reste.' },
+    ];
 
     return (
-        <div className="home-page" id="main" role="main" tabIndex="-1">
-            {/* 1. HERO FAÇON DRAFTBOT AVEC LOGO CENTRAL & VAGUE ANIMÉE */}
-            <div id="head" className="home-hero">
-                <div className="bot-part">
-                    <img
-                        className="bot-logo"
-                        src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
-                        alt="Logo AzimBot"
-                    />
+        <div className="azh" id="main" role="main" tabIndex="-1">
+            {/* HERO */}
+            <section className="azh-hero">
+                <div className="azh-hero-bg" aria-hidden="true">
+                    <span className="azh-blob azh-blob--a" />
+                    <span className="azh-blob azh-blob--b" />
+                    <span className="azh-grid" />
+                </div>
 
-                    <div className="bot-title">
-                        <p className="bot-description">Un bot pour</p>
-                        <div id="annimated-texts" className="bot-activities">
-                            {activities.map((act, index) => (
-                                <span
-                                    key={act}
-                                    className={index === activeIdx ? 'visible' : ''}
-                                >
-                                    {act}
-                                </span>
-                            ))}
+                <div className="azh-hero-inner">
+                    <div className="azh-hero-copy">
+                        <span className="azh-pill">
+                            <span className="azh-pill-dot" /> Bot Discord français · 100% gratuit
+                        </span>
+                        <h1>
+                            Un serveur Discord
+                            <span className="azh-word-slot">
+                                {words.map((w, i) => (
+                                    <span key={w} className={`azh-word${i === wordIdx ? ' is-on' : ''}`} aria-hidden={i !== wordIdx}>
+                                        {w}.
+                                    </span>
+                                ))}
+                            </span>
+                        </h1>
+                        <p className="azh-lead">
+                            Azim réunit l'IA, les niveaux, la modération et les alertes réseaux dans un seul bot,
+                            pensé pour être simple à configurer et agréable à utiliser.
+                        </p>
+                        <div className="azh-cta">
+                            <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
+                                <DiscordIcon /> Ajouter à Discord
+                            </a>
+                            <Link className="azh-btn azh-btn--ghost" to="/docs/commandes">
+                                Voir les commandes →
+                            </Link>
                         </div>
+                        <ul className="azh-facts">
+                            <li><b>30+</b> commandes slash</li>
+                            <li><b>24/7</b> en ligne</li>
+                            <li><b>0 €</b> pour toujours</li>
+                        </ul>
                     </div>
 
-                    <a
-                        className="bot-invite"
-                        href={addToServerUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        title="Ajouter à Discord"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-                        </svg>
-                        <span>Ajouter à Discord</span>
-                    </a>
-                </div>
-
-                {/* VAGUE INFINIE SVG EXACTEMENT COMME DRAFTBOT */}
-                <div className="wave-container" aria-hidden="true">
-                    <div className="wave">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="2064"
-                            height="219"
-                            fill="none"
-                            id="azim-wave-source"
-                            className="wave-part"
-                        >
-                            {/* Fond qui remplit le bas avec la couleur de la section suivante */}
-                            <path
-                                fill={sectionBg}
-                                d="M.002 68.707C493.593-82.922 334.453 185.814 993.229 39.824 1652.02-106.152 1544.84 211.336 2064 68.707V219H.004z"
-                            />
-                            {/* Ruban principal en relief dégradé */}
-                            <g filter="url(#azim-wave-shadow)">
-                                <path
-                                    fill="url(#azim-wave-grad)"
-                                    d="M0 68.258C493.591-83.371 334.451 185.365 993.227 39.375 1652.02-106.601 1544.84 210.887 2063.99 68.258v42.405C1527.17 238.432 1651.83-64.69 993.046 81.292S513.158-28.399 0 110.663z"
-                                />
-                            </g>
-                            {/* Ligne d'accent supérieure */}
-                            <path
-                                fill="url(#azim-wave-grad2)"
-                                d="M.004 68.259C493.59-83.369 334.45 185.364 993.228 39.376 1652.02-106.602 1544.84 210.886 2064 68.259v17.238C1546.74 226.172 1632.45-85.507 973.668 60.475 324.297 204.372 475.6-53.906.004 85.497z"
-                            />
-                            <defs>
-                                <linearGradient id="azim-wave-grad" x1="2066" x2="-8" y1="26" y2="18" gradientUnits="userSpaceOnUse">
-                                    <stop stopColor={accentColor} />
-                                    <stop offset="0.25" stopColor={accentDark} />
-                                    <stop offset="0.5" stopColor={accentColor} />
-                                    <stop offset="0.8" stopColor={accentDark} />
-                                    <stop offset="1" stopColor={accentColor} />
-                                </linearGradient>
-                                <linearGradient id="azim-wave-grad2" x1="2064" x2="0" y1="68" y2="67" gradientUnits="userSpaceOnUse">
-                                    <stop stopColor={accentDark} />
-                                    <stop offset="0.25" stopColor={accentColor} />
-                                    <stop offset="0.5" stopColor={accentDark} />
-                                    <stop offset="0.8" stopColor={accentColor} />
-                                    <stop offset="1" stopColor={accentDark} />
-                                </linearGradient>
-                                <filter id="azim-wave-shadow" width="2072" height="151" x="-4" y="0" colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse">
-                                    <feDropShadow dx="0" dy="4" stdDeviation="3" floodOpacity="0.4" />
-                                </filter>
-                            </defs>
-                        </svg>
-                        <svg className="wave-part"><use href="#azim-wave-source" /></svg>
-                        <svg className="wave-part"><use href="#azim-wave-source" /></svg>
-                    </div>
-                </div>
-            </div>
-
-            {/* 2. SHOWCASES ALTERNÉS GAUCHE/DROITE FAÇON DRAFTBOT */}
-            <div className="features">
-                <div className="features__content">
-                    {showcases.map((feat) => (
-                        <div
-                            key={feat.key}
-                            ref={registerFeatureRef}
-                            className="feature"
-                        >
-                            {/* Image / Illustration graphique circulaire avec l'icône du bot */}
-                            <div className="image">
-                                <div className="feature-circle-badge">
-                                    <div className="feature-circle-inner">
-                                        <span style={{ fontSize: '48px', lineHeight: 1 }}>{feat.icon}</span>
-                                        <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px', fontFamily: 'monospace' }}>
-                                            {feat.badgeText}
-                                        </span>
+                    {/* Aperçu façon fenêtre Discord */}
+                    <div className="azh-preview" aria-hidden="true">
+                        <div className="azh-window">
+                            <div className="azh-window-bar">
+                                <span className="azh-hash">#</span> général
+                                <span className="azh-window-dots"><i /><i /><i /></span>
+                            </div>
+                            <div className="azh-window-body">
+                                <div className="azh-msg">
+                                    <span className="azh-avatar azh-avatar--user">S</span>
+                                    <div>
+                                        <div className="azh-msg-head">Sami <small>aujourd'hui à 14:02</small></div>
+                                        <div className="azh-cmd">/ask quelle est la capitale du Japon ?</div>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Contenu textuel avec GRAND TITRE en majuscules */}
-                            <div className="content">
-                                <div className="title">
-                                    <h2>{feat.title}</h2>
+                                <div className="azh-msg">
+                                    <img className="azh-avatar" src={logoSrc} alt="" />
+                                    <div>
+                                        <div className="azh-msg-head">Azim <span className="azh-bot-tag">BOT</span> <small>aujourd'hui à 14:02</small></div>
+                                        <div className="azh-embed">
+                                            <p>La capitale du Japon est <b>Tokyo</b> 🇯🇵, la ville la plus peuplée du monde avec son agglomération.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p className="description" style={{ whiteSpace: 'pre-line' }}>
-                                    {feat.desc}
-                                </p>
+                                <div className="azh-msg azh-msg--system">
+                                    <span className="azh-levelup">🎉</span>
+                                    <div><b>Sami</b> passe au <b className="azh-accent">niveau 12</b> !</div>
+                                </div>
                             </div>
                         </div>
+                        <img className="azh-float-logo" src={logoSrc} alt="" />
+                    </div>
+                </div>
+            </section>
+
+            {/* MODULES QUI DÉFILENT */}
+            <div className="azh-marquee" aria-label="Modules disponibles">
+                <div className="azh-marquee-track">
+                    {[...modules, ...modules].map((m, i) => (
+                        <span key={i} className="azh-chip" aria-hidden={i >= modules.length}>{m}</span>
                     ))}
                 </div>
             </div>
+
+            {/* FONCTIONNALITÉS EN GRILLE */}
+            <section className="azh-section">
+                <header className="azh-section-head" ref={reveal}>
+                    <span className="azh-kicker">Fonctionnalités</span>
+                    <h2>Tout ce qu'il faut, rien de superflu</h2>
+                    <p>Chaque module s'active en quelques secondes et se règle au détail près.</p>
+                </header>
+
+                <div className="azh-bento">
+                    {features.map((f) => (
+                        <article key={f.key} ref={reveal} className={`azh-card${f.size === 'wide' ? ' azh-card--wide' : ''}`}>
+                            <div className="azh-card-icon">{f.icon}</div>
+                            <h3>{f.title}</h3>
+                            <p>{f.desc}</p>
+                            {f.visual && <div className="azh-card-visual">{f.visual}</div>}
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            {/* ÉTAPES */}
+            <section className="azh-section azh-section--steps">
+                <header className="azh-section-head" ref={reveal}>
+                    <span className="azh-kicker">Démarrage</span>
+                    <h2>Prêt en moins d'une minute</h2>
+                </header>
+                <ol className="azh-steps">
+                    {steps.map((s) => (
+                        <li key={s.n} ref={reveal} className="azh-step">
+                            <span className="azh-step-n">{s.n}</span>
+                            <h3>{s.title}</h3>
+                            <p>{s.desc}</p>
+                        </li>
+                    ))}
+                </ol>
+            </section>
+
+            {/* APPEL À L'ACTION FINAL */}
+            <section className="azh-final" ref={reveal}>
+                <img src={logoSrc} alt="" className="azh-final-logo" />
+                <div>
+                    <h2>Donnez un coup de boost à votre communauté</h2>
+                    <p>Ajoutez Azim gratuitement et configurez-le depuis le dashboard.</p>
+                </div>
+                <div className="azh-cta">
+                    <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
+                        <DiscordIcon /> Ajouter à Discord
+                    </a>
+                    <Link className="azh-btn azh-btn--ghost" to="/dashboard">Ouvrir le dashboard</Link>
+                </div>
+            </section>
         </div>
     );
 }

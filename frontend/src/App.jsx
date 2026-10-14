@@ -25,7 +25,7 @@ import StylePreviewPage from './pages/StylePreviewPage.jsx';
 
 function App() {
   const { loading } = useAuth();
-  if (loading) return <LoadingScreen fullScreen label="Chargement d'Azim…" subtext="Préparation de votre espace" />;
+  if (loading) return <LoadingScreen fullScreen />;
   return (
     <Routes>
       {/* Routes AVEC Header + Footer */}

@@ -51,7 +51,7 @@ function Login() {
         <div className="min-h-screen flex items-center justify-center px-4 py-10">
             <div className="auth-card w-full max-w-md">
                 <h1 className="text-2xl font-bold mb-2 text-center">{t('login.title')}</h1>
-                <p className="auth-card-note text-sm text-center mb-6">Pour gérer vos serveurs, connectez-vous avec Discord.</p>
+                <p className="auth-card-note text-sm text-center mb-6">{t('login.lead')}</p>
 
                 {error && <p className="text-rose-700 bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4 text-center">{error}</p>}
 
@@ -89,7 +89,7 @@ function Login() {
 
                 <div className="my-4 flex items-center gap-3">
                     <div className="h-px bg-slate-200 flex-1" />
-                    <span className="auth-card-note text-xs">ou</span>
+                    <span className="auth-card-note text-xs">{t('login.or')}</span>
                     <div className="h-px bg-slate-200 flex-1" />
                 </div>
 

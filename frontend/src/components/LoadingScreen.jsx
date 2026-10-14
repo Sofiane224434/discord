@@ -1,11 +1,15 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 
 function LoadingScreen({
-    label = 'Chargement en cours…',
-    subtext = 'Synchronisation avec le système Azim',
+    label,
+    subtext,
     fullScreen = false,
 }) {
+    const { t } = useTranslation();
+    const shownLabel = label ?? t('loading.default');
+    const shownSubtext = subtext ?? t('loading.default_sub');
     const { theme } = useTheme();
     const isIslam = theme === 'islam';
     const [imgLoaded, setImgLoaded] = useState(false);
@@ -87,13 +91,13 @@ function LoadingScreen({
                         : 'bg-gradient-to-r from-cyan-200 via-white to-sky-200 bg-clip-text text-transparent'
                 }`}
             >
-                {label}
+                {shownLabel}
             </h3>
 
             {/* Sous-titre informatif */}
-            {subtext && (
+            {shownSubtext && (
                 <p className="mt-1.5 max-w-sm text-xs text-slate-400 leading-relaxed">
-                    {subtext}
+                    {shownSubtext}
                 </p>
             )}
 

@@ -1208,7 +1208,7 @@ function GuildConfig() {
                                             <TextInput value={form.islam.prayerCity} onChange={(e) => update('islam', 'prayerCity', e.target.value)} placeholder="Paris" />
                                         </Field>
                                         <Field label={t('config.method')}>
-                                            <SelectInput value={form.islam.prayerMethod} onChange={(e) => update('islam', 'prayerMethod', Number(e.target.value))} options={PRAYER_METHODS} />
+                                            <SelectInput value={form.islam.prayerMethod} onChange={(e) => update('islam', 'prayerMethod', Number(e.target.value))} options={PRAYER_METHODS.map((m) => ({ ...m, label: t(`config.method_${m.value}`, { defaultValue: m.label }) }))} />
                                         </Field>
                                         {form.islam.prayerNotificationEnabled ? (
                                             <>

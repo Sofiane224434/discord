@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 
 export default function ThemeUnlockModal() {
+    const { t } = useTranslation();
     const { showUnlockModal, setShowUnlockModal, unlockIslam } = useTheme();
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
@@ -13,7 +15,7 @@ export default function ThemeUnlockModal() {
         setError('');
         const res = unlockIslam(code);
         if (!res.success) {
-            setError(res.error || 'Code secret incorrect.');
+            setError(t('unlock.wrong'));
         } else {
             setCode('');
         }
@@ -27,7 +29,7 @@ export default function ThemeUnlockModal() {
                     type="button"
                     onClick={() => { setShowUnlockModal(false); setError(''); setCode(''); }}
                     className="absolute top-4 right-4 text-slate-400 hover:text-white text-lg p-1"
-                    aria-label="Fermer"
+                    aria-label={t('common.close')}
                 >
                     ✕
                 </button>
@@ -39,16 +41,16 @@ export default function ThemeUnlockModal() {
                     </div>
                     <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/80 border border-cyan-800/60 px-2 py-0.5 rounded-full">
-                            Extension Secrète
+                            {t('unlock.badge')}
                         </span>
                         <h2 className="text-lg font-bold text-white mt-1">
-                            Débloquer un Module
+                            {t('unlock.title')}
                         </h2>
                     </div>
                 </div>
 
                 <p className="text-xs text-slate-300 leading-relaxed mb-5">
-                    Entrez votre code d'accès secret pour activer les fonctionnalités et personnalisations correspondantes sur le site.
+                    {t('unlock.lead')}
                 </p>
 
                 {error ? (
@@ -61,13 +63,13 @@ export default function ThemeUnlockModal() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1.5">
-                            Code secret d'activation
+                            {t('unlock.label')}
                         </label>
                         <input
                             type="password"
                             required
                             autoFocus
-                            placeholder="Entrez le code secret…"
+                            placeholder={t('unlock.placeholder')}
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
                             className="form-input w-full font-mono text-sm border-emerald-800/60 focus:border-emerald-500 focus:ring-emerald-500/40"
@@ -80,14 +82,14 @@ export default function ThemeUnlockModal() {
                             onClick={() => { setShowUnlockModal(false); setError(''); setCode(''); }}
                             className="btn btn-soft text-xs"
                         >
-                            Annuler
+                            {t('common.cancel')}
                         </button>
                         <button
                             type="submit"
                             disabled={!code.trim()}
                             className="btn bg-gradient-to-r from-emerald-600 to-teal-600 text-white border border-emerald-400 text-xs font-semibold shadow-lg shadow-emerald-950/60 hover:brightness-110 disabled:opacity-50"
                         >
-                            Débloquer et Activer ✨
+                            {t('unlock.submit')}
                         </button>
                     </div>
                 </form>

@@ -165,24 +165,27 @@
     "final_lead": "Free, no sign-up, configurable from Discord or the panel."
   },
   "login": {
-    "title": "Console sign in",
+    "title": "Log in",
     "email": "Email",
     "password": "Password",
     "submit": "Sign in",
     "discord_button": "Continue with Discord",
-    "loading": "Signing in...",
+    "loading": "Signing in…",
     "no_account": "No account?",
-    "register_link": "Sign up"
+    "register_link": "Sign up",
+    "lead": "Log in with Discord to manage your servers.",
+    "or": "or"
   },
   "register": {
-    "title": "Create dashboard access",
+    "title": "Create an account",
     "email": "Email",
     "password": "Password",
     "confirm_password": "Confirm password",
     "submit": "Sign up",
-    "loading": "Creating account...",
+    "loading": "Creating account…",
     "already_account": "Already have an account?",
-    "login_link": "Sign in"
+    "login_link": "Sign in",
+    "lead": "Create a website account, then connect Discord to find your servers."
   },
   "dashboard": {
     "title": "Azim Console - {{name}}",
@@ -190,7 +193,7 @@
     "bot_name": "Bot",
     "uptime": "Uptime",
     "latency": "Latency",
-    "loading": "Loading bot data...",
+    "loading": "Loading bot data…",
     "load_error": "Unable to load bot dashboard",
     "guilds_title": "Connected servers",
     "guilds_empty": "No guild returned by the bot",
@@ -211,7 +214,7 @@
     "errors_breakdown_empty": "No typed errors available.",
     "guild_history_title": "Snapshot history",
     "guild_history_empty": "No history available for this server.",
-    "back": "← Back to dashboard",
+    "back": "← Back to the panel",
     "oauth_test_btn": "Test Discord OAuth",
     "oauth_testing": "Testing...",
     "oauth_missing_client_id": "Client ID missing",
@@ -278,14 +281,14 @@
     "title": "Command usage",
     "total": "{{count}} total uses",
     "unique": "{{count}} distinct commands",
-    "search_placeholder": "Search a command...",
+    "search_placeholder": "Search a command…",
     "sort_count": "Sort by usage",
     "sort_name": "Sort by name",
     "no_results": "No command found."
   },
   "oauth": {
     "title": "Discord sign in",
-    "processing": "Signing in...",
+    "processing": "Signing in…",
     "error_no_code": "Discord OAuth code is missing in the URL.",
     "error_exchange": "Unable to complete Discord sign in",
     "back_login": "Back to login"
@@ -345,7 +348,8 @@
     "language": "Language",
     "french": "Français",
     "english": "English",
-    "unknown_error": "Something went wrong."
+    "unknown_error": "Something went wrong.",
+    "back_home": "← Back to home"
   },
   "header": {
     "docs": "Docs",
@@ -748,6 +752,47 @@
     "n_avatar_reset": "Default avatar restored on this server.",
     "e_avatar": "Couldn’t update the avatar.",
     "n_renamed": "Bot name updated: “{{name}}”",
-    "e_rename": "Couldn’t rename the bot."
+    "e_rename": "Couldn’t rename the bot.",
+    "method_12": "UOIF - Union of Islamic Organisations of France (12°)",
+    "method_3": "MWL - Muslim World League (18°)",
+    "method_13": "Diyanet İşleri Başkanlığı, Turkey"
+  },
+  "loading": {
+    "default": "Loading…",
+    "default_sub": "Syncing with Azim",
+    "session": "Checking your session…",
+    "session_sub": "Secure sign-in in progress"
+  },
+  "bots": {
+    "title": "The Azim bot",
+    "lead": "Member welcome, levels, alerts and server tools in a single bot.",
+    "services": "Azim service status",
+    "bot": "Discord bot",
+    "panel": "Panel",
+    "oauth": "Discord login",
+    "checking": "Checking…",
+    "online": "Online",
+    "ready": "Ready",
+    "unavailable": "Unavailable",
+    "loading": "Loading Azim’s status…",
+    "loading_sub": "Checking services",
+    "down": "Azim’s status is temporarily unavailable.",
+    "bot_desc": "Member welcome, levels, commands and alerts.",
+    "cta_title": "Add the bot to a server",
+    "cta_lead": "After installing it, choose which commands and channels to use.",
+    "cta": "Add Azim",
+    "list_label": "AzimBot"
+  },
+  "unlock": {
+    "badge": "Secret extension",
+    "title": "Unlock a module",
+    "lead": "Enter your access code to turn on the matching features on the website.",
+    "label": "Secret code",
+    "placeholder": "Enter the secret code…",
+    "submit": "Unlock",
+    "wrong": "Wrong secret code.",
+    "toast_islam": "Islam & spirituality theme turned on.",
+    "toast_cyber": "Back to the Cyber theme.",
+    "toast_code": "Code accepted: Islam theme unlocked."
   }
 }

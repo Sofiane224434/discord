@@ -54,7 +54,7 @@ function Register() {
         <div className="min-h-screen flex items-center justify-center px-4 py-10">
             <div className="auth-card w-full max-w-md">
                 <h1 className="text-2xl font-bold mb-2 text-center">{t('register.title')}</h1>
-                <p className="auth-card-note text-sm text-center mb-6">Créez un accès au site. Connectez ensuite Discord pour retrouver vos serveurs.</p>
+                <p className="auth-card-note text-sm text-center mb-6">{t('register.lead')}</p>
 
                 {error && <p className="text-rose-700 text-sm mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl">{error}</p>}
 

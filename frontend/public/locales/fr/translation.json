@@ -170,9 +170,11 @@
     "password": "Mot de passe",
     "submit": "Se connecter",
     "discord_button": "Continuer avec Discord",
-    "loading": "Connexion en cours...",
+    "loading": "Connexion en cours…",
     "no_account": "Pas de compte ?",
-    "register_link": "S'inscrire"
+    "register_link": "S'inscrire",
+    "lead": "Pour gérer vos serveurs, connectez-vous avec Discord.",
+    "or": "ou"
   },
   "register": {
     "title": "Créer un compte",
@@ -180,9 +182,10 @@
     "password": "Mot de passe",
     "confirm_password": "Confirmer le mot de passe",
     "submit": "S'inscrire",
-    "loading": "Inscription...",
+    "loading": "Inscription…",
     "already_account": "Déjà un compte ?",
-    "login_link": "Se connecter"
+    "login_link": "Se connecter",
+    "lead": "Créez un accès au site, puis connectez Discord pour retrouver vos serveurs."
   },
   "dashboard": {
     "title": "Console Azim - {{name}}",
@@ -190,8 +193,8 @@
     "bot_name": "Bot",
     "uptime": "Uptime",
     "latency": "Latence",
-    "loading": "Chargement des donnees du bot...",
-    "load_error": "Impossible de charger le dashboard bot",
+    "loading": "Chargement des données du bot…",
+    "load_error": "Impossible de charger les données du bot",
     "guilds_title": "Serveurs connectes",
     "guilds_empty": "Aucun serveur remonte par le bot",
     "discord_servers_title": "Serveurs Discord gerables",
@@ -211,7 +214,7 @@
     "errors_breakdown_empty": "Aucune erreur typee disponible.",
     "guild_history_title": "Historique des snapshots",
     "guild_history_empty": "Aucun historique disponible pour ce serveur.",
-    "back": "← Retour au dashboard",
+    "back": "← Retour au panel",
     "oauth_test_btn": "Tester OAuth Discord",
     "oauth_testing": "Test en cours...",
     "oauth_missing_client_id": "Client ID manquant",
@@ -278,17 +281,17 @@
     "title": "Utilisation des commandes",
     "total": "{{count}} utilisations au total",
     "unique": "{{count}} commandes distinctes",
-    "search_placeholder": "Rechercher une commande...",
+    "search_placeholder": "Rechercher une commande…",
     "sort_count": "Trier par usage",
     "sort_name": "Trier par nom",
-    "no_results": "Aucune commande trouvee."
+    "no_results": "Aucune commande trouvée."
   },
   "oauth": {
     "title": "Connexion à Discord",
-    "processing": "Connexion en cours...",
+    "processing": "Connexion en cours…",
     "error_no_code": "Code OAuth Discord introuvable dans l'URL.",
     "error_exchange": "Impossible de terminer la connexion Discord",
-    "back_login": "Retour a la connexion"
+    "back_login": "Retour à la connexion"
   },
   "email": {
     "title": "Envoyer un message",
@@ -345,7 +348,8 @@
     "language": "Langue",
     "french": "Français",
     "english": "English",
-    "unknown_error": "Une erreur est survenue."
+    "unknown_error": "Une erreur est survenue.",
+    "back_home": "← Retour à l’accueil"
   },
   "header": {
     "docs": "Documentation",
@@ -748,6 +752,47 @@
     "n_avatar_reset": "Avatar par défaut rétabli sur ce serveur.",
     "e_avatar": "Impossible de modifier l’avatar.",
     "n_renamed": "Nom du bot mis à jour : « {{name}} »",
-    "e_rename": "Impossible de modifier le nom du bot."
+    "e_rename": "Impossible de modifier le nom du bot.",
+    "method_12": "UOIF - Union des organisations islamiques de France (12°)",
+    "method_3": "MWL - Ligue islamique mondiale (18°)",
+    "method_13": "Diyanet İşleri Başkanlığı, Turquie"
+  },
+  "loading": {
+    "default": "Chargement en cours…",
+    "default_sub": "Synchronisation avec Azim",
+    "session": "Vérification de la session…",
+    "session_sub": "Connexion sécurisée en cours"
+  },
+  "bots": {
+    "title": "Le bot Azim",
+    "lead": "Accueil des membres, niveaux, alertes et outils réunis dans un seul bot.",
+    "services": "État des services d’Azim",
+    "bot": "Bot Discord",
+    "panel": "Panel",
+    "oauth": "Connexion Discord",
+    "checking": "Vérification…",
+    "online": "En ligne",
+    "ready": "Prête",
+    "unavailable": "Indisponible",
+    "loading": "Chargement de l’état d’Azim…",
+    "loading_sub": "Vérification des services",
+    "down": "L’état d’Azim est momentanément indisponible.",
+    "bot_desc": "Accueil des membres, niveaux, commandes et alertes.",
+    "cta_title": "Ajouter le bot à un serveur",
+    "cta_lead": "Après l’installation, choisissez les commandes et salons à utiliser.",
+    "cta": "Ajouter Azim",
+    "list_label": "Bot AzimBot"
+  },
+  "unlock": {
+    "badge": "Extension secrète",
+    "title": "Débloquer un module",
+    "lead": "Entrez votre code d’accès pour activer les fonctionnalités correspondantes sur le site.",
+    "label": "Code secret",
+    "placeholder": "Entrez le code secret…",
+    "submit": "Débloquer",
+    "wrong": "Code secret incorrect.",
+    "toast_islam": "Thème Islam & spiritualité activé.",
+    "toast_cyber": "Retour au thème Cyber.",
+    "toast_code": "Code validé : thème Islam débloqué."
   }
 }

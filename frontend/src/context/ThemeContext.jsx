@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import i18n from 'i18next';
 
 const ThemeContext = createContext();
 
@@ -140,9 +141,7 @@ export function ThemeProvider({ children }) {
                     const next = prev === 'islam' ? 'cyber' : 'islam';
                     localStorage.setItem(CHOICE_KEY, next);
                     triggerKonamiToast(
-                        next === 'islam'
-                            ? '🕌 Code Konami validé : Mode Islam & Spiritualité activé !'
-                            : '⚡ Code Konami : Retour au thème Cyber standard.'
+                        next === 'islam' ? i18n.t('unlock.toast_islam') : i18n.t('unlock.toast_cyber')
                     );
                     return next;
                 });
@@ -182,10 +181,10 @@ export function ThemeProvider({ children }) {
             localStorage.setItem('azim_konami_unlocked', 'true');
             setThemeState('islam');
             localStorage.setItem(CHOICE_KEY, 'islam');
-            triggerKonamiToast('🕌 Code secret validé : Thème Islam débloqué !');
+            triggerKonamiToast(i18n.t('unlock.toast_code'));
             return { success: true };
         }
-        return { success: false, error: 'Code secret invalide' };
+        return { success: false, error: i18n.t('unlock.wrong') };
     };
 
     const activeTheme = isIslamUnlocked && theme === 'islam' ? 'islam' : 'cyber';

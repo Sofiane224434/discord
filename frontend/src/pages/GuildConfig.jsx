@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
+import Icon from '../components/Icon.jsx';
 
 const PRAYER_METHODS = [
     { value: 12, label: 'UOIF - Union des Organisations Islamiques de France (12°)' },
@@ -510,86 +511,59 @@ function GuildConfig() {
     });
 
     const tabs = [
-        { id: 'ai', label: 'IA & Déclencheurs', icon: '🤖' },
-        { id: 'commands', label: 'Permissions Commandes', icon: '🛡️', count: form.commands.filter((cmd) => isIslamActive || !cmd.isIslamic).length },
-        { id: 'welcome', label: 'Bienvenue & Rôles', icon: '👋', count: form.welcome.rules?.length || 0 },
-        { id: 'logs', label: 'Logs & Profil', icon: '📋' },
-        { id: 'social', label: 'Réseaux & Niveaux', icon: '📢' },
-        { id: 'islam', label: isIslamActive ? 'Mode Islam' : 'Code secret', icon: isIslamActive ? '🌙' : '🔑', status: isIslamActive ? 'Actif' : 'Verrouillé' },
+        { id: 'ai', label: 'IA & déclencheurs', icon: 'sparkles' },
+        { id: 'commands', label: 'Commandes', icon: 'shield', count: form.commands.filter((cmd) => isIslamActive || !cmd.isIslamic).length },
+        { id: 'welcome', label: 'Bienvenue & rôles', icon: 'hand', count: form.welcome.rules?.length || 0 },
+        { id: 'logs', label: 'Logs & profil du bot', icon: 'fileText' },
+        { id: 'social', label: 'Réseaux & niveaux', icon: 'megaphone' },
+        { id: 'islam', label: isIslamActive ? 'Mode Islam' : 'Code secret', icon: isIslamActive ? 'moon' : 'key', status: isIslamActive ? 'Actif' : null },
     ];
 
     return (
-        <main className="site-page site-section-page guild-config-page max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-            {/* Top Bar Hero Header */}
-            <div className="guild-config-hero mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-700/60 bg-slate-900/60 p-4 sm:p-5 backdrop-blur-md">
-                <div className="flex items-center gap-4 min-w-0">
-                    {currentGuildIcon ? (
-                        <img
-                            src={currentGuildIcon}
-                            alt=""
-                            className="size-14 sm:size-16 rounded-2xl border-2 border-cyan-500/50 object-cover shadow-lg shadow-cyan-950/60 shrink-0"
-                        />
-                    ) : (
-                        <div className="flex size-14 sm:size-16 items-center justify-center rounded-2xl border-2 border-cyan-500/50 bg-slate-800 text-xl font-bold text-cyan-300 shadow-lg shadow-cyan-950/60 shrink-0">
-                            {getGuildName(guildId).slice(0, 2).toUpperCase()}
+        <main className="gc">
+            <header className="gc-head">
+                <Link to="/dashboard" className="gc-back"><Icon name="arrowLeft" size={16} /> Mes serveurs</Link>
+                <div className="gc-head__row">
+                    <div className="gc-head__id">
+                        {currentGuildIcon ? (
+                            <img src={currentGuildIcon} alt="" className="gc-head__icon" />
+                        ) : (
+                            <span className="gc-head__icon gc-head__icon--fallback">{getGuildName(guildId).slice(0, 2).toUpperCase()}</span>
+                        )}
+                        <div>
+                            <h1>{getGuildName(guildId)}</h1>
+                            <p>ID <code>{guildId}</code></p>
                         </div>
-                    )}
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                            <Link to="/dashboard" className="text-xs font-semibold text-cyan-400 hover:underline">← Console</Link>
-                            <span className="text-xs text-slate-600">/</span>
-                            <span className="site-eyebrow text-[10px]">Administration</span>
-                        </div>
-                        <h1 className="mt-1 text-xl sm:text-2xl font-bold text-white flex flex-wrap items-center gap-2.5">
-                            <span>{getGuildName(guildId)}</span>
-                            <span className="rounded bg-slate-800/90 border border-slate-700/60 px-2 py-0.5 font-mono text-xs font-normal text-slate-400">{guildId}</span>
-                        </h1>
                     </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                    <button
-                        type="button"
-                        onClick={save}
-                        disabled={saving}
-                        className="btn btn-primary flex items-center gap-2 text-sm shadow-md disabled:opacity-60"
-                    >
-                        {saving ? (
-                            <>
-                                <span className="size-3.5 animate-spin rounded-full border border-white border-t-transparent" />
-                                Enregistrement…
-                            </>
-                        ) : 'Enregistrer les modifications'}
+                    <button type="button" onClick={save} disabled={saving} className="gc-save">
+                        {saving ? <span className="gc-save__spinner" /> : <Icon name="check" size={17} />}
+                        {saving ? 'Enregistrement…' : 'Enregistrer'}
                     </button>
                 </div>
-            </div>
+            </header>
 
-            {error ? <div role="alert" className="mb-6 rounded border-l-4 border-rose-500 bg-rose-950/40 p-4 text-sm text-rose-200">{error}</div> : null}
-            {notice ? <div role="status" className="mb-6 rounded border-l-4 border-emerald-500 bg-emerald-950/40 p-4 text-sm text-emerald-200">{notice}</div> : null}
+            {error ? <div role="alert" className="gc-flash gc-flash--error"><Icon name="alert" size={18} /> {error}</div> : null}
+            {notice ? <div role="status" className="gc-flash gc-flash--ok"><Icon name="check" size={18} /> {notice}</div> : null}
 
-            {/* Navigation par Onglets */}
-            <nav className="admin-tab-nav scrollbar-none" aria-label="Sections de configuration">
+            <div className="gc-layout">
+            <nav className="gc-nav" aria-label="Sections de configuration">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         type="button"
                         onClick={() => setActiveTab(tab.id)}
-                        className={`admin-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                        className={`gc-nav__item${activeTab === tab.id ? ' is-active' : ''}`}
+                        aria-current={activeTab === tab.id ? 'page' : undefined}
                     >
-                        <span className="text-lg sm:text-xl shrink-0">{tab.icon}</span>
-                        <span>{tab.label}</span>
-                        {typeof tab.count === 'number' && tab.count > 0 ? (
-                            <span className="admin-tab-badge">{tab.count}</span>
-                        ) : null}
-                        {tab.status ? (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${tab.status === 'Actif' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}`}>
-                                {tab.status}
-                            </span>
-                        ) : null}
+                        <Icon name={tab.icon} size={18} />
+                        <span className="gc-nav__label">{tab.label}</span>
+                        {typeof tab.count === 'number' && tab.count > 0 ? <span className="gc-nav__count">{tab.count}</span> : null}
+                        {tab.status ? <span className="gc-nav__count gc-nav__count--ok">{tab.status}</span> : null}
                     </button>
                 ))}
             </nav>
 
-            <form id="guild-config" onSubmit={save} className="space-y-6">
+            <form id="guild-config" onSubmit={save} className="gc-content space-y-6">
                 {/* 1. ONGLET IA & DÉCLENCHEURS */}
                 {activeTab === 'ai' ? (
                     <section className="admin-card space-y-6">
@@ -1969,17 +1943,15 @@ function GuildConfig() {
                     </section>
                 ) : null}
 
-                {/* Bottom Save Bar */}
-                <div className="flex justify-end border-t border-slate-800 pt-5">
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="btn btn-primary px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
-                    >
-                        {saving ? 'Enregistrement en cours…' : 'Enregistrer toutes les modifications'}
+                <div className="gc-savebar">
+                    <span>Pensez à enregistrer après vos modifications.</span>
+                    <button type="submit" disabled={saving} className="gc-save">
+                        {saving ? <span className="gc-save__spinner" /> : <Icon name="check" size={17} />}
+                        {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
                     </button>
                 </div>
             </form>
+            </div>
         </main>
     );
 }

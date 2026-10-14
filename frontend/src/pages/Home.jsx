@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
+import Icon from '../components/Icon.jsx';
 
 const ADD_TO_SERVER_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
 
@@ -49,16 +50,16 @@ function Home() {
     };
 
     const modules = [
-        '🧠 IA /ask', '🏆 Niveaux & XP', '🛡️ Modération', '👋 Accueil', '📢 YouTube', '🎵 TikTok Live',
-        '⏰ Rappels', '📊 Stats serveur', '🎯 Quiz', '🔔 Rappel bump',
-        ...(isIslamUnlocked ? ['🕌 Horaires de prière', '📖 Coran', '📻 Radio 24/7', '🧭 Qibla'] : []),
+        'IA /ask', 'Niveaux & XP', 'Modération', 'Accueil', 'YouTube', 'TikTok Live',
+        'Rappels', 'Stats serveur', 'Quiz', 'Rappel bump',
+        ...(isIslamUnlocked ? ['Horaires de prière', 'Coran', 'Radio 24/7', 'Qibla'] : []),
     ];
 
     const features = [
         {
             key: 'ai',
             size: 'wide',
-            icon: '🧠',
+            icon: 'sparkles',
             title: 'Une IA dans vos salons',
             desc: "Posez une question avec /ask : la réponse arrive en quelques secondes, propulsée par Groq. Idéal pour aider vos membres sans quitter Discord.",
             visual: (
@@ -72,7 +73,7 @@ function Home() {
         },
         {
             key: 'levels',
-            icon: '🏆',
+            icon: 'activity',
             title: 'Niveaux & XP',
             desc: 'Classements, paliers et rôles attribués automatiquement aux membres les plus actifs.',
             visual: (
@@ -84,7 +85,7 @@ function Home() {
         },
         {
             key: 'moderation',
-            icon: '🛡️',
+            icon: 'shield',
             title: 'Modération',
             desc: 'Nettoyez un salon avec /purge, gérez les permissions et gardez une trace de tout.',
             visual: (
@@ -96,7 +97,7 @@ function Home() {
         },
         {
             key: 'alerts',
-            icon: '📢',
+            icon: 'megaphone',
             title: 'Alertes YouTube & TikTok',
             desc: "Une vidéo publiée, un live lancé ? Votre salon d'annonces est prévenu en temps réel.",
             visual: (
@@ -111,14 +112,14 @@ function Home() {
         },
         {
             key: 'welcome',
-            icon: '👋',
+            icon: 'hand',
             title: 'Accueil & outils',
             desc: 'Messages de bienvenue, rappels, infos serveur et membres : le quotidien de votre communauté, simplifié.',
         },
         ...(isIslamUnlocked ? [{
             key: 'spiritual',
             size: 'wide',
-            icon: '🕌',
+            icon: 'moon',
             title: 'Prières, Coran & radio',
             desc: 'Horaires des 5 prières avec rappels automatiques, lecture du Coran et radio vocale 24h/24 parmi 22 récitateurs.',
             visual: (
@@ -149,9 +150,6 @@ function Home() {
 
                 <div className="azh-hero-inner">
                     <div className="azh-hero-copy">
-                        <span className="azh-pill">
-                            <span className="azh-pill-dot" /> Bot Discord français · 100% gratuit
-                        </span>
                         <h1>
                             Un serveur Discord
                             <span className="azh-word-slot">
@@ -163,15 +161,15 @@ function Home() {
                             </span>
                         </h1>
                         <p className="azh-lead">
-                            Azim réunit l'IA, les niveaux, la modération et les alertes réseaux dans un seul bot,
-                            pensé pour être simple à configurer et agréable à utiliser.
+                            Azim réunit l'IA, les niveaux, la modération et les alertes réseaux dans un seul bot
+                            français et gratuit, simple à configurer et agréable à utiliser.
                         </p>
                         <div className="azh-cta">
                             <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
                                 <DiscordIcon /> Ajouter à Discord
                             </a>
                             <Link className="azh-btn azh-btn--ghost" to="/docs/commandes">
-                                Voir les commandes →
+                                Voir les commandes <Icon name="arrowRight" size={17} />
                             </Link>
                         </div>
                         <ul className="azh-facts">
@@ -186,7 +184,6 @@ function Home() {
                         <div className="azh-window">
                             <div className="azh-window-bar">
                                 <span className="azh-hash">#</span> général
-                                <span className="azh-window-dots"><i /><i /><i /></span>
                             </div>
                             <div className="azh-window-body">
                                 <div className="azh-msg">
@@ -201,7 +198,7 @@ function Home() {
                                     <div>
                                         <div className="azh-msg-head">Azim <span className="azh-bot-tag">BOT</span> <small>aujourd'hui à 14:02</small></div>
                                         <div className="azh-embed">
-                                            <p>La capitale du Japon est <b>Tokyo</b> 🇯🇵, la ville la plus peuplée du monde avec son agglomération.</p>
+                                            <p>La capitale du Japon est <b>Tokyo</b>, la ville la plus peuplée du monde avec son agglomération.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -226,9 +223,8 @@ function Home() {
             </div>
 
             {/* FONCTIONNALITÉS EN GRILLE */}
-            <section className="azh-section">
+            <section className="azh-section" id="features">
                 <header className="azh-section-head" ref={reveal}>
-                    <span className="azh-kicker">Fonctionnalités</span>
                     <h2>Tout ce qu'il faut, rien de superflu</h2>
                     <p>Chaque module s'active en quelques secondes et se règle au détail près.</p>
                 </header>
@@ -236,7 +232,7 @@ function Home() {
                 <div className="azh-bento">
                     {features.map((f) => (
                         <article key={f.key} ref={reveal} className={`azh-card${f.size === 'wide' ? ' azh-card--wide' : ''}`}>
-                            <div className="azh-card-icon">{f.icon}</div>
+                            <div className="azh-card-icon"><Icon name={f.icon} size={22} /></div>
                             <h3>{f.title}</h3>
                             <p>{f.desc}</p>
                             {f.visual && <div className="azh-card-visual">{f.visual}</div>}
@@ -248,7 +244,6 @@ function Home() {
             {/* ÉTAPES */}
             <section className="azh-section azh-section--steps">
                 <header className="azh-section-head" ref={reveal}>
-                    <span className="azh-kicker">Démarrage</span>
                     <h2>Prêt en moins d'une minute</h2>
                 </header>
                 <ol className="azh-steps">

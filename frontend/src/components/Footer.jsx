@@ -35,14 +35,10 @@ function Footer() {
                         </Link>
                         <p className="draft-footer__description">
                             {theme === 'islam'
-                                ? "Le bot Discord tout-en-un d'excellence : intelligence artificielle, modération, spiritualité islamique et personnalisation avancée."
-                                : "Le bot Discord nouvelle génération tout-en-un : intelligence artificielle, modération proactive, niveaux et outils de pointe pour votre communauté."
+                                ? "Un bot Discord français et gratuit : IA, modération, niveaux, horaires de prière et radio Coran réunis au même endroit."
+                                : "Un bot Discord français et gratuit : IA, modération, niveaux et alertes réseaux réunis au même endroit."
                             }
                         </p>
-                        <Link to="/status" className="draft-footer__status-badge">
-                            <span className="draft-footer__status-dot" aria-hidden="true" />
-                            <span>Tous les systèmes opérationnels</span>
-                        </Link>
                     </div>
 
                     {/* Colonne 2 : Navigation */}

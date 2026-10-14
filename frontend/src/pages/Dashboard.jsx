@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { botService, discordService } from '../services/api.js';
+import Icon from '../components/Icon.jsx';
 
 function hasManageGuildPermission(guild) {
     if (guild?.owner) return true;
@@ -73,7 +74,6 @@ function Dashboard() {
 
     const bot = overview?.bot || {};
     const stats = overview?.stats || {};
-    const observability = overview?.observability || {};
     const connectedGuildIds = useMemo(() => new Set((overview?.guilds || []).map((guild) => String(guild.id))), [overview]);
     // Map de tous les serveurs Discord de l'utilisateur (avec ses permissions réelles)
     const userGuildMap = useMemo(() => {
@@ -219,11 +219,13 @@ function Dashboard() {
         connectedGuildIds.size
     );
 
+    const [serverTab, setServerTab] = useState('manage');
+
     const cards = [
-        { label: 'Serveurs', value: totalConnectedCount.toLocaleString(), detail: 'connectés au bot', marker: '01' },
-        { label: 'Membres', value: Number(stats.memberCount || 0).toLocaleString(), detail: 'sur les serveurs', marker: '02' },
-        { label: 'Commandes · 24 h', value: Number(stats.commandCount24h || 0).toLocaleString(), detail: 'exécutées', marker: '03' },
-        { label: 'Disponibilité', value: bot.status === 'online' ? 'En ligne' : 'Hors ligne', detail: `latence ${Math.max(0, Number(bot.latency || 0))} ms`, marker: '04' },
+        { label: 'Serveurs', value: totalConnectedCount.toLocaleString('fr-FR'), detail: 'avec Azim installé', icon: 'server' },
+        { label: 'Membres', value: Number(stats.memberCount || 0).toLocaleString('fr-FR'), detail: 'touchés par le bot', icon: 'users' },
+        { label: 'Commandes', value: Number(stats.commandCount24h || 0).toLocaleString('fr-FR'), detail: 'ces dernières 24 h', icon: 'terminal' },
+        { label: 'Latence', value: `${Math.max(0, Number(bot.latency || 0))} ms`, detail: `en ligne depuis ${formatUptime(bot.uptime)}`, icon: 'activity' },
     ];
 
     const inviteBot = async (guildId) => {
@@ -238,211 +240,182 @@ function Dashboard() {
         }
     };
 
+    const serverTabs = [
+        { id: 'manage', label: 'À gérer', list: manageableGuilds },
+        { id: 'invite', label: 'À inviter', list: inviteableGuilds },
+        { id: 'other', label: 'Autres serveurs', list: otherBotGuilds },
+    ];
+    const currentTab = serverTabs.find((tab) => tab.id === serverTab) || serverTabs[0];
+    const isOnline = bot.status === 'online';
+    const displayName = user?.firstname || user?.username;
+
+    const renderGuildCard = (guild) => {
+        const icon = getDiscordGuildIcon(guild);
+        const initial = (guild.name || '?').slice(0, 1).toUpperCase();
+        return (
+            <article className={`pnl-guild${guild.connected ? '' : ' is-pending'}`} key={guild.id}>
+                <div className="pnl-guild__banner" style={icon ? { backgroundImage: `url(${icon})` } : undefined} />
+                <div className="pnl-guild__body">
+                    {icon ? <img className="pnl-guild__icon" src={icon} alt="" /> : <span className="pnl-guild__icon pnl-guild__icon--fallback">{initial}</span>}
+                    <h3 title={guild.name}>{guild.name}</h3>
+                    <p>
+                        {guild.connected
+                            ? (guild.memberCount ? `${Number(guild.memberCount).toLocaleString('fr-FR')} membres` : 'Azim installé')
+                            : 'Azim pas encore installé'}
+                    </p>
+                    {guild.connected && guild.canManage ? (
+                        <Link to={`/dashboard/servers/${guild.id}/config`} className="pnl-btn pnl-btn--primary">
+                            Configurer <Icon name="arrowRight" size={16} />
+                        </Link>
+                    ) : null}
+                    {!guild.connected ? (
+                        <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="pnl-btn">
+                            <Icon name="plus" size={16} /> {inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter Azim'}
+                        </button>
+                    ) : null}
+                    {guild.connected && !guild.canManage ? (
+                        <span className="pnl-guild__note">Lecture seule · permission « Gérer le serveur » requise</span>
+                    ) : null}
+                </div>
+            </article>
+        );
+    };
+
     return (
-        <main className="ops-dashboard">
-            <div className="ops-page-heading">
-                <div>
-                        <p className="site-eyebrow">PANEL AZIM</p>
-                        <h1>{user?.firstname ? `Bonjour ${user.firstname}` : 'Vos serveurs'}</h1>
-                        <p className="site-muted">Choisissez un serveur pour voir son état ou modifier ses réglages.</p>
+        <main className="pnl">
+            <header className="pnl-head">
+                <div className="pnl-head__who">
+                    {user?.avatarUrl ? <img src={user.avatarUrl} alt="" className="pnl-head__avatar" /> : (
+                        <span className="pnl-head__avatar pnl-head__avatar--fallback">{(displayName || 'A').charAt(0).toUpperCase()}</span>
+                    )}
+                    <div>
+                        <h1>{displayName ? `Bonjour ${displayName}` : 'Vos serveurs'}</h1>
+                        <p className={`pnl-head__status${isOnline ? ' is-online' : ''}`}>
+                            <i />
+                            {loading ? 'Connexion au bot…' : isOnline ? `Azim est en ligne · ${Math.max(0, Number(bot.latency || 0))} ms` : 'Azim est actuellement indisponible'}
+                        </p>
+                    </div>
                 </div>
-                <div className="ops-heading-actions">
-                    <Link to="/login" className="ops-action-button">Actualiser Discord</Link>
-                    <button type="button" onClick={loadData} disabled={refreshing} className="ops-action-button">
-                        {refreshing ? 'Actualisation…' : 'Actualiser'}
+                <div className="pnl-head__actions">
+                    <Link to="/login" className="pnl-btn pnl-btn--ghost" title="Recharger la liste de vos serveurs depuis Discord">
+                        Resynchroniser Discord
+                    </Link>
+                    <button type="button" onClick={loadData} disabled={refreshing} className="pnl-btn">
+                        <Icon name="refresh" size={16} className={refreshing ? 'pnl-spin' : ''} /> {refreshing ? 'Actualisation…' : 'Actualiser'}
                     </button>
-                    <span className={`ops-status-chip ${bot.status === 'online' ? 'ops-status-online' : 'ops-status-offline'}`}>
-                        <span /> {bot.status === 'online' ? 'Bot actif' : loading ? 'Connexion…' : 'Bot indisponible'}
-                    </span>
-                    <Link to="/status" className="ops-icon-link" title="État des services" aria-label="État des services">⚙</Link>
                 </div>
-            </div>
+            </header>
 
-            {error ? <div role="alert" className="ops-alert">{error}</div> : null}
+            {error ? <div role="alert" className="pnl-alert"><Icon name="alert" size={18} /> {error}</div> : null}
 
-            <section className="ops-metric-grid" aria-label="Statistiques du bot">
+            <section className="pnl-stats" aria-label="Statistiques du bot">
                 {cards.map((card) => (
-                    <article className="ops-metric site-panel" key={card.label}>
-                        <div className="ops-metric-head"><span className="ops-metric-symbol">{card.marker}</span><span>{card.label}</span></div>
-                        <strong className={card.label === 'Disponibilité' ? (bot.status === 'online' ? 'ops-value-online' : 'ops-value-offline') : ''}>{loading ? '—' : card.value}</strong>
-                        <small>{loading ? 'lecture des données' : card.detail}</small>
+                    <article className="pnl-stat" key={card.label}>
+                        <span className="pnl-stat__icon"><Icon name={card.icon} size={20} /></span>
+                        <div>
+                            <small>{card.label}</small>
+                            <strong>{loading ? '—' : card.value}</strong>
+                            <span>{loading ? 'lecture des données…' : card.detail}</span>
+                        </div>
                     </article>
                 ))}
             </section>
 
-            <div className="ops-main-grid">
-                <div className="ops-servers-column flex flex-col gap-4">
-                    {/* Section 1 : Serveurs à gérer */}
-                    <section className="ops-panel site-panel">
-                        <div className="ops-panel-heading">
-                            <div>
-                                <p className="site-eyebrow">VOS ACCÈS</p>
-                                <h2>Serveurs à gérer</h2>
-                            </div>
-                            <span className="ops-count">
-                                {manageableGuilds.length} serveur(s)
-                            </span>
+            <div className="pnl-grid">
+                <section className="pnl-card pnl-servers">
+                    <div className="pnl-card__head">
+                        <h2>Serveurs</h2>
+                        <div className="pnl-tabs" role="tablist">
+                            {serverTabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={serverTab === tab.id}
+                                    className={`pnl-tab${serverTab === tab.id ? ' is-active' : ''}`}
+                                    onClick={() => setServerTab(tab.id)}
+                                >
+                                    {tab.label} <span>{tab.list.length}</span>
+                                </button>
+                            ))}
                         </div>
-                        {manageableGuilds.length ? (
-                            <>
-                                <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Configuration</span></div>
-                                <div className="ops-server-list">
-                                    {manageableGuilds.map((guild) => {
-                                        const icon = getDiscordGuildIcon(guild);
-                                        return (
-                                            <article className="ops-server-row" key={guild.id}>
-                                                <div className="ops-server-identity">
-                                                    {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
-                                                    <span>{guild.name}</span>
-                                                </div>
-                                                <span className="ops-server-status is-connected"><i />Installé</span>
-                                                <span className="ops-server-members">{guild.memberCount ? Number(guild.memberCount).toLocaleString() : '—'}</span>
-                                                <div className="ops-server-actions">
-                                                    <Link to={`/dashboard/servers/${guild.id}/config`} className="ops-action-button">Configurer <span aria-hidden="true">↗</span></Link>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
-                            </>
-                        ) : (
-                            <div className="ops-empty-state">
-                                <p>Aucun serveur où vous avez les permissions de gestion n'a Azim installé actuellement.</p>
-                                {inviteableGuilds.length > 0 ? (
-                                    <p className="site-muted text-xs mt-2">Vous pouvez ajouter le bot à vos serveurs administrables dans la section ci-dessous.</p>
-                                ) : (
-                                    <Link to="/login" className="site-link">Actualiser vos permissions Discord →</Link>
-                                )}
-                            </div>
-                        )}
-                        <div className="ops-server-footer">
-                            <span>Disponibilité globale <strong>{bot.status === 'online' ? 'Opérationnelle' : 'À vérifier'}</strong></span>
-                            <span>Depuis le redémarrage <strong>{formatUptime(bot.uptime)}</strong></span>
+                    </div>
+
+                    {currentTab.list.length ? (
+                        <div className="pnl-guilds">{currentTab.list.map(renderGuildCard)}</div>
+                    ) : (
+                        <div className="pnl-empty">
+                            <Icon name="server" size={28} />
+                            {currentTab.id === 'manage' ? (
+                                <>
+                                    <p>Azim n’est installé sur aucun serveur que vous administrez.</p>
+                                    {inviteableGuilds.length ? (
+                                        <button type="button" className="pnl-btn pnl-btn--primary" onClick={() => setServerTab('invite')}>Voir les serveurs à inviter</button>
+                                    ) : (
+                                        <Link to="/login" className="pnl-btn">Resynchroniser mes serveurs Discord</Link>
+                                    )}
+                                </>
+                            ) : currentTab.id === 'invite' ? (
+                                <p>Azim est déjà présent sur tous vos serveurs administrables.</p>
+                            ) : (
+                                <p>Aucun autre serveur en commun avec Azim.</p>
+                            )}
                         </div>
-                    </section>
-
-                    {/* Section 2 : Autres serveurs avec Azim */}
-                    {otherBotGuilds.length > 0 && (
-                        <section className="ops-panel site-panel">
-                            <div className="ops-panel-heading">
-                                <div>
-                                    <p className="site-eyebrow">COMMUNAUTÉS AZIM</p>
-                                    <h2>Autres serveurs avec Azim</h2>
-                                </div>
-                                <span className="ops-count">
-                                    {otherBotGuilds.length} serveur(s)
-                                </span>
-                            </div>
-                            <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Statut</span></div>
-                            <div className="ops-server-list">
-                                {otherBotGuilds.map((guild) => {
-                                    const icon = getDiscordGuildIcon(guild);
-                                    return (
-                                        <article className="ops-server-row" key={guild.id}>
-                                            <div className="ops-server-identity">
-                                                {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
-                                                <span>{guild.name}</span>
-                                            </div>
-                                            <span className="ops-server-status is-connected"><i />En ligne</span>
-                                            <span className="ops-server-members">{guild.memberCount ? Number(guild.memberCount).toLocaleString() : '—'}</span>
-                                            <div className="ops-server-actions">
-                                                <span className="ops-action-hint">Permission requise pour gérer</span>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </div>
-                        </section>
                     )}
+                </section>
 
-                    {/* Section 3 : Serveurs disponibles pour invitation */}
-                    {inviteableGuilds.length > 0 && (
-                        <section className="ops-panel site-panel" style={{ opacity: 0.95 }}>
-                            <div className="ops-panel-heading">
-                                <div>
-                                    <p className="site-eyebrow">INVITATION</p>
-                                    <h2>Ajouter Azim à d'autres serveurs</h2>
-                                </div>
-                                <span className="ops-count">
-                                    {inviteableGuilds.length} disponible(s)
-                                </span>
-                            </div>
-                            <div className="ops-table-head"><span>Serveur</span><span>Bot</span><span>Membres</span><span>Action</span></div>
-                            <div className="ops-server-list">
-                                {inviteableGuilds.map((guild) => {
-                                    const icon = getDiscordGuildIcon(guild);
-                                    return (
-                                        <article className="ops-server-row" key={guild.id}>
-                                            <div className="ops-server-identity">
-                                                {icon ? <img src={icon} alt="" /> : <span className="ops-server-fallback">{(guild.name || '?').slice(0, 1).toUpperCase()}</span>}
-                                                <span>{guild.name}</span>
-                                            </div>
-                                            <span className="ops-server-status is-disconnected"><i />Non installé</span>
-                                            <span className="ops-server-members">—</span>
-                                            <div className="ops-server-actions">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => inviteBot(guild.id)}
-                                                    disabled={inviteLoading === guild.id}
-                                                    className="ops-action-button"
-                                                >
-                                                    {inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter le bot'}
-                                                </button>
-                                            </div>
-                                        </article>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                <aside className="ops-side-column">
-                    <section className="ops-panel site-panel ops-analytics-panel">
-                        <div className="ops-panel-heading">
-                            <div><p className="site-eyebrow">UTILISATION</p><h2>Commandes les plus utilisées</h2></div>
-                            <Link to="/command-history" className="site-link text-xs">Tout voir →</Link>
+                <aside className="pnl-side">
+                    <section className="pnl-card">
+                        <div className="pnl-card__head">
+                            <h2>Commandes populaires</h2>
+                            <Link to="/command-history" className="pnl-link">Historique <Icon name="arrowRight" size={14} /></Link>
                         </div>
                         {topCommands.length ? (
-                            <div className="ops-command-chart">
-                                {topCommands.map((command, index) => (
-                                    <div className="ops-command-bar-row" key={command.name}>
-                                        <span className="ops-command-rank">{String(index + 1).padStart(2, '0')}</span>
-                                        <span className="ops-command-name">/{command.name}</span>
-                                        <span className="ops-command-track"><i style={{ width: `${Math.max(5, (Number(command.count || 0) / maxCommandCount) * 100)}%` }} /></span>
-                                        <strong>{Number(command.count || 0).toLocaleString()}</strong>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : <p className="ops-quiet-empty">Les commandes apparaîtront après leurs premières utilisations.</p>}
-                    </section>
-
-                    <section className="ops-panel site-panel ops-activity-panel">
-                        <div className="ops-panel-heading">
-                            <div><p className="site-eyebrow">JOURNAL</p><h2>Erreurs récentes</h2></div>
-                            <span className="ops-count">{Number(errorTotal || 0)} au total</span>
-                        </div>
-                        {recentErrors.length ? (
-                            <ol className="ops-activity-list">
-                                {recentErrors.map((item, index) => (
-                                    <li key={`${item.ts}-${index}`}>
-                                        <span className="ops-activity-dot" />
-                                        <span className="ops-activity-copy"><strong>{item.type || 'Erreur'}</strong><small>{String(item.message || '').slice(0, 90)}</small></span>
-                                        <time>{item.ts ? new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</time>
+                            <ol className="pnl-bars">
+                                {topCommands.map((command) => (
+                                    <li key={command.name}>
+                                        <div className="pnl-bars__label">
+                                            <code>/{command.name}</code>
+                                            <strong>{Number(command.count || 0).toLocaleString('fr-FR')}</strong>
+                                        </div>
+                                        <span className="pnl-bars__track"><i style={{ width: `${Math.max(4, (Number(command.count || 0) / maxCommandCount) * 100)}%` }} /></span>
                                     </li>
                                 ))}
                             </ol>
-                        ) : <p className="ops-quiet-empty">Aucune erreur récente signalée.</p>}
+                        ) : <p className="pnl-muted">Les commandes apparaîtront ici après leurs premières utilisations.</p>}
+                    </section>
+
+                    <section className="pnl-card">
+                        <div className="pnl-card__head">
+                            <h2>Erreurs récentes</h2>
+                            <span className="pnl-count">{Number(errorTotal || 0)} au total</span>
+                        </div>
+                        {recentErrors.length ? (
+                            <ul className="pnl-errors">
+                                {recentErrors.map((item, index) => (
+                                    <li key={`${item.ts}-${index}`}>
+                                        <span className="pnl-errors__icon"><Icon name="alert" size={15} /></span>
+                                        <div>
+                                            <strong>{item.type || 'Erreur'}</strong>
+                                            <small>{String(item.message || '').slice(0, 90)}</small>
+                                        </div>
+                                        <time>{item.ts ? new Date(item.ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</time>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="pnl-muted pnl-ok"><Icon name="check" size={16} /> Aucune erreur récente.</p>
+                        )}
                     </section>
                 </aside>
             </div>
 
-            <section className="ops-bottom-links">
-                <Link to="/modules"><span>Modules</span><strong>Configurer les fonctions du bot →</strong></Link>
-                <Link to="/commands"><span>Documentation</span><strong>Parcourir les commandes →</strong></Link>
-                <Link to="/help"><span>Support</span><strong>Obtenir de l’aide →</strong></Link>
-                <Link to="/feedback"><span>Retours & Bugs</span><strong>Signaler un bug ou une suggestion →</strong></Link>
-            </section>
+            <nav className="pnl-shortcuts" aria-label="Raccourcis">
+                <Link to="/docs/accueil"><Icon name="book" size={20} /><span><strong>Documentation</strong><small>Guides et modules</small></span></Link>
+                <Link to="/docs/commandes"><Icon name="terminal" size={20} /><span><strong>Commandes</strong><small>Liste complète</small></span></Link>
+                <Link to="/feedback"><Icon name="bug" size={20} /><span><strong>Retours & bugs</strong><small>Signaler un problème</small></span></Link>
+                <a href="https://discord.gg/azim" target="_blank" rel="noreferrer"><Icon name="lifebuoy" size={20} /><span><strong>Support</strong><small>Serveur Discord</small></span></a>
+            </nav>
         </main>
     );
 }

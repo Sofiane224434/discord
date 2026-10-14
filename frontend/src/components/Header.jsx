@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { useTranslation } from 'react-i18next';
 import Icon from './Icon.jsx';
+import LanguageSwitch from './LanguageSwitch.jsx';
 import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
 
 
@@ -11,6 +13,7 @@ function Header() {
     const { theme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
 
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -45,10 +48,10 @@ function Header() {
     };
 
     const navItems = [
-        { label: 'Documentation', to: '/docs/accueil', match: '/docs' },
-        ...(isAuthenticated ? [{ label: 'Panel', to: '/dashboard', match: '/dashboard' }] : []),
-        { label: 'Statuts', to: '/status', match: '/status' },
-        { label: 'Retours & idées', to: '/feedback', match: '/feedback' },
+        { label: t('header.docs'), to: '/docs/accueil', match: '/docs' },
+        ...(isAuthenticated ? [{ label: t('header.panel'), to: '/dashboard', match: '/dashboard' }] : []),
+        { label: t('header.status'), to: '/status', match: '/status' },
+        { label: t('header.feedback'), to: '/feedback', match: '/feedback' },
     ];
 
     const isActive = (item) => location.pathname.startsWith(item.match);
@@ -56,7 +59,7 @@ function Header() {
     return (
         <header className={`az-header${scrolled ? ' is-scrolled' : ''}`} role="banner">
             <div className="az-header__inner">
-                <Link to="/" className="az-header__brand" aria-label="Accueil AzimBot">
+                <Link to="/" className="az-header__brand" aria-label={t('header.home_label')}>
                     <img
                         src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'}
                         alt=""
@@ -69,7 +72,7 @@ function Header() {
                     />
                 </Link>
 
-                <nav className="az-header__nav" aria-label="Navigation principale">
+                <nav className="az-header__nav" aria-label={t('header.main_nav')}>
                     {navItems.map((item) => (
                         <NavLink
                             key={item.to}
@@ -82,9 +85,10 @@ function Header() {
                 </nav>
 
                 <div className="az-header__actions">
+                    <LanguageSwitch className="az-header__lang" />
                     <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="az-header__ghost">
                         <Icon name="lifebuoy" size={17} />
-                        <span>Support</span>
+                        <span>{t('header.support')}</span>
                     </a>
 
                     {isAuthenticated && user ? (
@@ -111,22 +115,22 @@ function Header() {
                                 <div className="az-user__menu" role="menu">
                                     <div className="az-user__menu-head">
                                         <strong>{user.username}</strong>
-                                        <small>Connecté avec Discord</small>
+                                        <small>{t('header.connected_discord')}</small>
                                     </div>
                                     <Link to="/settings" onClick={() => setUserMenuOpen(false)} className="az-user__item" role="menuitem">
-                                        <Icon name="settings" size={16} /> Paramètres
+                                        <Icon name="settings" size={16} /> {t('header.settings')}
                                     </Link>
                                     <button type="button" onClick={handleLogout} className="az-user__item az-user__item--danger" role="menuitem">
-                                        <Icon name="logout" size={16} /> Déconnexion
+                                        <Icon name="logout" size={16} /> {t('header.logout')}
                                     </button>
                                 </div>
                             )}
                         </div>
                     ) : (
                         <>
-                            <Link to="/login" className="az-header__ghost az-header__login">Connexion</Link>
+                            <Link to="/login" className="az-header__ghost az-header__login">{t('header.login')}</Link>
                             <a href={ADD_BOT_URL} target="_blank" rel="noreferrer" className="az-header__cta">
-                                <Icon name="plus" size={17} /> Ajouter Azim
+                                <Icon name="plus" size={17} /> {t('header.add_bot')}
                             </a>
                         </>
                     )}
@@ -135,7 +139,7 @@ function Header() {
                         type="button"
                         onClick={() => setMobileOpen((prev) => !prev)}
                         className="az-header__burger"
-                        aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                        aria-label={mobileOpen ? t('header.close_menu') : t('header.open_menu')}
                         aria-expanded={mobileOpen}
                     >
                         <Icon name={mobileOpen ? 'close' : 'menu'} size={22} />
@@ -151,10 +155,11 @@ function Header() {
                         </Link>
                     ))}
                     <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="az-drawer__link">
-                        Support Discord <Icon name="external" size={15} />
+                        {t('header.support_discord')} <Icon name="external" size={15} />
                     </a>
+                    <LanguageSwitch variant="long" className="az-drawer__lang" />
                     {!isAuthenticated && (
-                        <Link to="/login" className="az-drawer__link">Connexion</Link>
+                        <Link to="/login" className="az-drawer__link">{t('header.login')}</Link>
                     )}
                 </nav>
             )}

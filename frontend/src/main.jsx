@@ -27,6 +27,11 @@ i18n
     },
   });
 
+// Langue de la page (lecteurs d'écran, traduction du navigateur)
+i18n.on('languageChanged', (lng) => {
+  document.documentElement.lang = (lng || 'fr').slice(0, 2);
+});
+
 function start() {
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

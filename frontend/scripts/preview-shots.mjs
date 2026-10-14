@@ -5,7 +5,7 @@
 // Sans ~scrollY : capture pleine page. Avec : capture de la fenêtre après défilement.
 // |texte : clique d'abord sur le bouton ou lien dont le texte commence par « texte » (ex. un onglet).
 //
-// Variables : PREVIEW_URL (défaut http://localhost:5173), CHROME (chemin d'un Chrome/Chromium).
+// Variables : PREVIEW_URL (défaut http://localhost:5173), CHROME (chemin d'un Chrome/Chromium), PREVIEW_LANG (fr|en).
 // Pour obtenir un Chrome headless : npx @puppeteer/browsers install chrome-headless-shell@stable
 import path from 'node:path';
 import fs from 'node:fs';
@@ -33,6 +33,8 @@ for (const spec of specs) {
     const page = await browser.newPage();
     await page.setViewport({ width: w, height: w < 600 ? 844 : 900 });
     page.on('pageerror', (e) => console.error(`[${route}] ${e.message}`));
+    // Langue du site pour la capture (PREVIEW_LANG=en), mémorisée par i18next dans le navigateur
+    if (process.env.PREVIEW_LANG) await page.evaluateOnNewDocument((lng) => localStorage.setItem('i18nextLng', lng), process.env.PREVIEW_LANG);
     await page.goto(base + route, { waitUntil: 'networkidle0', timeout: 30000 });
 
     if (click) {

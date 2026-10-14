@@ -2,6 +2,11 @@ import { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 const ThemeContext = createContext();
 
+// Choix fait par l'utilisateur lui-même ('cyber' ou 'islam'). Absent = pas de choix :
+// le thème islam devient alors le thème par défaut dès qu'il est débloqué.
+const CHOICE_KEY = 'azim_theme_choice';
+const readChoice = () => localStorage.getItem(CHOICE_KEY);
+
 const KONAMI_SEQUENCE = [
     'ArrowUp', 'ArrowUp',
     'ArrowDown', 'ArrowDown',
@@ -29,9 +34,8 @@ export function ThemeProvider({ children }) {
     const [theme, setThemeState] = useState(() => {
         const hasIslamBot = localStorage.getItem('azim_has_islam_bot') === 'true';
         const isKonami = localStorage.getItem('azim_konami_unlocked') === 'true';
-        const saved = localStorage.getItem('azim_theme');
         if (hasIslamBot || isKonami) {
-            return saved === 'cyber' ? 'cyber' : 'islam';
+            return readChoice() === 'cyber' ? 'cyber' : 'islam';
         }
         return 'cyber';
     });
@@ -60,15 +64,13 @@ export function ThemeProvider({ children }) {
                 if (hasIslamServer) {
                     localStorage.setItem('azim_has_islam_bot', 'true');
                     setHasBotWithIslam(true);
-                    const saved = localStorage.getItem('azim_theme');
-                    const chosen = saved === 'cyber' ? 'cyber' : 'islam'; // islam par défaut
-                    setThemeState(chosen);
+                    // Islam par défaut, sauf si l'utilisateur a choisi le thème Cyber
+                    setThemeState(readChoice() === 'cyber' ? 'cyber' : 'islam');
                 } else {
                     localStorage.removeItem('azim_has_islam_bot');
                     setHasBotWithIslam(false);
                     if (!konamiUnlocked) {
                         setThemeState('cyber');
-                        localStorage.setItem('azim_theme', 'cyber');
                     }
                 }
             })
@@ -84,7 +86,6 @@ export function ThemeProvider({ children }) {
         // Activer la transition fluide
         document.documentElement.classList.add('theme-transitioning');
         document.documentElement.setAttribute('data-theme', activeTheme);
-        localStorage.setItem('azim_theme', activeTheme);
 
         const timer = setTimeout(() => {
             document.documentElement.classList.remove('theme-transitioning');
@@ -137,6 +138,7 @@ export function ThemeProvider({ children }) {
                 // Si on était en cyber, basculer sur islam, sinon basculer ou confirmer
                 setThemeState((prev) => {
                     const next = prev === 'islam' ? 'cyber' : 'islam';
+                    localStorage.setItem(CHOICE_KEY, next);
                     triggerKonamiToast(
                         next === 'islam'
                             ? '🕌 Code Konami validé : Mode Islam & Spiritualité activé !'
@@ -161,12 +163,11 @@ export function ThemeProvider({ children }) {
     const setTheme = (newTheme) => {
         if (!isIslamUnlocked) {
             setThemeState('cyber');
-            localStorage.setItem('azim_theme', 'cyber');
             return;
         }
         const chosen = newTheme === 'islam' ? 'islam' : 'cyber';
         setThemeState(chosen);
-        localStorage.setItem('azim_theme', chosen);
+        localStorage.setItem(CHOICE_KEY, chosen);
     };
 
     const toggleTheme = () => {
@@ -180,6 +181,7 @@ export function ThemeProvider({ children }) {
             setKonamiUnlocked(true);
             localStorage.setItem('azim_konami_unlocked', 'true');
             setThemeState('islam');
+            localStorage.setItem(CHOICE_KEY, 'islam');
             triggerKonamiToast('🕌 Code secret validé : Thème Islam débloqué !');
             return { success: true };
         }
@@ -192,15 +194,12 @@ export function ThemeProvider({ children }) {
         if (unlocked) {
             localStorage.setItem('azim_has_islam_bot', 'true');
             setHasBotWithIslam(true);
-            const saved = localStorage.getItem('azim_theme');
-            const chosen = saved === 'cyber' ? 'cyber' : 'islam';
-            setThemeState(chosen);
+            setThemeState(readChoice() === 'cyber' ? 'cyber' : 'islam');
         } else {
             localStorage.removeItem('azim_has_islam_bot');
             setHasBotWithIslam(false);
             if (!konamiUnlocked) {
                 setThemeState('cyber');
-                localStorage.setItem('azim_theme', 'cyber');
             }
         }
     };

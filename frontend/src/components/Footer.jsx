@@ -2,41 +2,40 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from './Icon.jsx';
+import LanguageSwitch from './LanguageSwitch.jsx';
 import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
 
-
 function Footer() {
-    const { i18n } = useTranslation();
+    const { t } = useTranslation();
     const { theme, isIslamUnlocked } = useTheme();
-    const currentLanguage = (i18n.resolvedLanguage || i18n.language || 'fr').slice(0, 2);
 
     const columns = [
         {
-            title: 'Produit',
+            title: t('footer.product'),
             links: [
-                { label: 'Fonctionnalités', to: '/#features' },
-                { label: 'Ajouter Azim', href: ADD_BOT_URL },
-                { label: 'Commandes', to: '/docs/commandes' },
-                { label: 'Documentation', to: '/docs/accueil' },
-                { label: 'Statuts', to: '/status' },
-                ...(isIslamUnlocked ? [{ label: 'Prières & Coran', to: '/docs/islam-priere' }] : []),
+                { label: t('footer.features'), to: '/#features' },
+                { label: t('footer.add_azim'), href: ADD_BOT_URL },
+                { label: t('footer.commands'), to: '/docs/commandes' },
+                { label: t('footer.docs'), to: '/docs/accueil' },
+                { label: t('footer.status'), to: '/status' },
+                ...(isIslamUnlocked ? [{ label: t('footer.prayers'), to: '/docs/islam-priere' }] : []),
             ],
         },
         {
-            title: 'Communauté',
+            title: t('footer.community'),
             links: [
-                { label: 'Serveur support', href: SUPPORT_URL },
-                { label: 'Retours & idées', to: '/feedback' },
-                { label: 'Serveurs partenaires', to: '/public-servers' },
-                { label: 'Voter sur Top.gg', href: 'https://top.gg' },
+                { label: t('footer.support_server'), href: SUPPORT_URL },
+                { label: t('footer.feedback'), to: '/feedback' },
+                { label: t('footer.partners'), to: '/public-servers' },
+                { label: t('footer.vote'), href: 'https://top.gg' },
             ],
         },
         {
-            title: 'Compte',
+            title: t('footer.account'),
             links: [
-                { label: 'Panel', to: '/dashboard' },
-                { label: 'Paramètres', to: '/settings' },
-                { label: 'Centre d’aide', to: '/docs/faq' },
+                { label: t('footer.panel'), to: '/dashboard' },
+                { label: t('footer.settings'), to: '/settings' },
+                { label: t('footer.help'), to: '/docs/faq' },
             ],
         },
     ];
@@ -46,15 +45,11 @@ function Footer() {
             <div className="ft__inner">
                 <div className="ft__top">
                     <div className="ft__brand">
-                        <Link to="/" className="ft__logo" aria-label="Accueil AzimBot">
+                        <Link to="/" className="ft__logo" aria-label={t('header.home_label')}>
                             <img src={theme === 'islam' ? '/icon-islam.png' : '/icon.png'} alt="" />
                             <span>AzimBot</span>
                         </Link>
-                        <p>
-                            {theme === 'islam'
-                                ? 'Le bot Discord français et gratuit : IA, modération, niveaux, prières et radio Coran.'
-                                : 'Le bot Discord français et gratuit : IA, modération, niveaux et alertes réseaux.'}
-                        </p>
+                        <p>{theme === 'islam' ? t('footer.tagline_islam') : t('footer.tagline')}</p>
                     </div>
 
                     {columns.map((col) => (
@@ -80,22 +75,8 @@ function Footer() {
                 <div className="ft__word" aria-hidden="true">AZIM</div>
 
                 <div className="ft__bottom">
-                    <p>
-                        © 2024 – {new Date().getFullYear()} AzimBot · Non affilié à Discord Inc.
-                    </p>
-                    <div className="ft__lang" role="group" aria-label="Langue du site">
-                        {['fr', 'en'].map((lang) => (
-                            <button
-                                key={lang}
-                                type="button"
-                                onClick={() => i18n.changeLanguage(lang)}
-                                className={currentLanguage === lang ? 'is-active' : ''}
-                                aria-pressed={currentLanguage === lang}
-                            >
-                                {lang.toUpperCase()}
-                            </button>
-                        ))}
-                    </div>
+                    <p>{t('footer.legal', { year: new Date().getFullYear() })}</p>
+                    <LanguageSwitch />
                 </div>
             </div>
         </footer>

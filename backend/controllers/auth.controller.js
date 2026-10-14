@@ -131,7 +131,8 @@ export const changeEmail = async (req, res) => {
 export const deleteAccount = async (req, res) => {
     try {
         const { currentPassword, confirm } = req.body || {};
-        if (confirm !== 'SUPPRIMER') {
+        // Mot de confirmation tapé par l'utilisateur, selon la langue du site
+        if (!['SUPPRIMER', 'DELETE'].includes(confirm)) {
             return res.status(400).json({ error: 'Tapez SUPPRIMER pour confirmer.' });
         }
         const check = await confirmIdentity(req, currentPassword);

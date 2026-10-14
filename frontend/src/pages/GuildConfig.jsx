@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { useTranslation } from 'react-i18next';
 import Icon from '../components/Icon.jsx';
 
 const PRAYER_METHODS = [
@@ -220,7 +221,7 @@ function RoleChip({ name, onRemove }) {
     return (
         <span className="cf-chip">
             @{name}
-            <button type="button" onClick={onRemove} aria-label={`Retirer ${name}`}><Icon name="close" size={12} /></button>
+            <button type="button" onClick={onRemove} aria-label={name}><Icon name="close" size={12} /></button>
         </span>
     );
 }
@@ -243,6 +244,8 @@ function serializeForm(form) {
 function GuildConfig() {
     const { guildId } = useParams();
     const { setIsIslamUnlocked } = useTheme();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.resolvedLanguage || i18n.language || 'fr';
     const [form, setForm] = useState(EMPTY_CONFIG);
     // Dernière version enregistrée côté serveur : sert à détecter les modifications en cours
     const [savedForm, setSavedForm] = useState(null);
@@ -292,13 +295,13 @@ function GuildConfig() {
         try {
             const fileName = `${form.profile.botDisplayName || 'azim'}-avatar.png`;
             await adminService.downloadAvatar(guildId, fileName);
-            setNotice('Photo de profil téléchargée avec succès.');
+            setNotice(t('config.n_avatar_downloaded'));
         } catch {
             if (form.profile.currentAvatarUrl) {
                 window.open(form.profile.currentAvatarUrl, '_blank');
-                setNotice('Ouverture de la photo de profil dans un nouvel onglet.');
+                setNotice(t('config.n_avatar_opened'));
             } else {
-                setError('Impossible de télécharger la photo de profil.');
+                setError(t('config.e_avatar_download'));
             }
         } finally {
             setDownloadingAvatar(false);
@@ -320,7 +323,7 @@ function GuildConfig() {
                 }
             })
             .catch((apiError) => {
-                if (active) setError(apiError.hint || apiError.message || 'Impossible de charger cette configuration.');
+                if (active) setError(apiError.hint || apiError.message || t('config.e_load'));
             })
             .finally(() => {
                 if (active) setLoading(false);
@@ -399,9 +402,9 @@ function GuildConfig() {
                 commands: commandsPayload,
             });
             await refresh();
-            setNotice('Toutes les modifications ont été enregistrées avec succès.');
+            setNotice(t('config.n_saved'));
         } catch (apiError) {
-            setError(apiError.hint || apiError.message || 'Impossible d’enregistrer la configuration.');
+            setError(apiError.hint || apiError.message || t('config.e_save'));
         } finally {
             setSaving(false);
         }
@@ -417,19 +420,19 @@ function GuildConfig() {
             setIsIslamUnlocked(true);
             setIslamCode('');
             if (result.islamModeEnabled || result.alreadyEnabled) {
-                setNotice('Code secret validé : le mode Islam et ses commandes (/coran, /priere, /quiz, etc.) sont débloqués.');
+                setNotice(t('config.n_code_islam'));
             } else {
-                setNotice('Code appliqué avec succès.');
+                setNotice(t('config.n_code_ok'));
             }
         } catch (apiError) {
-            setError(apiError.message || 'Code secret invalide.');
+            setError(apiError.message || t('config.e_code'));
         } finally {
             setActivatingIslam(false);
         }
     };
 
     const disableIslamMode = async () => {
-        if (!window.confirm('Voulez-vous vraiment désactiver le mode Islam pour ce serveur ?')) return;
+        if (!window.confirm(t('config.disable_confirm'))) return;
         setActivatingIslam(true);
         setError('');
         setNotice('');
@@ -438,12 +441,12 @@ function GuildConfig() {
         setIsIslamUnlocked(false);
         try {
             await adminService.activateIslamMode(guildId, { action: 'disable' });
-            setNotice('Le mode Islam a été désactivé pour ce serveur.');
+            setNotice(t('config.n_disabled'));
         } catch (apiError) {
             // Rétablissement en cas d'échec
             update('features', 'islamModeEnabled', true);
             setIsIslamUnlocked(true);
-            setError(apiError.message || 'Impossible de désactiver le mode.');
+            setError(apiError.message || t('config.e_disable'));
         } finally {
             setActivatingIslam(false);
         }
@@ -456,9 +459,9 @@ function GuildConfig() {
             await adminService.updateGuildConfig(guildId, { ai: payload });
             setNewKey('');
             await refresh();
-            setNotice('Clés IA mises à jour.');
+            setNotice(t('config.n_keys'));
         } catch (apiError) {
-            setError(apiError.message || 'Impossible de modifier les clés IA.');
+            setError(apiError.message || t('config.e_keys'));
         }
     };
 
@@ -469,9 +472,9 @@ function GuildConfig() {
             await adminService.updateGuildConfig(guildId, { profile: { avatarUrl } });
             update('profile', 'avatarUrl', '');
             await refresh();
-            setNotice(avatarUrl ? 'Avatar local modifié avec succès.' : 'Photo de profil de base du bot rétablie avec succès sur ce serveur.');
+            setNotice(avatarUrl ? t('config.n_avatar_set') : t('config.n_avatar_reset'));
         } catch (apiError) {
-            setError(apiError.message || 'Impossible de modifier l’avatar.');
+            setError(apiError.message || t('config.e_avatar'));
         }
     };
 
@@ -481,9 +484,9 @@ function GuildConfig() {
         try {
             await adminService.updateGuildConfig(guildId, { profile: { botDisplayName: newName } });
             await refresh();
-            setNotice(`Nom du bot mis à jour avec succès : "${newName}"`);
+            setNotice(t('config.n_renamed', { name: newName }));
         } catch (apiError) {
-            setError(apiError.message || 'Impossible de modifier le nom du bot.');
+            setError(apiError.message || t('config.e_rename'));
         }
     };
 
@@ -580,7 +583,7 @@ function GuildConfig() {
         return (
             <main className="gc">
                 <LoadingScreen
-                    label="Chargement de la configuration…"
+                    label={t('config.loading')}
                     subtext={getGuildName(guildId)}
                 />
             </main>
@@ -607,26 +610,26 @@ function GuildConfig() {
     const recentErrors = Array.isArray(form.observability?.recentErrors) ? form.observability.recentErrors : [];
 
     const tabs = [
-        { id: 'overview', label: 'Vue d’ensemble', icon: 'activity' },
-        { id: 'ai', label: 'Intelligence artificielle', icon: 'sparkles' },
-        { id: 'commands', label: 'Commandes', icon: 'terminal', count: visibleCommands.length },
-        { id: 'welcome', label: 'Bienvenue', icon: 'hand', on: form.welcome.enabled },
-        { id: 'levels', label: 'Niveaux', icon: 'activity', on: form.rank.enabled },
-        { id: 'social', label: 'Alertes réseaux', icon: 'megaphone', on: (form.youtube.channels || []).length > 0 || form.tiktok.enabled },
-        { id: 'profile', label: 'Profil & logs', icon: 'fileText' },
-        { id: 'islam', label: isIslamActive ? 'Mode Islam' : 'Code secret', icon: isIslamActive ? 'moon' : 'key', on: isIslamActive ? true : undefined },
+        { id: 'overview', label: t('config.tab_overview'), icon: 'activity' },
+        { id: 'ai', label: t('config.tab_ai'), icon: 'sparkles' },
+        { id: 'commands', label: t('config.tab_commands'), icon: 'terminal', count: visibleCommands.length },
+        { id: 'welcome', label: t('config.tab_welcome'), icon: 'hand', on: form.welcome.enabled },
+        { id: 'levels', label: t('config.tab_levels'), icon: 'activity', on: form.rank.enabled },
+        { id: 'social', label: t('config.tab_social'), icon: 'megaphone', on: (form.youtube.channels || []).length > 0 || form.tiktok.enabled },
+        { id: 'profile', label: t('config.tab_profile'), icon: 'fileText' },
+        { id: 'islam', label: isIslamActive ? t('config.tab_islam') : t('config.tab_code'), icon: isIslamActive ? 'moon' : 'key', on: isIslamActive ? true : undefined },
     ];
 
     // Cartes de modules de la vue d'ensemble : état + accès direct à l'onglet
     const modules = [
-        { tab: 'ai', title: 'Intelligence artificielle', icon: 'sparkles', color: 'var(--azim-lilac)', state: form.ai.keysCount > 0 ? 'on' : 'todo', detail: form.ai.keysCount > 0 ? `${form.ai.keysCount} clé(s) Groq` : 'Ajoutez une clé Groq' },
-        { tab: 'welcome', title: 'Bienvenue', icon: 'hand', color: 'var(--azim-accent)', state: form.welcome.enabled ? (form.welcome.channelId ? 'on' : 'todo') : 'off', detail: form.welcome.enabled ? (channelName(form.welcome.channelId) ? `#${channelName(form.welcome.channelId)}` : 'Choisissez un salon') : 'Désactivé' },
-        { tab: 'levels', title: 'Niveaux', icon: 'activity', color: 'var(--azim-warm)', state: form.rank.enabled ? 'on' : 'off', detail: form.rank.enabled ? `${form.rank.rewards.length} palier(s) de récompense` : 'Désactivé' },
-        { tab: 'social', title: 'YouTube', icon: 'megaphone', color: 'var(--azim-coral)', state: (form.youtube.channels || []).length ? (form.youtube.targetChannelId ? 'on' : 'todo') : 'off', detail: (form.youtube.channels || []).length ? `${form.youtube.channels.length} chaîne(s) suivie(s)` : 'Aucune chaîne' },
-        { tab: 'social', title: 'TikTok Live', icon: 'megaphone', color: '#f472b6', state: form.tiktok.enabled ? (form.tiktok.username ? 'on' : 'todo') : 'off', detail: form.tiktok.enabled ? (form.tiktok.username || 'Ajoutez un pseudo') : 'Désactivé' },
-        { tab: 'profile', title: 'Logs du bot', icon: 'fileText', color: 'var(--azim-success)', state: form.logs.channelId ? 'on' : 'off', detail: form.logs.channelId ? `#${channelName(form.logs.channelId) || 'salon'}` : 'Aucun salon' },
+        { tab: 'ai', title: t('config.mod_ai'), icon: 'sparkles', color: 'var(--azim-lilac)', state: form.ai.keysCount > 0 ? 'on' : 'todo', detail: form.ai.keysCount > 0 ? t('config.mod_ai_keys', { count: form.ai.keysCount }) : t('config.mod_ai_none') },
+        { tab: 'welcome', title: t('config.mod_welcome'), icon: 'hand', color: 'var(--azim-accent)', state: form.welcome.enabled ? (form.welcome.channelId ? 'on' : 'todo') : 'off', detail: form.welcome.enabled ? (channelName(form.welcome.channelId) ? `#${channelName(form.welcome.channelId)}` : t('config.mod_choose_channel')) : t('config.disabled') },
+        { tab: 'levels', title: t('config.mod_levels'), icon: 'activity', color: 'var(--azim-warm)', state: form.rank.enabled ? 'on' : 'off', detail: form.rank.enabled ? t('config.mod_rewards', { count: form.rank.rewards.length }) : t('config.disabled') },
+        { tab: 'social', title: t('config.mod_youtube'), icon: 'megaphone', color: 'var(--azim-coral)', state: (form.youtube.channels || []).length ? (form.youtube.targetChannelId ? 'on' : 'todo') : 'off', detail: (form.youtube.channels || []).length ? t('config.mod_channels', { count: form.youtube.channels.length }) : t('config.mod_no_channel') },
+        { tab: 'social', title: t('config.mod_tiktok'), icon: 'megaphone', color: '#f472b6', state: form.tiktok.enabled ? (form.tiktok.username ? 'on' : 'todo') : 'off', detail: form.tiktok.enabled ? (form.tiktok.username || t('config.mod_add_handle')) : t('config.disabled') },
+        { tab: 'profile', title: t('config.mod_logs'), icon: 'fileText', color: 'var(--azim-success)', state: form.logs.channelId ? 'on' : 'off', detail: form.logs.channelId ? `#${channelName(form.logs.channelId) || t('config.mod_channel_fallback')}` : t('config.mod_no_logs') },
     ];
-    const STATE_LABEL = { on: 'Actif', off: 'Inactif', todo: 'À configurer' };
+    const STATE_LABEL = { on: t('config.active'), off: t('config.inactive'), todo: t('config.todo') };
 
     const addWelcomeRule = () => update('welcome', 'rules', [
         ...form.welcome.rules,
@@ -636,7 +639,7 @@ function GuildConfig() {
     return (
         <main className="gc">
             <header className="gc-head">
-                <Link to="/dashboard" className="gc-back"><Icon name="arrowLeft" size={16} /> Mes serveurs</Link>
+                <Link to="/dashboard" className="gc-back"><Icon name="arrowLeft" size={16} /> {t('config.back')}</Link>
                 <div className="gc-head__id">
                     {currentGuildIcon ? (
                         <img src={currentGuildIcon} alt="" className="gc-head__icon" />
@@ -645,7 +648,7 @@ function GuildConfig() {
                     )}
                     <div>
                         <h1>{getGuildName(guildId)}</h1>
-                        <p>Configuration d’Azim sur ce serveur</p>
+                        <p>{t('config.subtitle')}</p>
                     </div>
                 </div>
             </header>
@@ -654,7 +657,7 @@ function GuildConfig() {
             {notice ? <div role="status" className="ui-flash ui-flash--ok"><Icon name="check" size={18} /> {notice}</div> : null}
 
             <div className="gc-layout" ref={contentRef}>
-                <nav className="gc-nav" aria-label="Sections de configuration">
+                <nav className="gc-nav" aria-label={t('config.sections')}>
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -666,7 +669,7 @@ function GuildConfig() {
                             <Icon name={tab.icon} size={18} />
                             <span className="gc-nav__label">{tab.label}</span>
                             {typeof tab.count === 'number' ? <span className="gc-nav__count">{tab.count}</span> : null}
-                            {typeof tab.on === 'boolean' ? <span className={`gc-nav__dot${tab.on ? ' is-on' : ''}`} title={tab.on ? 'Actif' : 'Inactif'} /> : null}
+                            {typeof tab.on === 'boolean' ? <span className={`gc-nav__dot${tab.on ? ' is-on' : ''}`} title={tab.on ? t('config.active') : t('config.inactive')} /> : null}
                         </button>
                     ))}
                 </nav>
@@ -689,7 +692,7 @@ function GuildConfig() {
                             </div>
 
                             <div className="cf-grid-2">
-                                <Card title="Commandes utilisées" desc={`${totalRuns} exécution(s) sur ce serveur`}>
+                                <Card title={t('config.usage')} desc={t('config.usage_desc', { count: totalRuns })}>
                                     {commandUsage.length ? (
                                         <ol className="pnl-bars">
                                             {commandUsage.slice(0, 6).map((c) => (
@@ -699,20 +702,20 @@ function GuildConfig() {
                                                 </li>
                                             ))}
                                         </ol>
-                                    ) : <p className="cf-empty">Aucune commande utilisée pour l’instant.</p>}
+                                    ) : <p className="cf-empty">{t('config.usage_empty')}</p>}
                                 </Card>
-                                <Card title="Erreurs récentes" desc="Problèmes rencontrés par le bot ici">
+                                <Card title={t('config.errors')} desc={t('config.errors_desc')}>
                                     {recentErrors.length ? (
                                         <ul className="pnl-errors">
                                             {recentErrors.slice(0, 5).map((err, idx) => (
                                                 <li key={idx}>
                                                     <span className="pnl-errors__icon"><Icon name="alert" size={15} /></span>
-                                                    <div><strong>{err.type || 'Erreur'}</strong><small>{String(err.message || '').slice(0, 90)}</small></div>
-                                                    <time>{err.ts ? new Date(err.ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</time>
+                                                    <div><strong>{err.type || t('config.error_default')}</strong><small>{String(err.message || '').slice(0, 90)}</small></div>
+                                                    <time>{err.ts ? new Date(err.ts).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : ''}</time>
                                                 </li>
                                             ))}
                                         </ul>
-                                    ) : <p className="cf-empty cf-empty--ok"><Icon name="check" size={16} /> Aucune erreur récente.</p>}
+                                    ) : <p className="cf-empty cf-empty--ok"><Icon name="check" size={16} /> {t('config.errors_empty')}</p>}
                                 </Card>
                             </div>
                         </>
@@ -722,24 +725,24 @@ function GuildConfig() {
                     {activeTab === 'ai' ? (
                         <>
                             <div className="cf-title">
-                                <h2>Intelligence artificielle</h2>
-                                <p>Comment Azim répond quand on lui parle sur ce serveur.</p>
+                                <h2>{t('config.ai_title')}</h2>
+                                <p>{t('config.ai_lead')}</p>
                             </div>
 
-                            <Card title="Mots qui réveillent l’IA" desc="Azim répond quand un message contient l’un de ces mots, en plus des mentions.">
+                            <Card title={t('config.triggers')} desc={t('config.triggers_desc')}>
                                 <div className="cf-chips">
                                     {form.ai.triggerNames.map((trig) => (
                                         <span key={trig} className="cf-chip cf-chip--accent">
                                             {trig}
                                             {form.ai.triggerNames.length > 1 ? (
-                                                <button type="button" onClick={() => removeTriggerName(trig)} aria-label={`Retirer ${trig}`}><Icon name="close" size={12} /></button>
+                                                <button type="button" onClick={() => removeTriggerName(trig)} aria-label={t('config.remove_x', { name: trig })}><Icon name="close" size={12} /></button>
                                             ) : null}
                                         </span>
                                     ))}
                                 </div>
                                 <div className="cf-inline">
                                     <TextInput
-                                        placeholder="Ajouter un mot (ex : az, bot)"
+                                        placeholder={t('config.trigger_ph')}
                                         value={newTrigger}
                                         onChange={(e) => setNewTrigger(e.target.value)}
                                         onKeyDown={(e) => {
@@ -756,9 +759,9 @@ function GuildConfig() {
                                 </div>
                             </Card>
 
-                            <Card title="Personnalité">
+                            <Card title={t('config.personality')}>
                                 <div className="cf-stack">
-                                    <Field label="Langue des réponses" hint="Laissez vide pour répondre dans la langue du message.">
+                                    <Field label={t('config.ai_language')} hint={t('config.ai_language_hint')}>
                                         <TextInput
                                             maxLength={50}
                                             placeholder="Français, English, العربية…"
@@ -766,12 +769,12 @@ function GuildConfig() {
                                             onChange={(e) => update('ai', 'language', e.target.value)}
                                         />
                                     </Field>
-                                    <Field label="Instructions pour l’IA" hint={`${(form.ai.systemPrompt || '').length}/6000 caractères`}>
+                                    <Field label={t('config.ai_prompt')} hint={t('config.ai_prompt_count', { count: (form.ai.systemPrompt || '').length })}>
                                         <textarea
                                             className="ui-input"
                                             rows={6}
                                             maxLength={6000}
-                                            placeholder="Tu es Azim, l’assistant de ce serveur Discord. Tu tutoies les membres…"
+                                            placeholder={t('config.ai_prompt_ph')}
                                             value={form.ai.systemPrompt || ''}
                                             onChange={(e) => update('ai', 'systemPrompt', e.target.value)}
                                         />
@@ -780,11 +783,11 @@ function GuildConfig() {
                             </Card>
 
                             <Card
-                                title="Clés API Groq"
-                                desc="Utilisées uniquement pour ce serveur. Les modifications de clés sont enregistrées immédiatement."
+                                title={t('config.keys')}
+                                desc={t('config.keys_desc')}
                                 aside={form.ai.keysPreviews.length ? (
                                     <button type="button" className="ui-btn" onClick={copyAllKeysToClipboard}>
-                                        <Icon name={copiedAllKeys ? 'check' : 'fileText'} size={16} /> {copiedAllKeys ? 'Copiées' : 'Tout copier'}
+                                        <Icon name={copiedAllKeys ? 'check' : 'fileText'} size={16} /> {copiedAllKeys ? t('config.copied_all') : t('config.copy_all')}
                                     </button>
                                 ) : null}
                             >
@@ -796,7 +799,7 @@ function GuildConfig() {
                                                 <li key={key.index}>
                                                     <span className="cf-keys__n">#{key.index}</span>
                                                     <code>{fullKey}</code>
-                                                    <button type="button" className="ui-icon-btn" onClick={() => copyKeyToClipboard(fullKey, key.index)} title="Copier">
+                                                    <button type="button" className="ui-icon-btn" onClick={() => copyKeyToClipboard(fullKey, key.index)} title={t('common.copy')}>
                                                         <Icon name={copiedKeyIndex === key.index ? 'check' : 'fileText'} size={15} />
                                                     </button>
                                                     <button
@@ -804,7 +807,7 @@ function GuildConfig() {
                                                         className="ui-icon-btn cf-danger"
                                                         disabled={form.ai.keysCount <= 1}
                                                         onClick={() => manageKey({ removeKeyIndex: key.index })}
-                                                        title={form.ai.keysCount <= 1 ? 'Gardez au moins une clé' : 'Supprimer'}
+                                                        title={form.ai.keysCount <= 1 ? t('config.key_keep_one') : t('config.delete')}
                                                     >
                                                         <Icon name="close" size={15} />
                                                     </button>
@@ -812,12 +815,12 @@ function GuildConfig() {
                                             );
                                         })}
                                     </ul>
-                                ) : <p className="cf-empty">Aucune clé : l’IA utilise le quota partagé, plus limité.</p>}
+                                ) : <p className="cf-empty">{t('config.keys_empty')}</p>}
 
                                 <div className="cf-stack cf-keys__add">
                                     <Field
-                                        label="Ajouter des clés"
-                                        hint={detectedGroqKeys.length ? `${detectedGroqKeys.length} clé(s) détectée(s)` : 'Collez une ou plusieurs clés gsk_…, séparées par des retours à la ligne.'}
+                                        label={t('config.add_keys')}
+                                        hint={detectedGroqKeys.length ? t('config.keys_detected', { count: detectedGroqKeys.length }) : t('config.keys_hint')}
                                     >
                                         <textarea
                                             className="ui-input cf-mono"
@@ -834,19 +837,19 @@ function GuildConfig() {
                                             onClick={() => manageKey({ addKeys: detectedGroqKeys })}
                                             className="ui-btn ui-btn--primary"
                                         >
-                                            <Icon name="plus" size={16} /> Ajouter {detectedGroqKeys.length > 1 ? `les ${detectedGroqKeys.length} clés` : 'la clé'}
+                                            <Icon name="plus" size={16} /> {detectedGroqKeys.length > 1 ? t('config.add_n_keys', { count: detectedGroqKeys.length }) : t('config.add_key')}
                                         </button>
                                         {detectedGroqKeys.length && form.ai.keysPreviews.length ? (
                                             <button
                                                 type="button"
                                                 className="ui-btn ui-btn--ghost"
                                                 onClick={() => {
-                                                    if (window.confirm(`Remplacer toutes les clés existantes par ces ${detectedGroqKeys.length} clé(s) ?`)) {
+                                                    if (window.confirm(t('config.replace_confirm', { count: detectedGroqKeys.length }))) {
                                                         manageKey({ setKeys: detectedGroqKeys });
                                                     }
                                                 }}
                                             >
-                                                Remplacer les clés existantes
+                                                {t('config.replace_keys')}
                                             </button>
                                         ) : null}
                                     </div>
@@ -860,14 +863,14 @@ function GuildConfig() {
                         <>
                             <div className="cf-title cf-title--row">
                                 <div>
-                                    <h2>Commandes</h2>
-                                    <p>Activez les commandes et choisissez qui peut les utiliser.</p>
+                                    <h2>{t('config.commands_title')}</h2>
+                                    <p>{t('config.commands_lead')}</p>
                                 </div>
                                 <label className="ui-search">
                                     <Icon name="search" size={16} />
                                     <input
                                         type="search"
-                                        placeholder="Rechercher…"
+                                        placeholder={t('common.search')}
                                         value={commandSearch}
                                         onChange={(e) => setCommandSearch(e.target.value)}
                                     />
@@ -883,20 +886,20 @@ function GuildConfig() {
                                             <div className="cf-command__main">
                                                 <div className="cf-command__name">
                                                     <code>/{cmd.name}</code>
-                                                    {cmd.isIslamic ? <span className="cf-tag cf-tag--green">Islam</span> : null}
+                                                    {cmd.isIslamic ? <span className="cf-tag cf-tag--green">{t('config.islam_tag')}</span> : null}
                                                 </div>
-                                                <p>{cmd.description || 'Aucune description'}</p>
+                                                <p>{cmd.description || t('config.no_description')}</p>
                                             </div>
                                             <Switch checked={isEnabled} onChange={(v) => updateCommand(cmd.name, 'enabled', v)} />
 
                                             {isEnabled ? (
                                                 <div className="cf-command__access">
-                                                    <div className="ui-seg cf-seg-sm" role="radiogroup" aria-label={`Accès à /${cmd.name}`}>
+                                                    <div className="ui-seg cf-seg-sm" role="radiogroup" aria-label={t('config.access_label', { name: cmd.name })}>
                                                         <button type="button" className={!cmd.adminOnly ? 'is-active' : ''} onClick={() => updateCommand(cmd.name, 'adminOnly', false)}>
-                                                            {cmd.defaultLevel === 'admin' ? 'Par défaut' : 'Tout le monde'}
+                                                            {cmd.defaultLevel === 'admin' ? t('config.by_default') : t('config.everyone')}
                                                         </button>
                                                         <button type="button" className={cmd.adminOnly ? 'is-active' : ''} onClick={() => updateCommand(cmd.name, 'adminOnly', true)}>
-                                                            Admins seulement
+                                                            {t('config.admins_only')}
                                                         </button>
                                                     </div>
                                                     <div className="cf-chips">
@@ -907,7 +910,7 @@ function GuildConfig() {
                                                             value=""
                                                             onChange={(e) => { if (e.target.value) toggleCommandRole(cmd.name, e.target.value); }}
                                                             options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
-                                                            emptyLabel="+ Autoriser un rôle"
+                                                            emptyLabel={t('config.allow_role')}
                                                             className="cf-select--chip"
                                                         />
                                                     </div>
@@ -916,7 +919,7 @@ function GuildConfig() {
                                         </article>
                                     );
                                 })}
-                                {filteredCommands.length === 0 ? <p className="cf-empty">Aucune commande ne correspond à « {commandSearch} ».</p> : null}
+                                {filteredCommands.length === 0 ? <p className="cf-empty">{t('config.no_match', { q: commandSearch })}</p> : null}
                             </div>
                         </>
                     ) : null}
@@ -926,67 +929,67 @@ function GuildConfig() {
                         <>
                             <div className="cf-title cf-title--row">
                                 <div>
-                                    <h2>Bienvenue</h2>
-                                    <p>Le message envoyé quand quelqu’un rejoint le serveur.</p>
+                                    <h2>{t('config.welcome_title')}</h2>
+                                    <p>{t('config.welcome_lead')}</p>
                                 </div>
-                                <Switch checked={form.welcome.enabled} onChange={(v) => update('welcome', 'enabled', v)} label={form.welcome.enabled ? 'Activé' : 'Désactivé'} />
+                                <Switch checked={form.welcome.enabled} onChange={(v) => update('welcome', 'enabled', v)} label={form.welcome.enabled ? t('config.enabled') : t('config.disabled')} />
                             </div>
 
                             <div className={form.welcome.enabled ? '' : 'cf-disabled'}>
-                                <Card title="Envoi">
+                                <Card title={t('config.sending')}>
                                     <div className="cf-grid-3">
-                                        <Field label="Salon">
-                                            <SelectInput value={form.welcome.channelId} onChange={(e) => update('welcome', 'channelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        <Field label={t('config.channel')}>
+                                            <SelectInput value={form.welcome.channelId} onChange={(e) => update('welcome', 'channelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                         </Field>
-                                        <Field label="Où envoyer">
+                                        <Field label={t('config.where')}>
                                             <SelectInput
                                                 value={form.welcome.destination}
                                                 onChange={(e) => update('welcome', 'destination', e.target.value)}
                                                 options={[
-                                                    { value: 'both', label: 'Salon + message privé' },
-                                                    { value: 'channel', label: 'Salon uniquement' },
-                                                    { value: 'dm', label: 'Message privé uniquement' },
+                                                    { value: 'both', label: t('config.dest_both') },
+                                                    { value: 'channel', label: t('config.dest_channel') },
+                                                    { value: 'dm', label: t('config.dest_dm') },
                                                 ]}
                                             />
                                         </Field>
-                                        <Field label="Quand">
+                                        <Field label={t('config.when')}>
                                             <SelectInput
                                                 value={form.welcome.trigger}
                                                 onChange={(e) => update('welcome', 'trigger', e.target.value)}
                                                 options={[
-                                                    { value: 'arrivee', label: 'À l’arrivée' },
-                                                    { value: 'role', label: 'Quand un rôle est donné' },
+                                                    { value: 'arrivee', label: t('config.on_join') },
+                                                    { value: 'role', label: t('config.on_role') },
                                                 ]}
                                             />
                                         </Field>
                                     </div>
                                 </Card>
 
-                                <Card title="Messages" desc="Variables : {mention}, {username}, {serveur}, {nbmembres}">
+                                <Card title={t('config.messages')} desc={t('config.variables')}>
                                     <div className="cf-grid-2">
-                                        <Field label="Dans le salon">
+                                        <Field label={t('config.in_channel')}>
                                             <textarea className="ui-input" rows={4} maxLength={2000} value={form.welcome.defaultMessage || ''} onChange={(e) => update('welcome', 'defaultMessage', e.target.value)} />
                                         </Field>
-                                        <Field label="En message privé">
+                                        <Field label={t('config.in_dm')}>
                                             <textarea className="ui-input" rows={4} maxLength={2000} value={form.welcome.defaultDmMessage || ''} onChange={(e) => update('welcome', 'defaultDmMessage', e.target.value)} />
                                         </Field>
                                     </div>
                                 </Card>
 
                                 <Card
-                                    title="Messages selon les rôles"
-                                    desc="Un message différent pour les membres qui ont (ou n’ont pas) certains rôles."
-                                    aside={<button type="button" className="ui-btn" onClick={addWelcomeRule}><Icon name="plus" size={16} /> Ajouter une règle</button>}
+                                    title={t('config.rules')}
+                                    desc={t('config.rules_desc')}
+                                    aside={<button type="button" className="ui-btn" onClick={addWelcomeRule}><Icon name="plus" size={16} /> {t('config.add_rule')}</button>}
                                 >
-                                    {form.welcome.rules.length === 0 ? <p className="cf-empty">Aucune règle : tout le monde reçoit le message ci-dessus.</p> : null}
+                                    {form.welcome.rules.length === 0 ? <p className="cf-empty">{t('config.rules_empty')}</p> : null}
                                     <div className="cf-rules">
                                         {form.welcome.rules.map((rule, index) => {
                                             const selectedRoleIds = rule.roleIds || (rule.roleId ? [rule.roleId] : []);
                                             return (
                                                 <div key={index} className="cf-rule">
                                                     <div className="cf-rule__head">
-                                                        <span>Règle {index + 1}</span>
-                                                        <button type="button" className="ui-icon-btn cf-danger" title="Supprimer la règle" onClick={() => update('welcome', 'rules', form.welcome.rules.filter((_, i) => i !== index))}>
+                                                        <span>{t('config.rule_n', { n: index + 1 })}</span>
+                                                        <button type="button" className="ui-icon-btn cf-danger" title={t('config.delete_rule')} onClick={() => update('welcome', 'rules', form.welcome.rules.filter((_, i) => i !== index))}>
                                                             <Icon name="close" size={15} />
                                                         </button>
                                                     </div>
@@ -999,9 +1002,9 @@ function GuildConfig() {
                                                                 updateRuleField(index, 'matchType', match);
                                                             }}
                                                             options={[
-                                                                { value: 'has_role_all', label: 'Si le membre a tous ces rôles' },
-                                                                { value: 'has_role_any', label: 'Si le membre a l’un de ces rôles' },
-                                                                { value: 'lacks_role_all', label: 'Si le membre n’a aucun de ces rôles' },
+                                                                { value: 'has_role_all', label: t('config.cond_all') },
+                                                                { value: 'has_role_any', label: t('config.cond_any') },
+                                                                { value: 'lacks_role_all', label: t('config.cond_none') },
                                                             ]}
                                                         />
                                                         <div className="cf-chips">
@@ -1012,17 +1015,17 @@ function GuildConfig() {
                                                                 value=""
                                                                 onChange={(e) => addRoleToRule(index, e.target.value)}
                                                                 options={roleOptions.filter((r) => !selectedRoleIds.includes(r.value))}
-                                                                emptyLabel="+ Rôle"
+                                                                emptyLabel={t('config.add_role')}
                                                                 className="cf-select--chip"
                                                             />
                                                         </div>
                                                     </div>
                                                     <div className="cf-grid-2">
-                                                        <Field label="Message dans le salon">
-                                                            <TextInput placeholder="Ex : Bienvenue {mention} !" value={rule.message || ''} onChange={(e) => updateRuleField(index, 'message', e.target.value)} />
+                                                        <Field label={t('config.rule_message')}>
+                                                            <TextInput placeholder={t('config.rule_message_ph')} value={rule.message || ''} onChange={(e) => updateRuleField(index, 'message', e.target.value)} />
                                                         </Field>
-                                                        <Field label="Message privé (facultatif)">
-                                                            <TextInput placeholder="Message privé…" value={rule.dmMessage || ''} onChange={(e) => updateRuleField(index, 'dmMessage', e.target.value)} />
+                                                        <Field label={t('config.rule_dm')}>
+                                                            <TextInput placeholder={t('config.rule_dm_ph')} value={rule.dmMessage || ''} onChange={(e) => updateRuleField(index, 'dmMessage', e.target.value)} />
                                                         </Field>
                                                     </div>
                                                 </div>
@@ -1039,38 +1042,38 @@ function GuildConfig() {
                         <>
                             <div className="cf-title cf-title--row">
                                 <div>
-                                    <h2>Niveaux</h2>
-                                    <p>Les membres gagnent de l’XP en discutant et débloquent des rôles.</p>
+                                    <h2>{t('config.levels_title')}</h2>
+                                    <p>{t('config.levels_lead')}</p>
                                 </div>
-                                <Switch checked={form.rank.enabled} onChange={(v) => update('rank', 'enabled', v)} label={form.rank.enabled ? 'Activé' : 'Désactivé'} />
+                                <Switch checked={form.rank.enabled} onChange={(v) => update('rank', 'enabled', v)} label={form.rank.enabled ? t('config.enabled') : t('config.disabled')} />
                             </div>
 
                             <div className={form.rank.enabled ? '' : 'cf-disabled'}>
-                                <Card title="Annonces de niveau">
+                                <Card title={t('config.announces')}>
                                     <div className="cf-grid-2 cf-align-end">
-                                        <Field label="Salon des annonces">
-                                            <SelectInput value={form.rank.announceChannelId} onChange={(e) => update('rank', 'announceChannelId', e.target.value)} options={channelOptions} emptyLabel="Là où le membre écrit" />
+                                        <Field label={t('config.announce_channel')}>
+                                            <SelectInput value={form.rank.announceChannelId} onChange={(e) => update('rank', 'announceChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.where_member_writes')} />
                                         </Field>
-                                        <Switch checked={form.rank.silent} onChange={(v) => update('rank', 'silent', v)} label="Mode silencieux" desc="Ne pas annoncer les passages de niveau" />
+                                        <Switch checked={form.rank.silent} onChange={(v) => update('rank', 'silent', v)} label={t('config.silent')} desc={t('config.silent_desc')} />
                                     </div>
                                 </Card>
 
                                 <Card
-                                    title="Rôles de récompense"
-                                    desc="Donnés automatiquement quand un membre atteint le niveau."
-                                    aside={<button type="button" className="ui-btn" onClick={() => update('rank', 'rewards', [...form.rank.rewards, { level: 1, roleId: '' }])}><Icon name="plus" size={16} /> Ajouter un palier</button>}
+                                    title={t('config.rewards')}
+                                    desc={t('config.rewards_desc')}
+                                    aside={<button type="button" className="ui-btn" onClick={() => update('rank', 'rewards', [...form.rank.rewards, { level: 1, roleId: '' }])}><Icon name="plus" size={16} /> {t('config.add_reward')}</button>}
                                 >
-                                    {form.rank.rewards.length === 0 ? <p className="cf-empty">Aucun palier pour l’instant.</p> : null}
+                                    {form.rank.rewards.length === 0 ? <p className="cf-empty">{t('config.rewards_empty')}</p> : null}
                                     <div className="cf-rewards">
                                         {form.rank.rewards.map((reward, index) => (
                                             <div key={index} className="cf-reward">
                                                 <label className="cf-reward__lvl">
-                                                    <span>Niveau</span>
+                                                    <span>{t('config.level')}</span>
                                                     <input type="number" min="1" max="200" value={reward.level} onChange={(e) => updateReward(index, 'level', Number(e.target.value))} />
                                                 </label>
                                                 <Icon name="arrowRight" size={16} />
-                                                <SelectInput value={reward.roleId} onChange={(e) => updateReward(index, 'roleId', e.target.value)} options={roleOptions} emptyLabel="Choisir le rôle" />
-                                                <button type="button" className="ui-icon-btn cf-danger" title="Retirer ce palier" onClick={() => update('rank', 'rewards', form.rank.rewards.filter((_, i) => i !== index))}>
+                                                <SelectInput value={reward.roleId} onChange={(e) => updateReward(index, 'roleId', e.target.value)} options={roleOptions} emptyLabel={t('config.choose_role')} />
+                                                <button type="button" className="ui-icon-btn cf-danger" title={t('config.remove_reward')} onClick={() => update('rank', 'rewards', form.rank.rewards.filter((_, i) => i !== index))}>
                                                     <Icon name="close" size={15} />
                                                 </button>
                                             </div>
@@ -1085,14 +1088,14 @@ function GuildConfig() {
                     {activeTab === 'social' ? (
                         <>
                             <div className="cf-title">
-                                <h2>Alertes réseaux</h2>
-                                <p>Prévenez votre serveur des nouvelles vidéos et des lives.</p>
+                                <h2>{t('config.social_title')}</h2>
+                                <p>{t('config.social_lead')}</p>
                             </div>
 
                             <div className="cf-grid-2">
-                                <Card title="YouTube" desc="Une alerte à chaque nouvelle vidéo.">
+                                <Card title="YouTube" desc={t('config.yt_desc')}>
                                     <div className="cf-stack">
-                                        <Field label="Chaînes suivies" hint="Un identifiant UC… ou un @handle par ligne.">
+                                        <Field label={t('config.yt_channels')} hint={t('config.yt_channels_hint')}>
                                             <textarea
                                                 className="ui-input cf-mono"
                                                 rows={4}
@@ -1100,19 +1103,19 @@ function GuildConfig() {
                                                 onChange={(e) => update('youtube', 'channels', e.target.value.split(/\r?\n/).map((id) => id.trim()).filter(Boolean))}
                                             />
                                         </Field>
-                                        <Field label="Salon des alertes">
-                                            <SelectInput value={form.youtube.targetChannelId} onChange={(e) => update('youtube', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        <Field label={t('config.alerts_channel')}>
+                                            <SelectInput value={form.youtube.targetChannelId} onChange={(e) => update('youtube', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                         </Field>
                                     </div>
                                 </Card>
 
-                                <Card title="TikTok Live" desc="Une alerte quand le créateur lance un live." aside={<Switch checked={form.tiktok.enabled} onChange={(v) => update('tiktok', 'enabled', v)} />}>
+                                <Card title="TikTok Live" desc={t('config.tiktok_desc')} aside={<Switch checked={form.tiktok.enabled} onChange={(v) => update('tiktok', 'enabled', v)} />}>
                                     <div className={`cf-stack${form.tiktok.enabled ? '' : ' cf-disabled'}`}>
-                                        <Field label="Pseudo TikTok">
+                                        <Field label={t('config.tiktok_handle')}>
                                             <TextInput placeholder="@pseudo" value={form.tiktok.username || ''} onChange={(e) => update('tiktok', 'username', e.target.value)} />
                                         </Field>
-                                        <Field label="Salon des alertes">
-                                            <SelectInput value={form.tiktok.targetChannelId} onChange={(e) => update('tiktok', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        <Field label={t('config.alerts_channel')}>
+                                            <SelectInput value={form.tiktok.targetChannelId} onChange={(e) => update('tiktok', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                         </Field>
                                     </div>
                                 </Card>
@@ -1124,11 +1127,11 @@ function GuildConfig() {
                     {activeTab === 'profile' ? (
                         <>
                             <div className="cf-title">
-                                <h2>Profil & logs</h2>
-                                <p>L’apparence d’Azim sur ce serveur et son salon de diagnostic.</p>
+                                <h2>{t('config.profile_title')}</h2>
+                                <p>{t('config.profile_lead')}</p>
                             </div>
 
-                            <Card title="Profil du bot" desc="Le nom et l’avatar sont appliqués immédiatement.">
+                            <Card title={t('config.bot_profile')} desc={t('config.bot_profile_desc')}>
                                 <div className="cf-profile">
                                     <div className="cf-profile__avatar">
                                         <img
@@ -1137,49 +1140,49 @@ function GuildConfig() {
                                                 : (isIslamActive ? '/icon-islam.png' : (form.profile.globalAvatarUrl || '/icon.png'))}
                                             alt=""
                                         />
-                                        <span>{form.profile.hasServerAvatar ? 'Avatar du serveur' : 'Avatar par défaut'}</span>
+                                        <span>{form.profile.hasServerAvatar ? t('config.server_avatar') : t('config.default_avatar')}</span>
                                     </div>
                                     <div className="cf-stack cf-profile__fields">
-                                        <Field label="Nom sur ce serveur">
+                                        <Field label={t('config.bot_name')}>
                                             <div className="cf-inline">
                                                 <TextInput maxLength={32} placeholder="Azim" value={form.profile.botDisplayName || ''} onChange={(e) => update('profile', 'botDisplayName', e.target.value)} />
                                                 <button type="button" className="ui-btn" disabled={saving || !form.profile.botDisplayName?.trim()} onClick={() => handleUpdateBotName(form.profile.botDisplayName.trim())}>
-                                                    Renommer
+                                                    {t('config.rename')}
                                                 </button>
                                             </div>
                                         </Field>
-                                        <Field label="Nouvel avatar" hint="Lien d’image hébergée sur cdn.discordapp.com ou media.discordapp.net.">
+                                        <Field label={t('config.new_avatar')} hint={t('config.new_avatar_hint')}>
                                             <div className="cf-inline">
                                                 <TextInput type="url" placeholder="https://cdn.discordapp.com/…" value={form.profile.avatarUrl || ''} onChange={(e) => update('profile', 'avatarUrl', e.target.value)} />
                                                 <button type="button" className="ui-btn" disabled={!form.profile.avatarUrl?.trim()} onClick={() => updateAvatar(form.profile.avatarUrl.trim())}>
-                                                    Appliquer
+                                                    {t('config.apply')}
                                                 </button>
                                             </div>
                                         </Field>
                                         <div className="cf-actions">
                                             <button type="button" className="ui-btn ui-btn--ghost" disabled={downloadingAvatar || !form.profile.currentAvatarUrl} onClick={handleDownloadAvatar}>
-                                                {downloadingAvatar ? 'Téléchargement…' : 'Télécharger l’avatar actuel'}
+                                                {downloadingAvatar ? t('config.downloading') : t('config.download_avatar')}
                                             </button>
                                             {form.profile.hasServerAvatar ? (
                                                 <button type="button" className="ui-btn ui-btn--danger" onClick={() => updateAvatar('')}>
-                                                    Revenir à l’avatar par défaut
+                                                    {t('config.reset_avatar')}
                                                 </button>
                                             ) : null}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="cf-sep" />
-                                <Field label="Bio du bot" hint={`${(form.profile.bio || '').length}/190 · enregistrée avec les autres modifications`}>
-                                    <TextInput maxLength={190} placeholder="Description affichée sur le profil du bot…" value={form.profile.bio || ''} onChange={(e) => update('profile', 'bio', e.target.value)} />
+                                <Field label={t('config.bio')} hint={t('config.bio_hint', { count: (form.profile.bio || '').length })}>
+                                    <TextInput maxLength={190} placeholder={t('config.bio_ph')} value={form.profile.bio || ''} onChange={(e) => update('profile', 'bio', e.target.value)} />
                                 </Field>
                             </Card>
 
-                            <Card title="Logs" desc="Un salon où Azim signale ses problèmes sur ce serveur.">
+                            <Card title={t('config.logs')} desc={t('config.logs_desc')}>
                                 <div className="cf-grid-2 cf-align-end">
-                                    <Field label="Salon des logs">
-                                        <SelectInput value={form.logs.channelId} onChange={(e) => update('logs', 'channelId', e.target.value)} options={channelOptions} emptyLabel="Aucun salon" />
+                                    <Field label={t('config.logs_channel')}>
+                                        <SelectInput value={form.logs.channelId} onChange={(e) => update('logs', 'channelId', e.target.value)} options={channelOptions} emptyLabel={t('config.no_channel')} />
                                     </Field>
-                                    <Switch checked={form.logs.restartAnnouncementEnabled} onChange={(v) => update('logs', 'restartAnnouncementEnabled', v)} label="Annoncer les redémarrages" />
+                                    <Switch checked={form.logs.restartAnnouncementEnabled} onChange={(v) => update('logs', 'restartAnnouncementEnabled', v)} label={t('config.restart_announce')} />
                                 </div>
                             </Card>
                         </>
@@ -1191,53 +1194,53 @@ function GuildConfig() {
                             <>
                                 <div className="cf-title cf-title--row">
                                     <div>
-                                        <h2>Mode Islam</h2>
-                                        <p>Rappels de prière, jours blancs, radio Coran et commandes dédiées.</p>
+                                        <h2>{t('config.islam_title')}</h2>
+                                        <p>{t('config.islam_lead')}</p>
                                     </div>
                                     <button type="button" className="ui-btn ui-btn--danger" onClick={disableIslamMode} disabled={activatingIslam}>
-                                        {activatingIslam ? 'Désactivation…' : 'Désactiver le mode'}
+                                        {activatingIslam ? t('config.disabling') : t('config.disable_mode')}
                                     </button>
                                 </div>
 
-                                <Card title="Prières" desc="Horaires des 5 prières et rappel à l’heure de chaque prière." aside={<Switch checked={form.islam.prayerNotificationEnabled} onChange={(v) => update('islam', 'prayerNotificationEnabled', v)} />}>
+                                <Card title={t('config.prayers')} desc={t('config.prayers_desc')} aside={<Switch checked={form.islam.prayerNotificationEnabled} onChange={(v) => update('islam', 'prayerNotificationEnabled', v)} />}>
                                     <div className="cf-grid-2">
-                                        <Field label="Ville">
+                                        <Field label={t('config.city')}>
                                             <TextInput value={form.islam.prayerCity} onChange={(e) => update('islam', 'prayerCity', e.target.value)} placeholder="Paris" />
                                         </Field>
-                                        <Field label="Méthode de calcul">
+                                        <Field label={t('config.method')}>
                                             <SelectInput value={form.islam.prayerMethod} onChange={(e) => update('islam', 'prayerMethod', Number(e.target.value))} options={PRAYER_METHODS} />
                                         </Field>
                                         {form.islam.prayerNotificationEnabled ? (
                                             <>
-                                                <Field label="Salon des rappels">
-                                                    <SelectInput value={form.islam.prayerChannelId} onChange={(e) => update('islam', 'prayerChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                                <Field label={t('config.reminder_channel')}>
+                                                    <SelectInput value={form.islam.prayerChannelId} onChange={(e) => update('islam', 'prayerChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                                 </Field>
-                                                <Field label="Rôle à mentionner">
-                                                    <SelectInput value={form.islam.prayerRoleId} onChange={(e) => update('islam', 'prayerRoleId', e.target.value)} options={roleOptions} emptyLabel="Aucune mention" />
+                                                <Field label={t('config.mention_role')}>
+                                                    <SelectInput value={form.islam.prayerRoleId} onChange={(e) => update('islam', 'prayerRoleId', e.target.value)} options={roleOptions} emptyLabel={t('config.no_mention')} />
                                                 </Field>
                                             </>
                                         ) : null}
                                     </div>
                                 </Card>
 
-                                <Card title="Jours blancs" desc="Rappel la veille des 13, 14 et 15 du mois hégirien, à 18 h." aside={<Switch checked={form.islam.whiteDaysNotificationEnabled} onChange={(v) => update('islam', 'whiteDaysNotificationEnabled', v)} />}>
+                                <Card title={t('config.white_days')} desc={t('config.white_days_desc')} aside={<Switch checked={form.islam.whiteDaysNotificationEnabled} onChange={(v) => update('islam', 'whiteDaysNotificationEnabled', v)} />}>
                                     {form.islam.whiteDaysNotificationEnabled ? (
-                                        <Field label="Salon du rappel">
-                                            <SelectInput value={form.islam.whiteDaysChannelId} onChange={(e) => update('islam', 'whiteDaysChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        <Field label={t('config.white_days_channel')}>
+                                            <SelectInput value={form.islam.whiteDaysChannelId} onChange={(e) => update('islam', 'whiteDaysChannelId', e.target.value)} options={channelOptions} emptyLabel={t('config.choose_channel')} />
                                         </Field>
-                                    ) : <p className="cf-empty">Rappel désactivé.</p>}
+                                    ) : <p className="cf-empty">{t('config.reminder_off')}</p>}
                                 </Card>
 
-                                <Card title="Radio Coran 24/7" desc="Diffusion continue dans un salon vocal avec /radio.">
+                                <Card title={t('config.radio')} desc={t('config.radio_desc')}>
                                     <div className="cf-grid-2 cf-align-end">
-                                        <Field label="Récitateur par défaut">
+                                        <Field label={t('config.reciter')}>
                                             <SelectInput value={form.islam.radioDefaultReciter} onChange={(e) => update('islam', 'radioDefaultReciter', e.target.value)} options={ISLAMIC_RECITERS} />
                                         </Field>
-                                        <Switch checked={form.islam.radioAutoReconnect} onChange={(v) => update('islam', 'radioAutoReconnect', v)} label="Reconnexion automatique" desc="Relance le flux après une coupure" />
+                                        <Switch checked={form.islam.radioAutoReconnect} onChange={(v) => update('islam', 'radioAutoReconnect', v)} label={t('config.reconnect')} desc={t('config.reconnect_desc')} />
                                     </div>
                                 </Card>
 
-                                <Card title="Commandes débloquées">
+                                <Card title={t('config.unlocked')}>
                                     <div className="cf-chips">
                                         {['priere', 'doua', 'hadith', 'hijri', 'qibla', 'asma', 'ramadan', 'radio', 'coran', 'quiz'].map((c) => (
                                             <span key={c} className="cf-chip cf-chip--green">/{c}</span>
@@ -1248,14 +1251,14 @@ function GuildConfig() {
                         ) : (
                             <>
                                 <div className="cf-title">
-                                    <h2>Code secret</h2>
-                                    <p>Entrez un code d’activation pour débloquer des modules supplémentaires sur ce serveur.</p>
+                                    <h2>{t('config.code_title')}</h2>
+                                    <p>{t('config.code_lead')}</p>
                                 </div>
                                 <Card>
                                     <div className="cf-inline">
-                                        <TextInput value={islamCode} onChange={(e) => setIslamCode(e.target.value)} placeholder="Code secret" autoComplete="off" maxLength={64} />
+                                        <TextInput value={islamCode} onChange={(e) => setIslamCode(e.target.value)} placeholder={t('config.code_ph')} autoComplete="off" maxLength={64} />
                                         <button type="button" onClick={activateSecretCode} disabled={activatingIslam || !islamCode.trim()} className="ui-btn ui-btn--primary">
-                                            {activatingIslam ? 'Vérification…' : 'Valider'}
+                                            {activatingIslam ? t('config.checking') : t('config.validate')}
                                         </button>
                                     </div>
                                 </Card>
@@ -1265,11 +1268,11 @@ function GuildConfig() {
 
                     {/* Barre d'enregistrement : visible seulement s'il y a des changements */}
                     <div className={`gc-savebar${isDirty ? ' is-visible' : ''}`} aria-hidden={!isDirty}>
-                        <span><i /> Modifications non enregistrées</span>
+                        <span><i /> {t('config.unsaved')}</span>
                         <div className="cf-actions">
-                            <button type="button" className="ui-btn ui-btn--ghost" onClick={discardChanges} disabled={saving} tabIndex={isDirty ? 0 : -1}>Annuler</button>
+                            <button type="button" className="ui-btn ui-btn--ghost" onClick={discardChanges} disabled={saving} tabIndex={isDirty ? 0 : -1}>{t('common.cancel')}</button>
                             <button type="submit" disabled={saving} className="ui-btn ui-btn--primary" tabIndex={isDirty ? 0 : -1}>
-                                {saving ? 'Enregistrement…' : 'Enregistrer'}
+                                {saving ? t('common.saving') : t('common.save')}
                             </button>
                         </div>
                     </div>

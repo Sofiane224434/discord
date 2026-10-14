@@ -4,43 +4,39 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 import Icon from '../components/Icon.jsx';
 import AccountSettings from '../components/AccountSettings.jsx';
+import LanguageSwitch from '../components/LanguageSwitch.jsx';
 
 const THEMES = [
     {
         id: 'cyber',
-        name: 'Cyber',
-        desc: 'Bleu nuit et accents cyan',
+        nameKey: 'settings.theme_cyber',
+        descKey: 'settings.theme_cyber_desc',
         icon: '/icon.png',
         swatches: ['#0a1728', '#102239', '#20b9f2', '#b5a0ff'],
     },
     {
         id: 'islam',
-        name: 'Islam & spiritualité',
-        desc: 'Vert émeraude et reflets dorés',
+        nameKey: 'settings.theme_islam',
+        descKey: 'settings.theme_islam_desc',
         icon: '/icon-islam.png',
         swatches: ['#03140e', '#07261a', '#10b981', '#fbbf24'],
         locked: true,
     },
 ];
 
-const LANGUAGES = [
-    { id: 'fr', label: 'Français' },
-    { id: 'en', label: 'English' },
-];
 
 function Settings() {
     const { theme, setTheme, isIslamUnlocked } = useTheme();
     const { user, isAuthenticated } = useAuth();
-    const { i18n } = useTranslation();
-    const currentLanguage = (i18n.resolvedLanguage || i18n.language || 'fr').slice(0, 2);
+    const { t } = useTranslation();
 
-    const themes = THEMES.filter((t) => !t.locked || isIslamUnlocked);
+    const themes = THEMES.filter((th) => !th.locked || isIslamUnlocked);
 
     return (
         <main className="pg pg--narrow" id="main" tabIndex="-1">
             <header className="pg-head">
-                <h1>Paramètres</h1>
-                <p>Votre compte, sa sécurité et l’apparence du site.</p>
+                <h1>{t('settings.title')}</h1>
+                <p>{t('settings.lead')}</p>
             </header>
 
             <div className="set-stack">
@@ -50,10 +46,10 @@ function Settings() {
                     <section className="ui-card set-section">
                         <div className="set-account set-account--guest">
                             <div className="set-account__who">
-                                <strong>Vous n’êtes pas connecté</strong>
-                                <small>Connectez-vous avec Discord pour gérer vos serveurs et votre compte.</small>
+                                <strong>{t('settings.guest_title')}</strong>
+                                <small>{t('settings.guest_lead')}</small>
                             </div>
-                            <Link to="/login" className="ui-btn ui-btn--primary">Se connecter</Link>
+                            <Link to="/login" className="ui-btn ui-btn--primary">{t('settings.guest_cta')}</Link>
                         </div>
                     </section>
                 )}
@@ -63,34 +59,34 @@ function Settings() {
                     <div className="set-section__head">
                         <span className="set-section__icon" style={{ '--c': 'var(--azim-lilac)' }}><Icon name="sparkles" size={20} /></span>
                         <div>
-                            <h2>Apparence</h2>
-                            <p>Le thème s’applique à tout le site.</p>
+                            <h2>{t('settings.appearance')}</h2>
+                            <p>{t('settings.appearance_lead')}</p>
                         </div>
                     </div>
 
-                    <div className="set-themes" role="radiogroup" aria-label="Thème">
-                        {themes.map((t) => (
+                    <div className="set-themes" role="radiogroup" aria-label={t('settings.theme')}>
+                        {themes.map((th) => (
                             <button
-                                key={t.id}
+                                key={th.id}
                                 type="button"
                                 role="radio"
-                                aria-checked={theme === t.id}
-                                className={`set-theme${theme === t.id ? ' is-active' : ''}`}
-                                onClick={() => setTheme(t.id)}
+                                aria-checked={theme === th.id}
+                                className={`set-theme${theme === th.id ? ' is-active' : ''}`}
+                                onClick={() => setTheme(th.id)}
                             >
-                                <span className="set-theme__preview" style={{ background: t.swatches[0] }}>
-                                    <span className="set-theme__bar" style={{ background: t.swatches[1] }}>
-                                        <i style={{ background: t.swatches[2] }} />
+                                <span className="set-theme__preview" style={{ background: th.swatches[0] }}>
+                                    <span className="set-theme__bar" style={{ background: th.swatches[1] }}>
+                                        <i style={{ background: th.swatches[2] }} />
                                     </span>
-                                    <span className="set-theme__card" style={{ background: t.swatches[1] }}>
-                                        <i style={{ background: t.swatches[2] }} />
-                                        <i style={{ background: t.swatches[3] }} />
+                                    <span className="set-theme__card" style={{ background: th.swatches[1] }}>
+                                        <i style={{ background: th.swatches[2] }} />
+                                        <i style={{ background: th.swatches[3] }} />
                                     </span>
-                                    <img src={t.icon} alt="" />
+                                    <img src={th.icon} alt="" />
                                 </span>
                                 <span className="set-theme__label">
-                                    <strong>{t.name}</strong>
-                                    <small>{t.desc}</small>
+                                    <strong>{t(th.nameKey)}</strong>
+                                    <small>{t(th.descKey)}</small>
                                 </span>
                                 <span className="set-theme__check"><Icon name="check" size={14} strokeWidth={3} /></span>
                             </button>
@@ -103,24 +99,11 @@ function Settings() {
                     <div className="set-section__head">
                         <span className="set-section__icon" style={{ '--c': 'var(--azim-warm)' }}><Icon name="book" size={20} /></span>
                         <div>
-                            <h2>Langue</h2>
-                            <p>Langue de l’interface.</p>
+                            <h2>{t('common.language')}</h2>
+                            <p>{t('settings.language_lead')}</p>
                         </div>
                     </div>
-                    <div className="ui-seg" role="radiogroup" aria-label="Langue">
-                        {LANGUAGES.map((lang) => (
-                            <button
-                                key={lang.id}
-                                type="button"
-                                role="radio"
-                                aria-checked={currentLanguage === lang.id}
-                                className={currentLanguage === lang.id ? 'is-active' : ''}
-                                onClick={() => i18n.changeLanguage(lang.id)}
-                            >
-                                {lang.label}
-                            </button>
-                        ))}
-                    </div>
+                    <LanguageSwitch variant="long" />
                 </section>
             </div>
         </main>

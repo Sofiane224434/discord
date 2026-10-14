@@ -71,7 +71,7 @@ export function installMockApi() {
         localStorage.removeItem('discord_guilds');
     }
     if (params.has('mock_theme')) {
-        localStorage.setItem('azim_theme', islam ? 'islam' : 'cyber');
+        localStorage.setItem('azim_theme_choice', islam ? 'islam' : 'cyber');
         if (islam) localStorage.setItem('azim_konami_unlocked', 'true');
         else localStorage.removeItem('azim_konami_unlocked');
     }

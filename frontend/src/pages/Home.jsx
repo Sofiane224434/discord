@@ -1,6 +1,7 @@
 // pages/Home.jsx
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation, Trans } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from '../components/Icon.jsx';
 import { ADD_BOT_URL } from '../config/links.js';
@@ -19,10 +20,11 @@ const HUES = ['#20b9f2', '#b5a0ff', '#ffc46c', '#ff917e', '#51d6a5', '#f472b6'];
 
 function Home() {
     const { theme, isIslamUnlocked } = useTheme();
+    const { t } = useTranslation();
     const logoSrc = theme === 'islam' ? '/icon-islam.png' : '/icon.png';
 
     // Mot qui change dans le titre du hero
-    const words = ['intelligent', 'protégé', 'animé', 'connecté', ...(isIslamUnlocked ? ['serein'] : [])];
+    const words = [...t('home.words', { returnObjects: true }), ...(isIslamUnlocked ? [t('home.word_islam')] : [])];
     const [wordIdx, setWordIdx] = useState(0);
 
     useEffect(() => {
@@ -53,28 +55,25 @@ function Home() {
     };
 
     const modules = [
-        { label: 'Intelligence artificielle', icon: 'sparkles' },
-        { label: 'Niveaux & XP', icon: 'activity' },
-        { label: 'Modération', icon: 'shield' },
-        { label: 'Bienvenue', icon: 'hand' },
-        { label: 'Alertes YouTube', icon: 'megaphone' },
-        { label: 'Lives TikTok', icon: 'megaphone' },
-        { label: 'Rappels', icon: 'refresh' },
-        { label: 'Quiz', icon: 'help' },
-        { label: 'Infos serveur', icon: 'server' },
+        { label: t('home.modules.ai'), icon: 'sparkles' },
+        { label: t('home.modules.levels'), icon: 'activity' },
+        { label: t('home.modules.moderation'), icon: 'shield' },
+        { label: t('home.modules.welcome'), icon: 'hand' },
+        { label: t('home.modules.youtube'), icon: 'megaphone' },
+        { label: t('home.modules.tiktok'), icon: 'megaphone' },
+        { label: t('home.modules.reminders'), icon: 'refresh' },
+        { label: t('home.modules.quiz'), icon: 'help' },
+        { label: t('home.modules.serverinfo'), icon: 'server' },
         ...(isIslamUnlocked ? [
-            { label: 'Horaires de prière', icon: 'moon' },
-            { label: 'Radio Coran 24/7', icon: 'moon' },
+            { label: t('home.modules.prayers'), icon: 'moon' },
+            { label: t('home.modules.radio'), icon: 'moon' },
         ] : []),
     ];
     const half = Math.ceil(modules.length / 2);
     const rows = [modules.slice(0, half), modules.slice(half)];
 
-    const steps = [
-        { title: 'Invitez Azim', desc: 'Un clic, choisissez votre serveur.', icon: 'plus' },
-        { title: 'Activez vos modules', desc: 'Depuis le panel ou avec /config.', icon: 'settings' },
-        { title: 'C’est parti', desc: 'Vos membres profitent des commandes.', icon: 'check' },
-    ];
+    const stepIcons = ['plus', 'settings', 'check'];
+    const steps = t('home.steps', { returnObjects: true }).map((step, i) => ({ ...step, icon: stepIcons[i] }));
 
     return (
         <div className="azh" id="main" role="main" tabIndex="-1">
@@ -89,31 +88,30 @@ function Home() {
                 <div className="azh-hero-inner">
                     <div className="azh-hero-copy">
                         <h1>
-                            Un serveur Discord
+                            {t('home.title')}
                             <span className="azh-word-slot">
                                 {words.map((w, i) => (
                                     <span key={w} className={`azh-word${i === wordIdx ? ' is-on' : ''}`} aria-hidden={i !== wordIdx}>
-                                        {w}.
+                                        {w}
                                     </span>
                                 ))}
                             </span>
                         </h1>
                         <p className="azh-lead">
-                            IA, niveaux, modération et alertes réseaux dans un seul bot.
-                            Français, gratuit, prêt en une minute.
+                            {t('home.lead')}
                         </p>
                         <div className="azh-cta">
                             <a className="azh-btn azh-btn--primary" href={ADD_BOT_URL} target="_blank" rel="noreferrer">
-                                <DiscordIcon /> Ajouter à Discord
+                                <DiscordIcon /> {t('home.cta_add')}
                             </a>
                             <Link className="azh-btn azh-btn--ghost" to="/#features">
-                                Voir les fonctionnalités <Icon name="arrowRight" size={17} />
+                                {t('home.cta_features')} <Icon name="arrowRight" size={17} />
                             </Link>
                         </div>
                         <ul className="azh-facts">
-                            <li><b>30+</b> commandes</li>
-                            <li><b>24/7</b> en ligne</li>
-                            <li><b>0 €</b> pour toujours</li>
+                            <li><b>30+</b> {t('home.fact_commands')}</li>
+                            <li><b>24/7</b> {t('home.fact_online')}</li>
+                            <li><b>0 €</b> {t('home.fact_free')}</li>
                         </ul>
                     </div>
 
@@ -121,28 +119,28 @@ function Home() {
                     <div className="azh-preview" aria-hidden="true">
                         <div className="azh-window">
                             <div className="azh-window-bar">
-                                <span className="azh-hash">#</span> général
+                                <span className="azh-hash">#</span> {t('home.chat_channel')}
                             </div>
                             <div className="azh-window-body">
                                 <div className="azh-msg">
                                     <span className="azh-avatar azh-avatar--user">S</span>
                                     <div>
-                                        <div className="azh-msg-head">Sami <small>aujourd'hui à 14:02</small></div>
-                                        <div className="azh-cmd">/ask quelle est la capitale du Japon ?</div>
+                                        <div className="azh-msg-head">Sami <small>{t('home.chat_today')}</small></div>
+                                        <div className="azh-cmd">{t('home.chat_question')}</div>
                                     </div>
                                 </div>
                                 <div className="azh-msg">
                                     <img className="azh-avatar" src={logoSrc} alt="" />
                                     <div>
-                                        <div className="azh-msg-head">Azim <span className="azh-bot-tag">BOT</span> <small>aujourd'hui à 14:02</small></div>
+                                        <div className="azh-msg-head">Azim <span className="azh-bot-tag">BOT</span> <small>{t('home.chat_today')}</small></div>
                                         <div className="azh-embed">
-                                            <p>La capitale du Japon est <b>Tokyo</b>, la ville la plus peuplée du monde avec son agglomération.</p>
+                                            <p><Trans i18nKey="home.chat_answer" components={{ b: <b /> }} /></p>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="azh-msg azh-msg--system">
                                     <span className="azh-levelup">🎉</span>
-                                    <div><b>Sami</b> passe au <b className="azh-accent">niveau 12</b> !</div>
+                                    <div><Trans i18nKey="home.chat_levelup" components={{ b: <b />, lvl: <b className="azh-accent" /> }} /></div>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +150,7 @@ function Home() {
             </section>
 
             {/* BANDEAU DES MODULES : deux rubans croisés */}
-            <div className="azh-ribbons" aria-label="Modules disponibles">
+            <div className="azh-ribbons" aria-label={t('home.modules_label')}>
                 {rows.map((row, r) => (
                     <div key={r} className={`azh-ribbon azh-ribbon--${r ? 'b' : 'a'}`}>
                         <div className="azh-ribbon-track">
@@ -170,22 +168,22 @@ function Home() {
             {/* FONCTIONNALITÉS */}
             <section className="azh-section" id="features">
                 <header className="azh-section-head" ref={reveal}>
-                    <h2>Tout votre serveur, un seul bot</h2>
-                    <p>Activez ce dont vous avez besoin, ignorez le reste.</p>
+                    <h2>{t('home.features_title')}</h2>
+                    <p>{t('home.features_lead')}</p>
                 </header>
 
                 <div className={`azh-bento${isIslamUnlocked ? ' has-islam' : ''}`}>
                     <article ref={reveal} className="azh-card azh-card--ai" style={{ '--c': '#b5a0ff' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="sparkles" size={22} /></span>
-                            <h3>Une IA dans vos salons</h3>
-                            <p>Mentionnez Azim ou tapez /ask : il répond en quelques secondes.</p>
+                            <h3>{t('home.ai_title')}</h3>
+                            <p>{t('home.ai_desc')}</p>
                         </div>
                         <div className="azh-card-visual azh-v-chat">
-                            <div className="azh-v-bubble is-user">@Azim c'est quoi une promesse en JS ?</div>
+                            <div className="azh-v-bubble is-user">{t('home.ai_question')}</div>
                             <div className="azh-v-bubble is-bot">
                                 <img src={logoSrc} alt="" />
-                                <span>Une <b>Promise</b> représente une valeur disponible plus tard : on la lit avec <code>.then()</code> ou <code>await</code>.</span>
+                                <span><Trans i18nKey="home.ai_answer" components={{ b: <b />, code: <code /> }} /></span>
                             </div>
                         </div>
                     </article>
@@ -193,8 +191,8 @@ function Home() {
                     <article ref={reveal} className="azh-card azh-card--lvl" style={{ '--c': '#ffc46c' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="activity" size={22} /></span>
-                            <h3>Niveaux & XP</h3>
-                            <p>Vos membres gagnent de l'XP en discutant et débloquent des rôles.</p>
+                            <h3>{t('home.levels_title')}</h3>
+                            <p>{t('home.levels_desc')}</p>
                         </div>
                         <div className="azh-card-visual azh-v-rank">
                             <div className="azh-rank-card">
@@ -204,14 +202,14 @@ function Home() {
                                 </div>
                                 <div className="azh-rank-info">
                                     <strong>Sami</strong>
-                                    <small>Niveau 12 · #3</small>
+                                    <small>{t('home.level_rank')}</small>
                                     <div className="azh-rank-bar"><i /></div>
                                 </div>
                             </div>
                             <ol className="azh-board">
-                                <li><span className="azh-medal is-gold">1</span> Inès <b>Niv. 27</b></li>
-                                <li><span className="azh-medal is-silver">2</span> Yanis <b>Niv. 19</b></li>
-                                <li><span className="azh-medal is-bronze">3</span> Sami <b>Niv. 12</b></li>
+                                <li><span className="azh-medal is-gold">1</span> Inès <b>{t('home.level_short')} 27</b></li>
+                                <li><span className="azh-medal is-silver">2</span> Yanis <b>{t('home.level_short')} 19</b></li>
+                                <li><span className="azh-medal is-bronze">3</span> Sami <b>{t('home.level_short')} 12</b></li>
                             </ol>
                         </div>
                     </article>
@@ -219,26 +217,26 @@ function Home() {
                     <article ref={reveal} className="azh-card azh-card--mod" style={{ '--c': '#51d6a5' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="shield" size={22} /></span>
-                            <h3>Modération</h3>
-                            <p>Nettoyez un salon en une commande.</p>
+                            <h3>{t('home.mod_title')}</h3>
+                            <p>{t('home.mod_desc')}</p>
                         </div>
                         <div className="azh-card-visual azh-v-purge">
                             <code>/purge 50</code>
-                            <span className="azh-v-ok"><Icon name="check" size={14} /> 50 messages supprimés</span>
+                            <span className="azh-v-ok"><Icon name="check" size={14} /> {t('home.mod_done')}</span>
                         </div>
                     </article>
 
                     <article ref={reveal} className="azh-card azh-card--yt" style={{ '--c': '#ff917e' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="megaphone" size={22} /></span>
-                            <h3>Alertes YouTube & TikTok</h3>
-                            <p>Nouvelle vidéo ou live : votre salon est prévenu.</p>
+                            <h3>{t('home.yt_title')}</h3>
+                            <p>{t('home.yt_desc')}</p>
                         </div>
                         <div className="azh-card-visual azh-v-video">
                             <div className="azh-video-thumb"><span>▶</span></div>
                             <div>
-                                <strong>Nouvelle vidéo !</strong>
-                                <small>@createur · il y a 1 min</small>
+                                <strong>{t('home.yt_new')}</strong>
+                                <small>{t('home.yt_meta')}</small>
                             </div>
                         </div>
                     </article>
@@ -246,14 +244,14 @@ function Home() {
                     <article ref={reveal} className="azh-card azh-card--wel" style={{ '--c': '#20b9f2' }}>
                         <div className="azh-card-text">
                             <span className="azh-card-icon"><Icon name="hand" size={22} /></span>
-                            <h3>Accueil des membres</h3>
-                            <p>Message de bienvenue, rôles automatiques et message privé à l'arrivée.</p>
+                            <h3>{t('home.welcome_title')}</h3>
+                            <p>{t('home.welcome_desc')}</p>
                         </div>
                         <div className="azh-card-visual azh-v-welcome">
                             <div className="azh-welcome-banner">
                                 <span className="azh-welcome-avatar">L</span>
-                                <strong>Bienvenue Léa !</strong>
-                                <small>Tu es le 843e membre</small>
+                                <strong>{t('home.welcome_banner')}</strong>
+                                <small>{t('home.welcome_count')}</small>
                             </div>
                         </div>
                     </article>
@@ -262,8 +260,8 @@ function Home() {
                         <article ref={reveal} className="azh-card azh-card--isl" style={{ '--c': '#10b981' }}>
                             <div className="azh-card-text">
                                 <span className="azh-card-icon"><Icon name="moon" size={22} /></span>
-                                <h3>Prières & Coran</h3>
-                                <p>Rappels des 5 prières et radio Coran 24/7.</p>
+                                <h3>{t('home.islam_title')}</h3>
+                                <p>{t('home.islam_desc')}</p>
                             </div>
                             <div className="azh-card-visual azh-prayers">
                                 {[['Fajr', '06:42'], ['Dhuhr', '13:51'], ['Asr', '16:48'], ['Maghrib', '19:12'], ['Isha', '20:38']].map(([name, time], i) => (
@@ -278,7 +276,7 @@ function Home() {
             {/* ÉTAPES */}
             <section className="azh-section">
                 <header className="azh-section-head" ref={reveal}>
-                    <h2>Prêt en moins d’une minute</h2>
+                    <h2>{t('home.steps_title')}</h2>
                 </header>
                 <ol className="azh-steps" ref={reveal}>
                     {steps.map((s, i) => (
@@ -299,11 +297,11 @@ function Home() {
                     <img src={logoSrc} alt="" />
                 </div>
                 <div className="azh-final-copy">
-                    <h2>Prêt à ajouter Azim ?</h2>
-                    <p>Gratuit, sans inscription, configurable depuis Discord ou le panel.</p>
+                    <h2>{t('home.final_title')}</h2>
+                    <p>{t('home.final_lead')}</p>
                     <div className="azh-cta">
                         <a className="azh-btn azh-btn--light" href={ADD_BOT_URL} target="_blank" rel="noreferrer">
-                            <DiscordIcon /> Ajouter à Discord
+                            <DiscordIcon /> {t('home.cta_add')}
                         </a>
                     </div>
                 </div>

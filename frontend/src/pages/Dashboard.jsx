@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { botService, discordService } from '../services/api.js';
@@ -14,14 +15,14 @@ function hasManageGuildPermission(guild) {
     }
 }
 
-function formatUptime(seconds = 0) {
+function formatUptime(seconds, t) {
     const safeSeconds = Math.max(0, Number(seconds) || 0);
-    const days = Math.floor(safeSeconds / 86400);
-    const hours = Math.floor((safeSeconds % 86400) / 3600);
-    const minutes = Math.floor((safeSeconds % 3600) / 60);
-    if (days) return `${days}j ${hours}h`;
-    if (hours) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
+    const d = Math.floor(safeSeconds / 86400);
+    const h = Math.floor((safeSeconds % 86400) / 3600);
+    const m = Math.floor((safeSeconds % 3600) / 60);
+    if (d) return t('panel.days', { d, h });
+    if (h) return t('panel.hours', { h, m });
+    return t('panel.minutes', { m });
 }
 
 function getDiscordGuildIcon(guild) {
@@ -32,6 +33,8 @@ function getDiscordGuildIcon(guild) {
 
 function Dashboard() {
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.resolvedLanguage || i18n.language || 'fr';
     const { setIsIslamUnlocked } = useTheme();
     const [overview, setOverview] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -52,12 +55,12 @@ function Dashboard() {
                 setIsIslamUnlocked(true);
             }
         } catch (apiError) {
-            setError(apiError.message || 'Impossible de charger les données du bot.');
+            setError(apiError.message || t('panel.load_error'));
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [user, setIsIslamUnlocked]);
+    }, [user, setIsIslamUnlocked, t]);
 
     useEffect(() => {
         loadData();
@@ -222,10 +225,10 @@ function Dashboard() {
     const [serverTab, setServerTab] = useState('manage');
 
     const cards = [
-        { label: 'Serveurs', value: totalConnectedCount.toLocaleString('fr-FR'), detail: 'avec Azim installé', icon: 'server' },
-        { label: 'Membres', value: Number(stats.memberCount || 0).toLocaleString('fr-FR'), detail: 'touchés par le bot', icon: 'users' },
-        { label: 'Commandes', value: Number(stats.commandCount24h || 0).toLocaleString('fr-FR'), detail: 'ces dernières 24 h', icon: 'terminal' },
-        { label: 'Latence', value: `${Math.max(0, Number(bot.latency || 0))} ms`, detail: `en ligne depuis ${formatUptime(bot.uptime)}`, icon: 'activity' },
+        { label: t('panel.stat_servers'), value: totalConnectedCount.toLocaleString(locale), detail: t('panel.stat_servers_detail'), icon: 'server' },
+        { label: t('panel.stat_members'), value: Number(stats.memberCount || 0).toLocaleString(locale), detail: t('panel.stat_members_detail'), icon: 'users' },
+        { label: t('panel.stat_commands'), value: Number(stats.commandCount24h || 0).toLocaleString(locale), detail: t('panel.stat_commands_detail'), icon: 'terminal' },
+        { label: t('panel.stat_latency'), value: `${Math.max(0, Number(bot.latency || 0))} ms`, detail: t('panel.stat_latency_detail', { uptime: formatUptime(bot.uptime, t) }), icon: 'activity' },
     ];
 
     const inviteBot = async (guildId) => {
@@ -234,16 +237,16 @@ function Dashboard() {
             const invite = await discordService.getBotInviteUrl(guildId);
             window.open(invite.url, '_blank', 'noopener,noreferrer');
         } catch {
-            setError('Impossible de préparer le lien d’invitation.');
+            setError(t('panel.invite_error'));
         } finally {
             setInviteLoading(null);
         }
     };
 
     const serverTabs = [
-        { id: 'manage', label: 'À gérer', list: manageableGuilds },
-        { id: 'invite', label: 'À inviter', list: inviteableGuilds },
-        { id: 'other', label: 'Autres serveurs', list: otherBotGuilds },
+        { id: 'manage', label: t('panel.tab_manage'), list: manageableGuilds },
+        { id: 'invite', label: t('panel.tab_invite'), list: inviteableGuilds },
+        { id: 'other', label: t('panel.tab_other'), list: otherBotGuilds },
     ];
     const currentTab = serverTabs.find((tab) => tab.id === serverTab) || serverTabs[0];
     const isOnline = bot.status === 'online';
@@ -260,21 +263,21 @@ function Dashboard() {
                     <h3 title={guild.name}>{guild.name}</h3>
                     <p>
                         {guild.connected
-                            ? (guild.memberCount ? `${Number(guild.memberCount).toLocaleString('fr-FR')} membres` : 'Azim installé')
-                            : 'Azim pas encore installé'}
+                            ? (guild.memberCount ? t('panel.members', { count: Number(guild.memberCount).toLocaleString(locale) }) : t('panel.installed'))
+                            : t('panel.not_installed')}
                     </p>
                     {guild.connected && guild.canManage ? (
                         <Link to={`/dashboard/servers/${guild.id}/config`} className="ui-btn ui-btn--primary">
-                            Configurer <Icon name="arrowRight" size={16} />
+                            {t('panel.configure')} <Icon name="arrowRight" size={16} />
                         </Link>
                     ) : null}
                     {!guild.connected ? (
                         <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="ui-btn">
-                            <Icon name="plus" size={16} /> {inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter Azim'}
+                            <Icon name="plus" size={16} /> {inviteLoading === guild.id ? t('panel.opening') : t('panel.add')}
                         </button>
                     ) : null}
                     {guild.connected && !guild.canManage ? (
-                        <span className="pnl-guild__note">Lecture seule · permission « Gérer le serveur » requise</span>
+                        <span className="pnl-guild__note">{t('panel.readonly')}</span>
                     ) : null}
                 </div>
             </article>
@@ -289,10 +292,10 @@ function Dashboard() {
                         <span className="pnl-head__avatar pnl-head__avatar--fallback">{(displayName || 'A').charAt(0).toUpperCase()}</span>
                     )}
                     <div>
-                        <h1>{displayName ? `Bonjour ${displayName}` : 'Vos serveurs'}</h1>
+                        <h1>{displayName ? t('panel.hello', { name: displayName }) : t('panel.your_servers')}</h1>
                         <p className={`pnl-head__status${isOnline ? ' is-online' : ''}`}>
                             <i />
-                            {loading ? 'Connexion au bot…' : isOnline ? `Azim est en ligne · ${Math.max(0, Number(bot.latency || 0))} ms` : 'Azim est actuellement indisponible'}
+                            {loading ? t('panel.connecting') : isOnline ? t('panel.online', { ms: Math.max(0, Number(bot.latency || 0)) }) : t('panel.unavailable')}
                         </p>
                     </div>
                 </div>
@@ -305,14 +308,14 @@ function Dashboard() {
 
             {error ? <div role="alert" className="pnl-alert"><Icon name="alert" size={18} /> {error}</div> : null}
 
-            <section className="ui-stats" aria-label="Statistiques du bot">
+            <section className="ui-stats" aria-label={t('panel.stats_label')}>
                 {cards.map((card) => (
                     <article className="ui-stat" key={card.label}>
                         <span className="ui-stat__icon"><Icon name={card.icon} size={20} /></span>
                         <div>
                             <small>{card.label}</small>
                             <strong>{loading ? '—' : card.value}</strong>
-                            <span>{loading ? 'lecture des données…' : card.detail}</span>
+                            <span>{loading ? t('panel.reading') : card.detail}</span>
                         </div>
                     </article>
                 ))}
@@ -321,7 +324,7 @@ function Dashboard() {
             <div className="pnl-grid">
                 <section className="pnl-card pnl-servers">
                     <div className="pnl-card__head">
-                        <h2>Serveurs</h2>
+                        <h2>{t('panel.servers')}</h2>
                         <div className="pnl-tabs" role="tablist">
                             {serverTabs.map((tab) => (
                                 <button
@@ -345,31 +348,31 @@ function Dashboard() {
                             <Icon name="server" size={28} />
                             {currentTab.id === 'manage' ? (
                                 <>
-                                    <p>Azim n’est installé sur aucun serveur que vous administrez.</p>
+                                    <p>{t('panel.empty_manage')}</p>
                                     {inviteableGuilds.length ? (
-                                        <button type="button" className="ui-btn ui-btn--primary" onClick={() => setServerTab('invite')}>Voir les serveurs à inviter</button>
+                                        <button type="button" className="ui-btn ui-btn--primary" onClick={() => setServerTab('invite')}>{t('panel.see_invite')}</button>
                                     ) : (
-                                        <p className="pnl-muted">Utilisez le lien ci-dessous si un serveur manque.</p>
+                                        <p className="pnl-muted">{t('panel.empty_hint')}</p>
                                     )}
                                 </>
                             ) : currentTab.id === 'invite' ? (
-                                <p>Azim est déjà présent sur tous vos serveurs administrables.</p>
+                                <p>{t('panel.empty_invite')}</p>
                             ) : (
-                                <p>Aucun autre serveur en commun avec Azim.</p>
+                                <p>{t('panel.empty_other')}</p>
                             )}
                         </div>
                     )}
 
                     <p className="pnl-resync">
-                        Un serveur manque ? <Link to="/login">Resynchroniser avec Discord</Link>
+                        {t('panel.resync_q')} <Link to="/login">{t('panel.resync')}</Link>
                     </p>
                 </section>
 
                 <aside className="pnl-side">
                     <section className="pnl-card">
                         <div className="pnl-card__head">
-                            <h2>Top commandes</h2>
-                            <Link to="/command-history" className="pnl-link">Historique <Icon name="arrowRight" size={14} /></Link>
+                            <h2>{t('panel.top_commands')}</h2>
+                            <Link to="/command-history" className="pnl-link">{t('panel.history')} <Icon name="arrowRight" size={14} /></Link>
                         </div>
                         {topCommands.length ? (
                             <ol className="pnl-bars">
@@ -377,19 +380,19 @@ function Dashboard() {
                                     <li key={command.name}>
                                         <div className="pnl-bars__label">
                                             <code>/{command.name}</code>
-                                            <strong>{Number(command.count || 0).toLocaleString('fr-FR')}</strong>
+                                            <strong>{Number(command.count || 0).toLocaleString(locale)}</strong>
                                         </div>
                                         <span className="pnl-bars__track"><i style={{ width: `${Math.max(4, (Number(command.count || 0) / maxCommandCount) * 100)}%` }} /></span>
                                     </li>
                                 ))}
                             </ol>
-                        ) : <p className="pnl-muted">Les commandes apparaîtront ici après leurs premières utilisations.</p>}
+                        ) : <p className="pnl-muted">{t('panel.no_commands')}</p>}
                     </section>
 
                     <section className="pnl-card">
                         <div className="pnl-card__head">
-                            <h2>Erreurs récentes</h2>
-                            <span className="pnl-count">{Number(errorTotal || 0)} au total</span>
+                            <h2>{t('panel.recent_errors')}</h2>
+                            <span className="pnl-count">{t('panel.errors_total', { count: Number(errorTotal || 0) })}</span>
                         </div>
                         {recentErrors.length ? (
                             <ul className="pnl-errors">
@@ -397,15 +400,15 @@ function Dashboard() {
                                     <li key={`${item.ts}-${index}`}>
                                         <span className="pnl-errors__icon"><Icon name="alert" size={15} /></span>
                                         <div>
-                                            <strong>{item.type || 'Erreur'}</strong>
+                                            <strong>{item.type || t('panel.error_default')}</strong>
                                             <small>{String(item.message || '').slice(0, 90)}</small>
                                         </div>
-                                        <time>{item.ts ? new Date(item.ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</time>
+                                        <time>{item.ts ? new Date(item.ts).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) : ''}</time>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="pnl-muted pnl-ok"><Icon name="check" size={16} /> Aucune erreur récente.</p>
+                            <p className="pnl-muted pnl-ok"><Icon name="check" size={16} /> {t('panel.no_errors')}</p>
                         )}
                     </section>
                 </aside>

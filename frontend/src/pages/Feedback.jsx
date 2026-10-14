@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import Icon from '../components/Icon.jsx';
 import { feedbackService } from '../services/api.js';
 import { useAuth } from '../hooks/useAuth.js';
@@ -10,6 +11,8 @@ const MAX_IMAGES = 3;
 
 export default function Feedback() {
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
+    const locale = i18n.resolvedLanguage || i18n.language || 'fr';
 
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -98,7 +101,7 @@ export default function Feedback() {
 
         const remainingSlots = MAX_IMAGES - images.length;
         if (remainingSlots <= 0) {
-            setSubmitError(`Vous pouvez ajouter au maximum ${MAX_IMAGES} captures d'écran.`);
+            setSubmitError(t('feedback.err_max_images', { max: MAX_IMAGES }));
             return;
         }
 
@@ -106,11 +109,11 @@ export default function Feedback() {
 
         selectedFiles.forEach(async (file) => {
             if (!file.type.startsWith('image/')) {
-                setSubmitError('Format de fichier non supporté. Veuillez choisir une image PNG, JPEG ou WebP.');
+                setSubmitError(t('feedback.err_format'));
                 return;
             }
             if (file.size > 20 * 1024 * 1024) {
-                setSubmitError('Image trop volumineuse (maximum 20 Mo par image).');
+                setSubmitError(t('feedback.err_size'));
                 return;
             }
 
@@ -141,19 +144,19 @@ export default function Feedback() {
         const cleanEmail = authorEmail.trim();
 
         if (!cleanTitle) {
-            setSubmitError('Veuillez renseigner un titre pour votre signalement.');
+            setSubmitError(t('feedback.err_title'));
             return;
         }
         if (!cleanDesc) {
-            setSubmitError('Veuillez fournir une description détaillée.');
+            setSubmitError(t('feedback.err_desc'));
             return;
         }
         if (!cleanAuthor) {
-            setSubmitError('Le champ "Votre Nom ou Pseudo Discord" est obligatoire pour vous identifier.');
+            setSubmitError(t('feedback.err_name'));
             return;
         }
         if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-            setSubmitError('L\'adresse email saisie est invalide.');
+            setSubmitError(t('feedback.err_email'));
             return;
         }
 
@@ -170,9 +173,7 @@ export default function Feedback() {
 
             if (res.success || res.report) {
                 setSubmitSuccess(
-                    formType === 'bug'
-                        ? 'Votre bug a été enregistré avec succès ! Merci de votre aide.'
-                        : 'Votre suggestion a été enregistrée avec succès ! Merci pour votre idée.'
+                    formType === 'bug' ? t('feedback.ok_bug') : t('feedback.ok_idea')
                 );
                 setTitle('');
                 setDescription('');
@@ -183,9 +184,9 @@ export default function Feedback() {
         } catch (err) {
             const msg = err.message || '';
             if (msg.includes('413') || err.status === 413) {
-                setSubmitError('Le contenu du signalement ou les captures d\'écran sont trop volumineux. Veuillez réduire la taille ou le nombre d\'images.');
+                setSubmitError(t('feedback.err_too_big'));
             } else {
-                setSubmitError(msg || 'Impossible d\'envoyer le rapport. Réessayez plus tard.');
+                setSubmitError(msg || t('feedback.err_send'));
             }
         } finally {
             setSubmitting(false);
@@ -216,10 +217,10 @@ export default function Feedback() {
 
 
     const STATUS_LABELS = {
-        open: 'En attente',
-        in_progress: 'En cours',
-        resolved: 'Résolu',
-        closed: 'Archivé',
+        open: t('feedback.status_open'),
+        in_progress: t('feedback.status_in_progress'),
+        resolved: t('feedback.status_resolved'),
+        closed: t('feedback.status_closed'),
     };
 
     const openForm = (type = formType) => {
@@ -237,34 +238,34 @@ export default function Feedback() {
     };
 
     const statCards = [
-        { label: 'Retours', value: stats.total, icon: 'fileText', color: 'var(--azim-accent)' },
-        { label: 'Bugs', value: stats.bugs, icon: 'bug', color: 'var(--azim-coral)' },
-        { label: 'Idées', value: stats.suggestions, icon: 'sparkles', color: 'var(--azim-lilac)' },
-        { label: 'Résolus', value: stats.resolved, icon: 'check', color: 'var(--azim-success)' },
+        { label: t('feedback.stat_total'), value: stats.total, icon: 'fileText', color: 'var(--azim-accent)' },
+        { label: t('feedback.stat_bugs'), value: stats.bugs, icon: 'bug', color: 'var(--azim-coral)' },
+        { label: t('feedback.stat_ideas'), value: stats.suggestions, icon: 'sparkles', color: 'var(--azim-lilac)' },
+        { label: t('feedback.stat_resolved'), value: stats.resolved, icon: 'check', color: 'var(--azim-success)' },
     ];
 
     const typeTabs = [
-        { id: 'all', label: 'Tous', count: stats.total },
-        { id: 'bug', label: 'Bugs', count: stats.bugs },
-        { id: 'suggestion', label: 'Idées', count: stats.suggestions },
+        { id: 'all', label: t('feedback.tab_all'), count: stats.total },
+        { id: 'bug', label: t('feedback.tab_bugs'), count: stats.bugs },
+        { id: 'suggestion', label: t('feedback.tab_ideas'), count: stats.suggestions },
     ];
 
     return (
         <main className="pg" id="main" tabIndex="-1">
             <header className="pg-head pg-head--row">
                 <div>
-                    <h1>Retours & idées</h1>
-                    <p>Un bug ou une idée pour Azim ? Dites-le nous ici, ou avec <code>/report</code> sur Discord.</p>
+                    <h1>{t('feedback.title')}</h1>
+                    <p><Trans i18nKey="feedback.lead" components={{ code: <code /> }} /></p>
                 </div>
                 <button type="button" className="ui-btn ui-btn--primary" onClick={() => openForm()}>
-                    <Icon name="plus" size={16} /> Nouveau retour
+                    <Icon name="plus" size={16} /> {t('feedback.new')}
                 </button>
             </header>
 
             {submitSuccess ? <div role="status" className="ui-flash ui-flash--ok"><Icon name="check" size={18} /> {submitSuccess}</div> : null}
             {submitError && !showForm ? <div role="alert" className="ui-flash ui-flash--error"><Icon name="alert" size={18} /> {submitError}</div> : null}
 
-            <section className="ui-stats" aria-label="Chiffres des retours">
+            <section className="ui-stats" aria-label={t('feedback.stats_label')}>
                 {statCards.map((card) => (
                     <article key={card.label} className="ui-stat" style={{ '--c': card.color }}>
                         <span className="ui-stat__icon"><Icon name={card.icon} size={20} /></span>
@@ -277,7 +278,7 @@ export default function Feedback() {
             </section>
 
             <div className="fb-toolbar">
-                <div className="ui-seg" role="tablist" aria-label="Type de retour">
+                <div className="ui-seg" role="tablist" aria-label={t('feedback.type_label')}>
                     {typeTabs.map((tab) => (
                         <button
                             key={tab.id}
@@ -292,17 +293,17 @@ export default function Feedback() {
                     ))}
                 </div>
                 <div className="fb-toolbar__right">
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="ui-input" aria-label="Filtrer par statut">
-                        <option value="all">Tous les statuts</option>
-                        <option value="open">En attente</option>
-                        <option value="in_progress">En cours</option>
-                        <option value="resolved">Résolu</option>
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="ui-input" aria-label={t('feedback.status_filter')}>
+                        <option value="all">{t('feedback.status_all')}</option>
+                        <option value="open">{t('feedback.status_open')}</option>
+                        <option value="in_progress">{t('feedback.status_in_progress')}</option>
+                        <option value="resolved">{t('feedback.status_resolved')}</option>
                     </select>
                     <label className="ui-search">
                         <Icon name="search" size={16} />
                         <input
                             type="search"
-                            placeholder="Rechercher…"
+                            placeholder={t('common.search')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -312,15 +313,15 @@ export default function Feedback() {
 
             {loading ? (
                 <div className="py-12">
-                    <LoadingScreen label="Chargement des retours…" subtext="Récupération des signalements et des idées" />
+                    <LoadingScreen label={t('feedback.loading')} subtext={t('feedback.loading_sub')} />
                 </div>
             ) : filteredReports.length === 0 ? (
                 <div className="ui-empty">
                     <span className="ui-empty__icon"><Icon name="fileText" size={26} /></span>
-                    <h3>Aucun retour pour ces filtres</h3>
-                    <p>Soyez le premier à signaler un bug ou à proposer une idée.</p>
+                    <h3>{t('feedback.empty_title')}</h3>
+                    <p>{t('feedback.empty_lead')}</p>
                     <button type="button" className="ui-btn ui-btn--primary" onClick={() => { setFilterType('all'); setStatusFilter('all'); setSearchQuery(''); openForm(); }}>
-                        Écrire un retour
+                        {t('feedback.write')}
                     </button>
                 </div>
             ) : (
@@ -340,8 +341,8 @@ export default function Feedback() {
                                     {Array.isArray(item.images) && item.images.length > 0 && (
                                         <div className="fb-thumbs">
                                             {item.images.map((imgSrc, imgIdx) => (
-                                                <button type="button" key={imgIdx} onClick={() => setPreviewImage(imgSrc)} title="Agrandir la capture">
-                                                    <img src={imgSrc} alt={`Capture ${imgIdx + 1}`} />
+                                                <button type="button" key={imgIdx} onClick={() => setPreviewImage(imgSrc)} title={t('feedback.enlarge')}>
+                                                    <img src={imgSrc} alt={t('feedback.capture', { n: imgIdx + 1 })} />
                                                 </button>
                                             ))}
                                         </div>
@@ -350,12 +351,12 @@ export default function Feedback() {
                                     <div className="fb-item__meta">
                                         <span className="fb-author">
                                             <i>{(item.authorName || 'A').charAt(0).toUpperCase()}</i>
-                                            {item.authorName || 'Anonyme'}
+                                            {item.authorName || t('feedback.anonymous')}
                                         </span>
-                                        {item.guildName ? <span>sur {item.guildName}</span> : null}
-                                        <span>{item.source === 'discord' ? 'via /report' : 'via le site'}</span>
+                                        {item.guildName ? <span>{t('feedback.on_guild', { name: item.guildName })}</span> : null}
+                                        <span>{item.source === 'discord' ? t('feedback.via_report') : t('feedback.via_site')}</span>
                                         <time>
-                                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                                         </time>
                                         <code>{item.id}</code>
                                     </div>
@@ -371,8 +372,8 @@ export default function Feedback() {
                 <div className="ui-modal" role="dialog" aria-modal="true" aria-labelledby="fb-form-title" onClick={() => setShowForm(false)}>
                     <section className="ui-modal__panel fb-form" onClick={(e) => e.stopPropagation()}>
                         <header className="ui-modal__head">
-                            <h2 id="fb-form-title">Nouveau retour</h2>
-                            <button type="button" className="ui-icon-btn" onClick={() => setShowForm(false)} aria-label="Fermer">
+                            <h2 id="fb-form-title">{t('feedback.form_title')}</h2>
+                            <button type="button" className="ui-icon-btn" onClick={() => setShowForm(false)} aria-label={t('common.close')}>
                                 <Icon name="close" size={18} />
                             </button>
                         </header>
@@ -381,23 +382,23 @@ export default function Feedback() {
                             <div className="fb-types">
                                 <button type="button" className={`fb-type is-bug${formType === 'bug' ? ' is-active' : ''}`} onClick={() => setFormType('bug')}>
                                     <Icon name="bug" size={20} />
-                                    <span><strong>Un bug</strong><small>Quelque chose ne marche pas</small></span>
+                                    <span><strong>{t('feedback.type_bug')}</strong><small>{t('feedback.type_bug_desc')}</small></span>
                                 </button>
                                 <button type="button" className={`fb-type is-idea${formType === 'suggestion' ? ' is-active' : ''}`} onClick={() => setFormType('suggestion')}>
                                     <Icon name="sparkles" size={20} />
-                                    <span><strong>Une idée</strong><small>Une amélioration à proposer</small></span>
+                                    <span><strong>{t('feedback.type_idea')}</strong><small>{t('feedback.type_idea_desc')}</small></span>
                                 </button>
                             </div>
 
                             <label className="ui-field">
                                 <span className="ui-field__label">
-                                    Titre <em className={counterClass(title.length, MAX_TITLE_LENGTH)}>{title.length}/{MAX_TITLE_LENGTH}</em>
+                                    {t('feedback.field_title')} <em className={counterClass(title.length, MAX_TITLE_LENGTH)}>{title.length}/{MAX_TITLE_LENGTH}</em>
                                 </span>
                                 <input
                                     type="text"
                                     required
                                     maxLength={MAX_TITLE_LENGTH}
-                                    placeholder={formType === 'bug' ? 'Ex : la radio s’arrête après 20 minutes' : 'Ex : une commande pour la météo'}
+                                    placeholder={formType === 'bug' ? t('feedback.ph_title_bug') : t('feedback.ph_title_idea')}
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     className="ui-input"
@@ -406,13 +407,13 @@ export default function Feedback() {
 
                             <label className="ui-field">
                                 <span className="ui-field__label">
-                                    Description <em className={counterClass(description.length, MAX_DESCRIPTION_LENGTH)}>{description.length}/{MAX_DESCRIPTION_LENGTH}</em>
+                                    {t('feedback.field_desc')} <em className={counterClass(description.length, MAX_DESCRIPTION_LENGTH)}>{description.length}/{MAX_DESCRIPTION_LENGTH}</em>
                                 </span>
                                 <textarea
                                     required
                                     rows={5}
                                     maxLength={MAX_DESCRIPTION_LENGTH}
-                                    placeholder={formType === 'bug' ? 'Que s’est-il passé ? Dans quel salon ? Comment le reproduire ?' : 'Décrivez votre idée et à quoi elle servirait.'}
+                                    placeholder={formType === 'bug' ? t('feedback.ph_desc_bug') : t('feedback.ph_desc_idea')}
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     className="ui-input"
@@ -420,12 +421,12 @@ export default function Feedback() {
                             </label>
 
                             <div className="ui-field">
-                                <span className="ui-field__label">Captures d’écran <em>{images.length}/{MAX_IMAGES} · facultatif</em></span>
+                                <span className="ui-field__label">{t('feedback.field_images')} <em>{images.length}/{MAX_IMAGES} · {t('feedback.optional')}</em></span>
                                 <div className="fb-uploads">
                                     {images.map((imgSrc, idx) => (
                                         <div key={idx} className="fb-upload">
-                                            <img src={imgSrc} alt={`Capture ${idx + 1}`} />
-                                            <button type="button" onClick={() => handleRemoveImage(idx)} aria-label="Retirer cette capture">
+                                            <img src={imgSrc} alt={t('feedback.capture', { n: idx + 1 })} />
+                                            <button type="button" onClick={() => handleRemoveImage(idx)} aria-label={t('feedback.remove_image')}>
                                                 <Icon name="close" size={12} />
                                             </button>
                                         </div>
@@ -440,7 +441,7 @@ export default function Feedback() {
                                                 onChange={handleImageUpload}
                                             />
                                             <Icon name="plus" size={20} />
-                                            <span>Ajouter</span>
+                                            <span>{t('feedback.add_image')}</span>
                                         </label>
                                     )}
                                 </div>
@@ -448,21 +449,21 @@ export default function Feedback() {
 
                             <div className="fb-form__grid">
                                 <label className="ui-field">
-                                    <span className="ui-field__label">Pseudo Discord</span>
+                                    <span className="ui-field__label">{t('feedback.field_name')}</span>
                                     <input
                                         type="text"
                                         required
-                                        placeholder="Ex : sofiane"
+                                        placeholder={t('feedback.ph_name')}
                                         value={authorName}
                                         onChange={(e) => setAuthorName(e.target.value)}
                                         className="ui-input"
                                     />
                                 </label>
                                 <label className="ui-field">
-                                    <span className="ui-field__label">Email <em>facultatif</em></span>
+                                    <span className="ui-field__label">{t('feedback.field_email')} <em>{t('feedback.optional')}</em></span>
                                     <input
                                         type="email"
-                                        placeholder="Pour être prévenu de la résolution"
+                                        placeholder={t('feedback.ph_email')}
                                         value={authorEmail}
                                         onChange={(e) => setAuthorEmail(e.target.value)}
                                         className="ui-input"
@@ -473,13 +474,13 @@ export default function Feedback() {
                             {submitError ? <div role="alert" className="ui-flash ui-flash--error"><Icon name="alert" size={18} /> {submitError}</div> : null}
 
                             <footer className="ui-modal__foot">
-                                <button type="button" className="ui-btn ui-btn--ghost" onClick={() => setShowForm(false)}>Annuler</button>
+                                <button type="button" className="ui-btn ui-btn--ghost" onClick={() => setShowForm(false)}>{t('common.cancel')}</button>
                                 <button
                                     type="submit"
                                     className="ui-btn ui-btn--primary"
                                     disabled={submitting || !title.trim() || !description.trim() || !authorName.trim()}
                                 >
-                                    {submitting ? 'Envoi…' : 'Envoyer'}
+                                    {submitting ? t('feedback.sending') : t('feedback.send')}
                                 </button>
                             </footer>
                         </form>
@@ -491,7 +492,7 @@ export default function Feedback() {
             {previewImage && (
                 <div className="ui-modal" onClick={() => setPreviewImage(null)}>
                     <div className="fb-preview" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className="ui-icon-btn" onClick={() => setPreviewImage(null)} aria-label="Fermer">
+                        <button type="button" className="ui-icon-btn" onClick={() => setPreviewImage(null)} aria-label={t('common.close')}>
                             <Icon name="close" size={18} />
                         </button>
                         <img src={previewImage} alt="Capture agrandie" />

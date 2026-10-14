@@ -22,7 +22,17 @@ async function checkBotAPI() {
         // On ne renvoie que des infos publiques (pas les erreurs détaillées du bot)
         const body = await res.json().catch(() => ({}));
         const uptimeSeconds = Number(body?.observability?.uptimeSeconds) || null;
-        return { status: res.ok ? 'ok' : 'degraded', responseMs, uptimeSeconds };
+        const d = body?.discord;
+        const discord = d ? {
+            ready: Boolean(d.ready),
+            ping: Number.isFinite(d.ping) ? d.ping : null,
+            guildCount: Number(d.guildCount) || 0,
+            shardCount: Math.max(1, Number(d.shardCount) || 1),
+            shards: Array.isArray(d.shards)
+                ? d.shards.map((s) => ({ id: Number(s.id) || 0, ping: Number.isFinite(s.ping) ? s.ping : null, ready: Boolean(s.ready) }))
+                : [],
+        } : null;
+        return { status: res.ok ? 'ok' : 'degraded', responseMs, uptimeSeconds, discord };
     } catch {
         return { status: 'error' };
     }

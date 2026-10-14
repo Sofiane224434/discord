@@ -16,6 +16,7 @@ function Footer() {
             title: 'Produit',
             links: [
                 { label: 'Fonctionnalités', to: '/#features' },
+                { label: 'Ajouter Azim', href: ADD_BOT_URL },
                 { label: 'Commandes', to: '/docs/commandes' },
                 { label: 'Documentation', to: '/docs/accueil' },
                 { label: 'Statuts', to: '/status' },
@@ -55,14 +56,6 @@ function Footer() {
                                 ? 'Le bot Discord français et gratuit : IA, modération, niveaux, prières et radio Coran.'
                                 : 'Le bot Discord français et gratuit : IA, modération, niveaux et alertes réseaux.'}
                         </p>
-                        <div className="ft__actions">
-                            <a href={ADD_BOT_URL} target="_blank" rel="noreferrer" className="ft__btn ft__btn--primary">
-                                <Icon name="plus" size={16} /> Ajouter Azim
-                            </a>
-                            <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="ft__btn">
-                                <Icon name="lifebuoy" size={16} /> Support
-                            </a>
-                        </div>
                     </div>
 
                     {columns.map((col) => (
@@ -91,11 +84,6 @@ function Footer() {
                     <p>
                         © 2024 – {new Date().getFullYear()} AzimBot · Non affilié à Discord Inc.
                     </p>
-                    <div className="ft__legal">
-                        <Link to="/docs/faq">Confidentialité</Link>
-                        <Link to="/docs/faq">Conditions</Link>
-                        <Link to="/docs/faq">Mentions légales</Link>
-                    </div>
                     <div className="ft__lang" role="group" aria-label="Langue du site">
                         {['fr', 'en'].map((lang) => (
                             <button

@@ -297,9 +297,6 @@ function Dashboard() {
                     </div>
                 </div>
                 <div className="pnl-head__actions">
-                    <Link to="/login" className="ui-btn ui-btn--ghost" title="Recharger la liste de vos serveurs depuis Discord">
-                        Resynchroniser Discord
-                    </Link>
                     <button type="button" onClick={loadData} disabled={refreshing} className="ui-btn">
                         <Icon name="refresh" size={16} className={refreshing ? 'ui-spin' : ''} /> {refreshing ? 'Actualisation…' : 'Actualiser'}
                     </button>
@@ -352,7 +349,7 @@ function Dashboard() {
                                     {inviteableGuilds.length ? (
                                         <button type="button" className="ui-btn ui-btn--primary" onClick={() => setServerTab('invite')}>Voir les serveurs à inviter</button>
                                     ) : (
-                                        <Link to="/login" className="ui-btn">Resynchroniser mes serveurs Discord</Link>
+                                        <p className="pnl-muted">Utilisez le lien ci-dessous si un serveur manque.</p>
                                     )}
                                 </>
                             ) : currentTab.id === 'invite' ? (
@@ -362,6 +359,10 @@ function Dashboard() {
                             )}
                         </div>
                     )}
+
+                    <p className="pnl-resync">
+                        Un serveur manque ? <Link to="/login">Resynchroniser avec Discord</Link>
+                    </p>
                 </section>
 
                 <aside className="pnl-side">
@@ -410,12 +411,6 @@ function Dashboard() {
                 </aside>
             </div>
 
-            <nav className="pnl-shortcuts" aria-label="Raccourcis">
-                <Link to="/docs/accueil"><Icon name="book" size={20} /><span><strong>Documentation</strong><small>Guides et modules</small></span></Link>
-                <Link to="/docs/commandes"><Icon name="terminal" size={20} /><span><strong>Commandes</strong><small>Liste complète</small></span></Link>
-                <Link to="/feedback"><Icon name="bug" size={20} /><span><strong>Retours & bugs</strong><small>Signaler un problème</small></span></Link>
-                <a href="https://discord.gg/azim" target="_blank" rel="noreferrer"><Icon name="lifebuoy" size={20} /><span><strong>Support</strong><small>Serveur Discord</small></span></a>
-            </nav>
         </main>
     );
 }

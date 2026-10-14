@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { adminService } from '../services/api.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
@@ -158,21 +158,21 @@ function getGuildName(guildId) {
 
 function Field({ label, children, hint }) {
     return (
-        <label className="grid gap-1.5 text-sm font-medium text-slate-200">
-            <span>{label}</span>
+        <label className="ui-field">
+            <span className="ui-field__label">{label}</span>
             {children}
-            {hint ? <span className="text-xs font-normal text-slate-400">{hint}</span> : null}
+            {hint ? <span className="cf-hint">{hint}</span> : null}
         </label>
     );
 }
 
 function TextInput(props) {
-    return <input {...props} className="form-input" />;
+    return <input {...props} className="ui-input" />;
 }
 
 function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
     return (
-        <select value={value || ''} onChange={onChange} className={`form-input ${className}`}>
+        <select value={value || ''} onChange={onChange} className={`ui-input cf-select ${className}`}>
             {emptyLabel ? <option value="">{emptyLabel}</option> : null}
             {options.map((option) => (
                 <option value={option.value} key={option.value}>{option.label}</option>
@@ -181,11 +181,73 @@ function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
     );
 }
 
+// Interrupteur on/off avec libellé et description
+function Switch({ checked, onChange, label, desc }) {
+    return (
+        <label className={`cf-switch${checked ? ' is-on' : ''}`}>
+            <input type="checkbox" checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />
+            <span className="cf-switch__track" aria-hidden="true"><i /></span>
+            {label ? (
+                <span className="cf-switch__text">
+                    <strong>{label}</strong>
+                    {desc ? <small>{desc}</small> : null}
+                </span>
+            ) : null}
+        </label>
+    );
+}
+
+// Bloc de réglages : titre, description, action optionnelle à droite
+function Card({ title, desc, aside, children }) {
+    return (
+        <section className="cf-card">
+            {title ? (
+                <header className="cf-card__head">
+                    <div>
+                        <h3>{title}</h3>
+                        {desc ? <p>{desc}</p> : null}
+                    </div>
+                    {aside}
+                </header>
+            ) : null}
+            {children}
+        </section>
+    );
+}
+
+// Pastille de rôle supprimable
+function RoleChip({ name, onRemove }) {
+    return (
+        <span className="cf-chip">
+            @{name}
+            <button type="button" onClick={onRemove} aria-label={`Retirer ${name}`}><Icon name="close" size={12} /></button>
+        </span>
+    );
+}
+
+// Prépare la partie « enregistrable » du formulaire pour détecter les modifications
+function serializeForm(form) {
+    return JSON.stringify({
+        ai: { systemPrompt: form.ai.systemPrompt, language: form.ai.language, triggerNames: form.ai.triggerNames },
+        logs: form.logs,
+        welcome: form.welcome,
+        bio: form.profile.bio,
+        youtube: form.youtube,
+        tiktok: form.tiktok,
+        rank: form.rank,
+        islam: form.islam,
+        commands: form.commands,
+    });
+}
+
 function GuildConfig() {
     const { guildId } = useParams();
-    const { setIsIslamUnlocked, theme, setTheme } = useTheme();
+    const { setIsIslamUnlocked } = useTheme();
     const [form, setForm] = useState(EMPTY_CONFIG);
-    const [activeTab, setActiveTab] = useState('ai');
+    // Dernière version enregistrée côté serveur : sert à détecter les modifications en cours
+    const [savedForm, setSavedForm] = useState(null);
+    const [activeTab, setActiveTab] = useState('overview');
+    const contentRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -219,7 +281,9 @@ function GuildConfig() {
 
     const refresh = useCallback(async () => {
         const data = await adminService.getGuildConfig(guildId);
-        setForm(mergeConfig(data));
+        const merged = mergeConfig(data);
+        setForm(merged);
+        setSavedForm(merged);
     }, [guildId]);
 
     const handleDownloadAvatar = async () => {
@@ -229,7 +293,7 @@ function GuildConfig() {
             const fileName = `${form.profile.botDisplayName || 'azim'}-avatar.png`;
             await adminService.downloadAvatar(guildId, fileName);
             setNotice('Photo de profil téléchargée avec succès.');
-        } catch (downloadErr) {
+        } catch {
             if (form.profile.currentAvatarUrl) {
                 window.open(form.profile.currentAvatarUrl, '_blank');
                 setNotice('Ouverture de la photo de profil dans un nouvel onglet.');
@@ -249,6 +313,7 @@ function GuildConfig() {
                 if (active) {
                     const merged = mergeConfig(data);
                     setForm(merged);
+                    setSavedForm(merged);
                     if (merged.features?.islamModeEnabled) {
                         setIsIslamUnlocked(true);
                     }
@@ -488,13 +553,35 @@ function GuildConfig() {
     }, [guildId]);
 
     const isIslamActive = Boolean(form.features?.islamModeEnabled);
+    const isDirty = savedForm ? serializeForm(form) !== serializeForm(savedForm) : false;
+
+    // Prévient avant de quitter la page avec des modifications non enregistrées
+    useEffect(() => {
+        if (!isDirty) return undefined;
+        const onBeforeUnload = (e) => { e.preventDefault(); e.returnValue = ''; };
+        window.addEventListener('beforeunload', onBeforeUnload);
+        return () => window.removeEventListener('beforeunload', onBeforeUnload);
+    }, [isDirty]);
+
+    const discardChanges = () => {
+        if (savedForm) setForm(savedForm);
+    };
+
+    // Change d'onglet et remonte en haut du contenu
+    const goToTab = (tabId) => {
+        setActiveTab(tabId);
+        const el = contentRef.current;
+        if (el && el.getBoundingClientRect().top < 0) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
 
     if (loading) {
         return (
-            <main className="site-page site-section-page max-w-5xl py-12">
+            <main className="gc">
                 <LoadingScreen
-                    label="Chargement du panneau d'administration…"
-                    subtext={`Configuration en cours pour ${getGuildName(guildId)}`}
+                    label="Chargement de la configuration…"
+                    subtext={getGuildName(guildId)}
                 />
             </main>
         );
@@ -502,104 +589,157 @@ function GuildConfig() {
 
     const channelOptions = form.channels.map((channel) => ({ value: channel.id, label: `#${channel.name}` }));
     const roleOptions = form.roles.map((role) => ({ value: role.id, label: role.name }));
+    const roleName = (id) => form.roles.find((r) => r.id === id)?.name || id;
+    const channelName = (id) => form.channels.find((c) => c.id === id)?.name;
 
-    const filteredCommands = form.commands.filter((cmd) => {
-        if (!isIslamActive && cmd.isIslamic) return false;
+    const visibleCommands = form.commands.filter((cmd) => isIslamActive || !cmd.isIslamic);
+    const filteredCommands = visibleCommands.filter((cmd) => {
         if (!commandSearch.trim()) return true;
         const q = commandSearch.toLowerCase().trim();
         return cmd.name.toLowerCase().includes(q) || (cmd.description || '').toLowerCase().includes(q);
     });
 
+    const commandUsage = Object.entries(form.observability?.commandByName || {})
+        .map(([name, count]) => ({ name, count: Number(count) || 0 }))
+        .sort((a, b) => b.count - a.count);
+    const totalRuns = commandUsage.reduce((n, c) => n + c.count, 0);
+    const maxRuns = Math.max(1, ...commandUsage.map((c) => c.count));
+    const recentErrors = Array.isArray(form.observability?.recentErrors) ? form.observability.recentErrors : [];
+
     const tabs = [
-        { id: 'ai', label: 'IA & déclencheurs', icon: 'sparkles' },
-        { id: 'commands', label: 'Commandes', icon: 'shield', count: form.commands.filter((cmd) => isIslamActive || !cmd.isIslamic).length },
-        { id: 'welcome', label: 'Bienvenue & rôles', icon: 'hand', count: form.welcome.rules?.length || 0 },
-        { id: 'logs', label: 'Logs & profil du bot', icon: 'fileText' },
-        { id: 'social', label: 'Réseaux & niveaux', icon: 'megaphone' },
-        { id: 'islam', label: isIslamActive ? 'Mode Islam' : 'Code secret', icon: isIslamActive ? 'moon' : 'key', status: isIslamActive ? 'Actif' : null },
+        { id: 'overview', label: 'Vue d’ensemble', icon: 'activity' },
+        { id: 'ai', label: 'Intelligence artificielle', icon: 'sparkles' },
+        { id: 'commands', label: 'Commandes', icon: 'terminal', count: visibleCommands.length },
+        { id: 'welcome', label: 'Bienvenue', icon: 'hand', on: form.welcome.enabled },
+        { id: 'levels', label: 'Niveaux', icon: 'activity', on: form.rank.enabled },
+        { id: 'social', label: 'Alertes réseaux', icon: 'megaphone', on: (form.youtube.channels || []).length > 0 || form.tiktok.enabled },
+        { id: 'profile', label: 'Profil & logs', icon: 'fileText' },
+        { id: 'islam', label: isIslamActive ? 'Mode Islam' : 'Code secret', icon: isIslamActive ? 'moon' : 'key', on: isIslamActive ? true : undefined },
     ];
+
+    // Cartes de modules de la vue d'ensemble : état + accès direct à l'onglet
+    const modules = [
+        { tab: 'ai', title: 'Intelligence artificielle', icon: 'sparkles', color: 'var(--azim-lilac)', state: form.ai.keysCount > 0 ? 'on' : 'todo', detail: form.ai.keysCount > 0 ? `${form.ai.keysCount} clé(s) Groq` : 'Ajoutez une clé Groq' },
+        { tab: 'welcome', title: 'Bienvenue', icon: 'hand', color: 'var(--azim-accent)', state: form.welcome.enabled ? (form.welcome.channelId ? 'on' : 'todo') : 'off', detail: form.welcome.enabled ? (channelName(form.welcome.channelId) ? `#${channelName(form.welcome.channelId)}` : 'Choisissez un salon') : 'Désactivé' },
+        { tab: 'levels', title: 'Niveaux', icon: 'activity', color: 'var(--azim-warm)', state: form.rank.enabled ? 'on' : 'off', detail: form.rank.enabled ? `${form.rank.rewards.length} palier(s) de récompense` : 'Désactivé' },
+        { tab: 'social', title: 'YouTube', icon: 'megaphone', color: 'var(--azim-coral)', state: (form.youtube.channels || []).length ? (form.youtube.targetChannelId ? 'on' : 'todo') : 'off', detail: (form.youtube.channels || []).length ? `${form.youtube.channels.length} chaîne(s) suivie(s)` : 'Aucune chaîne' },
+        { tab: 'social', title: 'TikTok Live', icon: 'megaphone', color: '#f472b6', state: form.tiktok.enabled ? (form.tiktok.username ? 'on' : 'todo') : 'off', detail: form.tiktok.enabled ? (form.tiktok.username || 'Ajoutez un pseudo') : 'Désactivé' },
+        { tab: 'profile', title: 'Logs du bot', icon: 'fileText', color: 'var(--azim-success)', state: form.logs.channelId ? 'on' : 'off', detail: form.logs.channelId ? `#${channelName(form.logs.channelId) || 'salon'}` : 'Aucun salon' },
+    ];
+    const STATE_LABEL = { on: 'Actif', off: 'Inactif', todo: 'À configurer' };
+
+    const addWelcomeRule = () => update('welcome', 'rules', [
+        ...form.welcome.rules,
+        { condition: 'has_role', matchType: 'all', roleIds: [], channelId: '', message: '', dmMessage: '' },
+    ]);
 
     return (
         <main className="gc">
             <header className="gc-head">
                 <Link to="/dashboard" className="gc-back"><Icon name="arrowLeft" size={16} /> Mes serveurs</Link>
-                <div className="gc-head__row">
-                    <div className="gc-head__id">
-                        {currentGuildIcon ? (
-                            <img src={currentGuildIcon} alt="" className="gc-head__icon" />
-                        ) : (
-                            <span className="gc-head__icon gc-head__icon--fallback">{getGuildName(guildId).slice(0, 2).toUpperCase()}</span>
-                        )}
-                        <div>
-                            <h1>{getGuildName(guildId)}</h1>
-                            <p>ID <code>{guildId}</code></p>
-                        </div>
+                <div className="gc-head__id">
+                    {currentGuildIcon ? (
+                        <img src={currentGuildIcon} alt="" className="gc-head__icon" />
+                    ) : (
+                        <span className="gc-head__icon gc-head__icon--fallback">{getGuildName(guildId).slice(0, 2).toUpperCase()}</span>
+                    )}
+                    <div>
+                        <h1>{getGuildName(guildId)}</h1>
+                        <p>Configuration d’Azim sur ce serveur</p>
                     </div>
-                    <button type="button" onClick={save} disabled={saving} className="gc-save">
-                        {saving ? <span className="gc-save__spinner" /> : <Icon name="check" size={17} />}
-                        {saving ? 'Enregistrement…' : 'Enregistrer'}
-                    </button>
                 </div>
             </header>
 
-            {error ? <div role="alert" className="gc-flash gc-flash--error"><Icon name="alert" size={18} /> {error}</div> : null}
-            {notice ? <div role="status" className="gc-flash gc-flash--ok"><Icon name="check" size={18} /> {notice}</div> : null}
+            {error ? <div role="alert" className="ui-flash ui-flash--error"><Icon name="alert" size={18} /> {error}</div> : null}
+            {notice ? <div role="status" className="ui-flash ui-flash--ok"><Icon name="check" size={18} /> {notice}</div> : null}
 
-            <div className="gc-layout">
-            <nav className="gc-nav" aria-label="Sections de configuration">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`gc-nav__item${activeTab === tab.id ? ' is-active' : ''}`}
-                        aria-current={activeTab === tab.id ? 'page' : undefined}
-                    >
-                        <Icon name={tab.icon} size={18} />
-                        <span className="gc-nav__label">{tab.label}</span>
-                        {typeof tab.count === 'number' && tab.count > 0 ? <span className="gc-nav__count">{tab.count}</span> : null}
-                        {tab.status ? <span className="gc-nav__count gc-nav__count--ok">{tab.status}</span> : null}
-                    </button>
-                ))}
-            </nav>
+            <div className="gc-layout" ref={contentRef}>
+                <nav className="gc-nav" aria-label="Sections de configuration">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => goToTab(tab.id)}
+                            className={`gc-nav__item${activeTab === tab.id ? ' is-active' : ''}`}
+                            aria-current={activeTab === tab.id ? 'page' : undefined}
+                        >
+                            <Icon name={tab.icon} size={18} />
+                            <span className="gc-nav__label">{tab.label}</span>
+                            {typeof tab.count === 'number' ? <span className="gc-nav__count">{tab.count}</span> : null}
+                            {typeof tab.on === 'boolean' ? <span className={`gc-nav__dot${tab.on ? ' is-on' : ''}`} title={tab.on ? 'Actif' : 'Inactif'} /> : null}
+                        </button>
+                    ))}
+                </nav>
 
-            <form id="guild-config" onSubmit={save} className="gc-content space-y-6">
-                {/* 1. ONGLET IA & DÉCLENCHEURS */}
-                {activeTab === 'ai' ? (
-                    <section className="admin-card space-y-6">
-                        <div className="admin-card-header">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Intelligence Artificielle & Déclencheurs</h2>
-                                <p className="text-sm text-slate-400">Configurez la personnalité, la langue et les mots-clés d'appel d'Azim.</p>
+                <form id="guild-config" onSubmit={save} className="gc-content">
+                    {/* VUE D'ENSEMBLE */}
+                    {activeTab === 'overview' ? (
+                        <>
+                            <div className="cf-modules">
+                                {modules.map((m) => (
+                                    <button key={m.title} type="button" className={`cf-module is-${m.state}`} style={{ '--c': m.color }} onClick={() => goToTab(m.tab)}>
+                                        <span className="cf-module__icon"><Icon name={m.icon} size={20} /></span>
+                                        <span className="cf-module__text">
+                                            <strong>{m.title}</strong>
+                                            <small>{m.detail}</small>
+                                        </span>
+                                        <span className="cf-module__state">{STATE_LABEL[m.state]}</span>
+                                    </button>
+                                ))}
                             </div>
-                        </div>
 
-                        {/* Mots déclencheurs multiples */}
-                        <div className="rounded-lg border border-cyan-800/40 bg-slate-900/40 p-4">
-                            <Field
-                                label="Mots déclencheurs de l'IA (Multi-déclencheurs)"
-                                hint="Mots ou préfixes qui réveillent et font répondre l'IA en plus des mentions directes."
-                            >
-                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <div className="cf-grid-2">
+                                <Card title="Commandes utilisées" desc={`${totalRuns} exécution(s) sur ce serveur`}>
+                                    {commandUsage.length ? (
+                                        <ol className="pnl-bars">
+                                            {commandUsage.slice(0, 6).map((c) => (
+                                                <li key={c.name}>
+                                                    <div className="pnl-bars__label"><code>/{c.name}</code><strong>{c.count}</strong></div>
+                                                    <span className="pnl-bars__track"><i style={{ width: `${Math.max(4, (c.count / maxRuns) * 100)}%` }} /></span>
+                                                </li>
+                                            ))}
+                                        </ol>
+                                    ) : <p className="cf-empty">Aucune commande utilisée pour l’instant.</p>}
+                                </Card>
+                                <Card title="Erreurs récentes" desc="Problèmes rencontrés par le bot ici">
+                                    {recentErrors.length ? (
+                                        <ul className="pnl-errors">
+                                            {recentErrors.slice(0, 5).map((err, idx) => (
+                                                <li key={idx}>
+                                                    <span className="pnl-errors__icon"><Icon name="alert" size={15} /></span>
+                                                    <div><strong>{err.type || 'Erreur'}</strong><small>{String(err.message || '').slice(0, 90)}</small></div>
+                                                    <time>{err.ts ? new Date(err.ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}</time>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : <p className="cf-empty cf-empty--ok"><Icon name="check" size={16} /> Aucune erreur récente.</p>}
+                                </Card>
+                            </div>
+                        </>
+                    ) : null}
+
+                    {/* INTELLIGENCE ARTIFICIELLE */}
+                    {activeTab === 'ai' ? (
+                        <>
+                            <div className="cf-title">
+                                <h2>Intelligence artificielle</h2>
+                                <p>Comment Azim répond quand on lui parle sur ce serveur.</p>
+                            </div>
+
+                            <Card title="Mots qui réveillent l’IA" desc="Azim répond quand un message contient l’un de ces mots, en plus des mentions.">
+                                <div className="cf-chips">
                                     {form.ai.triggerNames.map((trig) => (
-                                        <span key={trig} className="trigger-chip">
+                                        <span key={trig} className="cf-chip cf-chip--accent">
                                             {trig}
                                             {form.ai.triggerNames.length > 1 ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeTriggerName(trig)}
-                                                    className="role-badge-remove text-xs"
-                                                    title={`Retirer ${trig}`}
-                                                >
-                                                    ×
-                                                </button>
+                                                <button type="button" onClick={() => removeTriggerName(trig)} aria-label={`Retirer ${trig}`}><Icon name="close" size={12} /></button>
                                             ) : null}
                                         </span>
                                     ))}
                                 </div>
-                                <div className="mt-3 flex max-w-md items-center gap-2">
+                                <div className="cf-inline">
                                     <TextInput
-                                        placeholder="Ajouter un mot déclencheur (ex: azim, az, bot)…"
+                                        placeholder="Ajouter un mot (ex : az, bot)"
                                         value={newTrigger}
                                         onChange={(e) => setNewTrigger(e.target.value)}
                                         onKeyDown={(e) => {
@@ -610,1347 +750,530 @@ function GuildConfig() {
                                         }}
                                         maxLength={32}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={addTriggerName}
-                                        disabled={!newTrigger.trim() || newTrigger.trim().length < 2}
-                                        className="btn btn-soft text-xs disabled:opacity-40"
-                                    >
-                                        + Ajouter
+                                    <button type="button" onClick={addTriggerName} disabled={!newTrigger.trim() || newTrigger.trim().length < 2} className="ui-btn">
+                                        <Icon name="plus" size={16} /> Ajouter
                                     </button>
                                 </div>
-                            </Field>
-                        </div>
+                            </Card>
 
-                        <div className="grid gap-5 md:grid-cols-2">
-                            <Field label="Langue par défaut des réponses" hint="Ex: Français, English, العربية... (Laisser vide pour adaptation automatique)">
-                                <TextInput
-                                    maxLength={50}
-                                    placeholder="Français, English, العربية…"
-                                    value={form.ai.language || ''}
-                                    onChange={(e) => update('ai', 'language', e.target.value)}
-                                />
-                            </Field>
-                        </div>
-
-                        <Field label="Prompt système personnalisé" hint="Instructions et contexte propres à ce serveur (max 6000 caractères).">
-                            <textarea
-                                className="form-input min-h-32 resize-y font-sans text-sm"
-                                maxLength={6000}
-                                placeholder="Tu es Azim, l'assistant officiel de ce serveur Discord..."
-                                value={form.ai.systemPrompt || ''}
-                                onChange={(e) => update('ai', 'systemPrompt', e.target.value)}
-                            />
-                        </Field>
-
-                        {/* Clés Groq */}
-                        <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-4 space-y-3">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                    <h3 className="font-semibold text-white">Clés API Groq du serveur</h3>
-                                    <p className="text-xs text-slate-400">Toutes vos clés sont affichées en entier pour vous permettre de les vérifier ou de les copier.</p>
+                            <Card title="Personnalité">
+                                <div className="cf-stack">
+                                    <Field label="Langue des réponses" hint="Laissez vide pour répondre dans la langue du message.">
+                                        <TextInput
+                                            maxLength={50}
+                                            placeholder="Français, English, العربية…"
+                                            value={form.ai.language || ''}
+                                            onChange={(e) => update('ai', 'language', e.target.value)}
+                                        />
+                                    </Field>
+                                    <Field label="Instructions pour l’IA" hint={`${(form.ai.systemPrompt || '').length}/6000 caractères`}>
+                                        <textarea
+                                            className="ui-input"
+                                            rows={6}
+                                            maxLength={6000}
+                                            placeholder="Tu es Azim, l’assistant de ce serveur Discord. Tu tutoies les membres…"
+                                            value={form.ai.systemPrompt || ''}
+                                            onChange={(e) => update('ai', 'systemPrompt', e.target.value)}
+                                        />
+                                    </Field>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-300 font-semibold">{form.ai.keysCount} active(s)</span>
-                                    {form.ai.keysPreviews.length > 0 ? (
+                            </Card>
+
+                            <Card
+                                title="Clés API Groq"
+                                desc="Utilisées uniquement pour ce serveur. Les modifications de clés sont enregistrées immédiatement."
+                                aside={form.ai.keysPreviews.length ? (
+                                    <button type="button" className="ui-btn" onClick={copyAllKeysToClipboard}>
+                                        <Icon name={copiedAllKeys ? 'check' : 'fileText'} size={16} /> {copiedAllKeys ? 'Copiées' : 'Tout copier'}
+                                    </button>
+                                ) : null}
+                            >
+                                {form.ai.keysPreviews.length ? (
+                                    <ul className="cf-keys">
+                                        {form.ai.keysPreviews.map((key) => {
+                                            const fullKey = key.key || key.preview || '';
+                                            return (
+                                                <li key={key.index}>
+                                                    <span className="cf-keys__n">#{key.index}</span>
+                                                    <code>{fullKey}</code>
+                                                    <button type="button" className="ui-icon-btn" onClick={() => copyKeyToClipboard(fullKey, key.index)} title="Copier">
+                                                        <Icon name={copiedKeyIndex === key.index ? 'check' : 'fileText'} size={15} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="ui-icon-btn cf-danger"
+                                                        disabled={form.ai.keysCount <= 1}
+                                                        onClick={() => manageKey({ removeKeyIndex: key.index })}
+                                                        title={form.ai.keysCount <= 1 ? 'Gardez au moins une clé' : 'Supprimer'}
+                                                    >
+                                                        <Icon name="close" size={15} />
+                                                    </button>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : <p className="cf-empty">Aucune clé : l’IA utilise le quota partagé, plus limité.</p>}
+
+                                <div className="cf-stack cf-keys__add">
+                                    <Field
+                                        label="Ajouter des clés"
+                                        hint={detectedGroqKeys.length ? `${detectedGroqKeys.length} clé(s) détectée(s)` : 'Collez une ou plusieurs clés gsk_…, séparées par des retours à la ligne.'}
+                                    >
+                                        <textarea
+                                            className="ui-input cf-mono"
+                                            rows={3}
+                                            placeholder={'gsk_…\ngsk_…'}
+                                            value={newKey}
+                                            onChange={(e) => setNewKey(e.target.value)}
+                                        />
+                                    </Field>
+                                    <div className="cf-actions">
                                         <button
                                             type="button"
-                                            onClick={copyAllKeysToClipboard}
-                                            className="btn btn-primary text-xs py-1 px-3 flex items-center gap-1.5 shadow-md shadow-cyan-900/40"
-                                            title="Copie toutes les clés de ce serveur séparées par des retours à la ligne"
+                                            disabled={!detectedGroqKeys.length}
+                                            onClick={() => manageKey({ addKeys: detectedGroqKeys })}
+                                            className="ui-btn ui-btn--primary"
                                         >
-                                            <span>{copiedAllKeys ? '✓' : '📋'}</span>
-                                            <span>{copiedAllKeys ? 'Toutes les clés copiées !' : `Tout copier d'un coup (${form.ai.keysPreviews.length})`}</span>
+                                            <Icon name="plus" size={16} /> Ajouter {detectedGroqKeys.length > 1 ? `les ${detectedGroqKeys.length} clés` : 'la clé'}
                                         </button>
-                                    ) : null}
+                                        {detectedGroqKeys.length && form.ai.keysPreviews.length ? (
+                                            <button
+                                                type="button"
+                                                className="ui-btn ui-btn--ghost"
+                                                onClick={() => {
+                                                    if (window.confirm(`Remplacer toutes les clés existantes par ces ${detectedGroqKeys.length} clé(s) ?`)) {
+                                                        manageKey({ setKeys: detectedGroqKeys });
+                                                    }
+                                                }}
+                                            >
+                                                Remplacer les clés existantes
+                                            </button>
+                                        ) : null}
+                                    </div>
                                 </div>
-                            </div>
+                            </Card>
+                        </>
+                    ) : null}
 
-                            <div className="flex items-start gap-2.5 rounded-md border border-emerald-800/40 bg-emerald-950/20 p-2.5 text-xs text-emerald-300">
-                                <span className="text-sm shrink-0">🛡️</span>
+                    {/* COMMANDES */}
+                    {activeTab === 'commands' ? (
+                        <>
+                            <div className="cf-title cf-title--row">
                                 <div>
-                                    <strong>Isolation stricte :</strong> Les clés API configurées ici sont hermétiques et utilisées exclusivement pour ce serveur ({getGuildName(guildId)}). Aucun autre serveur ne peut utiliser ou partager vos clés ou quotas.
+                                    <h2>Commandes</h2>
+                                    <p>Activez les commandes et choisissez qui peut les utiliser.</p>
                                 </div>
+                                <label className="ui-search">
+                                    <Icon name="search" size={16} />
+                                    <input
+                                        type="search"
+                                        placeholder="Rechercher…"
+                                        value={commandSearch}
+                                        onChange={(e) => setCommandSearch(e.target.value)}
+                                    />
+                                </label>
                             </div>
 
-                            <div className="space-y-2.5">
-                                {form.ai.keysPreviews.map((key) => {
-                                    const fullKey = key.key || key.preview || '';
-
+                            <div className="cf-commands">
+                                {filteredCommands.map((cmd) => {
+                                    const allowedRoles = cmd.allowedRoleIds || [];
+                                    const isEnabled = cmd.enabled !== false;
                                     return (
-                                        <div
-                                            key={key.index}
-                                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-lg border border-slate-800 bg-[#071727] p-3 text-sm shadow-sm"
-                                        >
-                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-xs text-slate-400 shrink-0">
-                                                    #{key.index}
-                                                </span>
-                                                <code className="font-mono text-cyan-300 break-all select-all text-xs sm:text-sm bg-[#050e18] px-2.5 py-1.5 rounded border border-cyan-950/60 flex-1">
-                                                    {fullKey}
-                                                </code>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => copyKeyToClipboard(fullKey, key.index)}
-                                                    className="btn btn-soft text-xs py-1 px-2.5 flex items-center gap-1 text-cyan-300 hover:text-cyan-200"
-                                                    title="Copier cette clé complète"
-                                                >
-                                                    <span>{copiedKeyIndex === key.index ? '✓' : '📋'}</span>
-                                                    <span>{copiedKeyIndex === key.index ? 'Copié !' : 'Copier'}</span>
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    disabled={form.ai.keysCount <= 1}
-                                                    onClick={() => manageKey({ removeKeyIndex: key.index })}
-                                                    className="btn btn-soft text-xs py-1 px-2.5 text-rose-400 hover:text-rose-300 disabled:opacity-40"
-                                                    title="Supprimer cette clé de la configuration"
-                                                >
-                                                    Supprimer
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Zone d'ajout de clés en bloc ou à l'unité */}
-                            <div className="mt-4 rounded-lg border border-slate-700/80 bg-slate-900/60 p-3.5 space-y-3">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <label className="text-xs font-semibold text-slate-200">
-                                        Ajouter ou coller plusieurs clés d'un coup
-                                    </label>
-                                    {detectedGroqKeys.length > 0 ? (
-                                        <span className="rounded bg-cyan-950/80 border border-cyan-600/40 px-2 py-0.5 text-[11px] font-semibold text-cyan-300">
-                                            ✨ {detectedGroqKeys.length} clé(s) Groq détectée(s)
-                                        </span>
-                                    ) : null}
-                                </div>
-
-                                <textarea
-                                    className="form-input min-h-[90px] w-full resize-y font-mono text-xs sm:text-sm"
-                                    placeholder="Collez une ou plusieurs clés Groq ici (séparées par saut de ligne, espace ou virgule) :&#10;gsk_123...&#10;gsk_456...&#10;gsk_789..."
-                                    value={newKey}
-                                    onChange={(e) => setNewKey(e.target.value)}
-                                />
-
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <button
-                                        type="button"
-                                        disabled={detectedGroqKeys.length === 0}
-                                        onClick={() => manageKey({ addKeys: detectedGroqKeys })}
-                                        className="btn btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5 disabled:opacity-40 shadow-sm"
-                                    >
-                                        <span>+</span>
-                                        <span>
-                                            {detectedGroqKeys.length > 1
-                                                ? `Ajouter ces ${detectedGroqKeys.length} clés d'un coup`
-                                                : detectedGroqKeys.length === 1
-                                                ? 'Ajouter cette clé'
-                                                : 'Ajouter les clés'}
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        disabled={detectedGroqKeys.length === 0}
-                                        onClick={() => {
-                                            if (window.confirm(`Voulez-vous vraiment remplacer TOUTES les clés existantes par ces ${detectedGroqKeys.length} nouvelle(s) clé(s) ?`)) {
-                                                manageKey({ setKeys: detectedGroqKeys });
-                                            }
-                                        }}
-                                        className="btn btn-soft text-xs py-1.5 px-3 text-amber-300 hover:text-amber-200 disabled:opacity-40"
-                                        title="Remplace toutes les clés existantes par la liste collée"
-                                    >
-                                        <span>🔄</span>
-                                        <span>Remplacer tout par ce lot</span>
-                                    </button>
-
-                                    {newKey ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => setNewKey('')}
-                                            className="btn btn-soft text-xs py-1.5 px-2.5 text-slate-400"
-                                        >
-                                            Effacer
-                                        </button>
-                                    ) : null}
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                ) : null}
-
-                {/* 2. ONGLET PERMISSIONS DES COMMANDES */}
-                {activeTab === 'commands' ? (
-                    <section className="admin-card space-y-6">
-                        <div className="admin-card-header">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Permissions et Accès aux Commandes</h2>
-                                <p className="text-sm text-slate-400">
-                                    Définissez précisément quelles commandes peuvent être utilisées et par quels rôles sur ce serveur.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Search Toolbar */}
-                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700/60 bg-slate-900/40 p-3">
-                            <div className="w-full max-w-sm">
-                                <TextInput
-                                    type="search"
-                                    placeholder="Rechercher une commande (/ask, /welcome, /rank…)…"
-                                    value={commandSearch}
-                                    onChange={(e) => setCommandSearch(e.target.value)}
-                                />
-                            </div>
-                            <span className="text-xs text-slate-400">{filteredCommands.length} commande(s) affichée(s)</span>
-                        </div>
-
-                        {/* Commands List */}
-                        <div className="space-y-3">
-                            {filteredCommands.map((cmd) => {
-                                const allowedRoles = cmd.allowedRoleIds || [];
-                                const isEnabled = cmd.enabled !== false;
-
-                                return (
-                                    <div
-                                        key={cmd.name}
-                                        className={`rounded-lg border p-4 transition-all ${
-                                            !isEnabled
-                                                ? 'border-rose-900/40 bg-rose-950/10 opacity-70'
-                                                : 'border-slate-700/60 bg-slate-900/50 hover:border-cyan-700/50'
-                                        }`}
-                                    >
-                                        <div className="flex flex-wrap items-start justify-between gap-4">
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <code className="text-base font-bold text-cyan-300">/{cmd.name}</code>
-                                                    {cmd.isIslamic ? (
-                                                        <span className="rounded bg-emerald-950/70 border border-emerald-600/50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">Mode Islam</span>
-                                                    ) : null}
-                                                    {cmd.defaultLevel === 'admin' ? (
-                                                        <span className="rounded bg-amber-950/60 border border-amber-600/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">Admin par défaut</span>
-                                                    ) : null}
+                                        <article key={cmd.name} className={`cf-command${isEnabled ? '' : ' is-off'}`}>
+                                            <div className="cf-command__main">
+                                                <div className="cf-command__name">
+                                                    <code>/{cmd.name}</code>
+                                                    {cmd.isIslamic ? <span className="cf-tag cf-tag--green">Islam</span> : null}
                                                 </div>
-                                                <p className="mt-1 text-xs text-slate-400">{cmd.description || 'Aucune description'}</p>
+                                                <p>{cmd.description || 'Aucune description'}</p>
                                             </div>
+                                            <Switch checked={isEnabled} onChange={(v) => updateCommand(cmd.name, 'enabled', v)} />
 
-                                            {/* Switches: Admin Only & Enable/Disable */}
-                                            <div className="flex flex-wrap items-center gap-2.5">
-                                                <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold transition-all ${
-                                                    cmd.adminOnly
-                                                        ? 'border-amber-500/60 bg-amber-950/40 text-amber-200 shadow-sm'
-                                                        : 'border-slate-700/60 bg-slate-800/40 text-slate-400 hover:border-slate-600'
-                                                }`}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={Boolean(cmd.adminOnly)}
-                                                        onChange={(e) => updateCommand(cmd.name, 'adminOnly', e.target.checked)}
-                                                        className="size-3.5 accent-amber-500"
-                                                    />
-                                                    <span>🔒 Admin seulement</span>
-                                                </label>
-
-                                                <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-300">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={isEnabled}
-                                                        onChange={(e) => updateCommand(cmd.name, 'enabled', e.target.checked)}
-                                                        className="size-4 accent-cyan-500"
-                                                    />
-                                                    {isEnabled ? 'Activée' : 'Désactivée'}
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        {isEnabled ? (
-                                            <div className="mt-4 border-t border-slate-800/80 pt-3">
-                                                {cmd.adminOnly ? (
-                                                    <div className="mb-3 flex items-center gap-2.5 rounded-md bg-amber-950/20 border border-amber-600/30 px-3 py-2 text-xs text-amber-300">
-                                                        <span className="text-sm shrink-0">🛡️</span>
-                                                        <span>
-                                                            <strong>Mode Administrateur actif :</strong> les administrateurs et le propriétaire ont accès d'office. Vous pouvez également autoriser des rôles spécifiques supplémentaires ci-dessous.
-                                                        </span>
+                                            {isEnabled ? (
+                                                <div className="cf-command__access">
+                                                    <div className="ui-seg cf-seg-sm" role="radiogroup" aria-label={`Accès à /${cmd.name}`}>
+                                                        <button type="button" className={!cmd.adminOnly ? 'is-active' : ''} onClick={() => updateCommand(cmd.name, 'adminOnly', false)}>
+                                                            {cmd.defaultLevel === 'admin' ? 'Par défaut' : 'Tout le monde'}
+                                                        </button>
+                                                        <button type="button" className={cmd.adminOnly ? 'is-active' : ''} onClick={() => updateCommand(cmd.name, 'adminOnly', true)}>
+                                                            Admins seulement
+                                                        </button>
                                                     </div>
-                                                ) : null}
-
-                                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                                    <span className="text-xs font-semibold text-slate-300">
-                                                        {cmd.adminOnly ? 'Rôles autorisés additionnels :' : 'Rôles autorisés :'}
-                                                    </span>
-                                                    <div className="max-w-xs">
+                                                    <div className="cf-chips">
+                                                        {allowedRoles.map((roleId) => (
+                                                            <RoleChip key={roleId} name={roleName(roleId)} onRemove={() => toggleCommandRole(cmd.name, roleId)} />
+                                                        ))}
                                                         <SelectInput
                                                             value=""
-                                                            onChange={(e) => {
-                                                                if (e.target.value) {
-                                                                    toggleCommandRole(cmd.name, e.target.value);
-                                                                    e.target.value = '';
-                                                                }
-                                                            }}
+                                                            onChange={(e) => { if (e.target.value) toggleCommandRole(cmd.name, e.target.value); }}
                                                             options={roleOptions.filter((r) => !allowedRoles.includes(r.value))}
-                                                            emptyLabel="+ Ajouter un rôle autorisé…"
-                                                            className="text-xs py-1"
+                                                            emptyLabel="+ Autoriser un rôle"
+                                                            className="cf-select--chip"
                                                         />
                                                     </div>
                                                 </div>
-
-                                                <div className="mt-2 flex flex-wrap items-center gap-2">
-                                                    {allowedRoles.length === 0 ? (
-                                                        <span className="text-xs italic text-slate-500">
-                                                            {cmd.adminOnly
-                                                                ? 'Réservée aux administrateurs du serveur (ajoutez des rôles pour étendre l’accès).'
-                                                                : (cmd.defaultLevel === 'admin'
-                                                                    ? 'Réservée aux administrateurs du serveur (ou ajoutez des rôles pour autoriser des membres)'
-                                                                    : 'Accessible à tous les membres (@everyone)')}
-                                                        </span>
-                                                    ) : (
-                                                        allowedRoles.map((roleId) => {
-                                                            const roleName = form.roles.find((r) => r.id === roleId)?.name || roleId;
-                                                            return (
-                                                                <span key={roleId} className="role-badge">
-                                                                    <span>@{roleName}</span>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => toggleCommandRole(cmd.name, roleId)}
-                                                                        className="role-badge-remove"
-                                                                        title="Retirer ce rôle"
-                                                                    >
-                                                                        ×
-                                                                    </button>
-                                                                </span>
-                                                            );
-                                                        })
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </section>
-                ) : null}
-
-                {/* 3. ONGLET BIENVENUE & MULTI-RÔLES */}
-                {activeTab === 'welcome' ? (
-                    <section className="admin-card space-y-6">
-                        <div className="admin-card-header">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Messages de Bienvenue Conditionnels</h2>
-                                <p className="text-sm text-slate-400">
-                                    Personnalisez l'accueil et créez des messages sur-mesure selon des combinaisons de rôles (ex: Femme + Musulman = Selem ma soeur).
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Paramètres Généraux */}
-                        <div className="grid gap-5 md:grid-cols-2">
-                            <label className="flex items-center gap-3 text-sm font-semibold text-white">
-                                <input
-                                    type="checkbox"
-                                    checked={form.welcome.enabled}
-                                    onChange={(e) => update('welcome', 'enabled', e.target.checked)}
-                                    className="size-4 accent-cyan-500"
-                                />
-                                Activer le système de bienvenue
-                            </label>
-                            <Field label="Salon de bienvenue principal">
-                                <SelectInput
-                                    value={form.welcome.channelId}
-                                    onChange={(e) => update('welcome', 'channelId', e.target.value)}
-                                    options={channelOptions}
-                                    emptyLabel="Choisir un salon"
-                                />
-                            </Field>
-                            <Field label="Destination du message">
-                                <SelectInput
-                                    value={form.welcome.destination}
-                                    onChange={(e) => update('welcome', 'destination', e.target.value)}
-                                    options={[
-                                        { value: 'both', label: 'Salon public ET Message Privé (MP)' },
-                                        { value: 'channel', label: 'Salon public uniquement' },
-                                        { value: 'dm', label: 'Message Privé (MP) uniquement' },
-                                    ]}
-                                />
-                            </Field>
-                            <Field label="Déclencheur">
-                                <SelectInput
-                                    value={form.welcome.trigger}
-                                    onChange={(e) => update('welcome', 'trigger', e.target.value)}
-                                    options={[
-                                        { value: 'arrivee', label: 'Dès l’arrivée sur le serveur' },
-                                        { value: 'role', label: 'Lors de l’attribution d’un rôle' },
-                                    ]}
-                                />
-                            </Field>
-                        </div>
-
-                        {/* Messages par défaut */}
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <Field label="Message public standard (fallback)" hint="Variables : {mention}, {username}, {serveur}, {nbmembres}">
-                                <textarea
-                                    className="form-input min-h-24 resize-y text-sm"
-                                    maxLength={2000}
-                                    value={form.welcome.defaultMessage || ''}
-                                    onChange={(e) => update('welcome', 'defaultMessage', e.target.value)}
-                                />
-                            </Field>
-                            <Field label="Message privé standard (MP)">
-                                <textarea
-                                    className="form-input min-h-24 resize-y text-sm"
-                                    maxLength={2000}
-                                    value={form.welcome.defaultDmMessage || ''}
-                                    onChange={(e) => update('welcome', 'defaultDmMessage', e.target.value)}
-                                />
-                            </Field>
-                        </div>
-
-                        {/* Règles Conditionnelles Multi-Rôles */}
-                        <div className="mt-8 border-t border-slate-700/60 pt-6">
-                            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                    <h3 className="text-base font-bold text-white">Règles Conditionnelles Multi-Rôles</h3>
-                                    <p className="text-xs text-slate-400">
-                                        Combinez plusieurs rôles pour déclencher un message spécifique (ex: Rôle Femme + Rôle Musulman).
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        update('welcome', 'rules', [
-                                            ...form.welcome.rules,
-                                            {
-                                                condition: 'has_role',
-                                                matchType: 'all',
-                                                roleIds: [],
-                                                channelId: '',
-                                                message: '',
-                                                dmMessage: '',
-                                            },
-                                        ])
-                                    }
-                                    className="btn btn-primary text-xs"
-                                >
-                                    + Ajouter une règle
-                                </button>
-                            </div>
-
-                            {form.welcome.rules.length === 0 ? (
-                                <p className="text-xs italic text-slate-500 py-3">Aucune règle conditionnelle. Le message standard sera envoyé à tous.</p>
-                            ) : null}
-
-                            <div className="space-y-4">
-                                {form.welcome.rules.map((rule, index) => {
-                                    const selectedRoleIds = rule.roleIds || (rule.roleId ? [rule.roleId] : []);
-                                    return (
-                                        <div key={index} className="rounded-lg border border-cyan-800/50 bg-slate-900/60 p-4 space-y-4">
-                                            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                                                <span className="font-mono text-xs font-bold text-cyan-400">Règle #{index + 1}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        update(
-                                                            'welcome',
-                                                            'rules',
-                                                            form.welcome.rules.filter((_, i) => i !== index)
-                                                        )
-                                                    }
-                                                    className="text-xs text-rose-400 hover:underline"
-                                                >
-                                                    Supprimer la règle
-                                                </button>
-                                            </div>
-
-                                            {/* Sélecteur Multi-Rôles & Condition */}
-                                            <div className="grid gap-4 md:grid-cols-2">
-                                                <div>
-                                                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                                                        Rôles combinés ({selectedRoleIds.length}) :
-                                                    </label>
-                                                    <div className="mb-2 flex flex-wrap gap-1.5">
-                                                        {selectedRoleIds.map((rid) => {
-                                                            const rName = form.roles.find((r) => r.id === rid)?.name || rid;
-                                                            return (
-                                                                <span key={rid} className="role-badge">
-                                                                    <span>@{rName}</span>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => removeRoleFromRule(index, rid)}
-                                                                        className="role-badge-remove"
-                                                                    >
-                                                                        ×
-                                                                    </button>
-                                                                </span>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                    <SelectInput
-                                                        value=""
-                                                        onChange={(e) => addRoleToRule(index, e.target.value)}
-                                                        options={roleOptions.filter((r) => !selectedRoleIds.includes(r.value))}
-                                                        emptyLabel="+ Ajouter un rôle à la condition…"
-                                                        className="text-xs"
-                                                    />
-                                                </div>
-
-                                                <Field label="Condition de correspondance">
-                                                    <SelectInput
-                                                        value={`${rule.condition || 'has_role'}_${rule.matchType || 'all'}`}
-                                                        onChange={(e) => {
-                                                            const [cond, match] = e.target.value.split('_');
-                                                            updateRuleField(index, 'condition', cond);
-                                                            updateRuleField(index, 'matchType', match);
-                                                        }}
-                                                        options={[
-                                                            { value: 'has_role_all', label: 'Possède TOUS les rôles sélectionnés (ET / AND)' },
-                                                            { value: 'has_role_any', label: 'Possède AU MOINS UN des rôles (OU / OR)' },
-                                                            { value: 'lacks_role_all', label: 'Ne possède AUCUN des rôles sélectionnés' },
-                                                        ]}
-                                                    />
-                                                </Field>
-                                            </div>
-
-                                            <div className="grid gap-4 md:grid-cols-2">
-                                                <Field label="Message public personnalisé (Ex: Selem ma soeur {mention})">
-                                                    <TextInput
-                                                        placeholder="Ex: Selem ma soeur {mention} sur {serveur} !"
-                                                        value={rule.message || ''}
-                                                        onChange={(e) => updateRuleField(index, 'message', e.target.value)}
-                                                    />
-                                                </Field>
-                                                <Field label="Message privé personnalisé (facultatif)">
-                                                    <TextInput
-                                                        placeholder="Message privé personnalisé…"
-                                                        value={rule.dmMessage || ''}
-                                                        onChange={(e) => updateRuleField(index, 'dmMessage', e.target.value)}
-                                                    />
-                                                </Field>
-                                            </div>
-                                        </div>
+                                            ) : null}
+                                        </article>
                                     );
                                 })}
+                                {filteredCommands.length === 0 ? <p className="cf-empty">Aucune commande ne correspond à « {commandSearch} ».</p> : null}
                             </div>
-                        </div>
-                    </section>
-                ) : null}
+                        </>
+                    ) : null}
 
-                {/* 4. ONGLET LOGS & PROFIL */}
-                {activeTab === 'logs' ? (
-                    <section className="admin-card space-y-6">
-                        <div className="admin-card-header">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Logs & Profil du Bot</h2>
-                                <p className="text-sm text-slate-400">Canal de diagnostic et identité locale du bot sur ce serveur.</p>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-5 md:grid-cols-2">
-                            <Field label="Salon dédié aux logs du bot">
-                                <SelectInput
-                                    value={form.logs.channelId}
-                                    onChange={(e) => update('logs', 'channelId', e.target.value)}
-                                    options={channelOptions}
-                                    emptyLabel="Aucun salon de logs"
-                                />
-                            </Field>
-                            <div className="flex items-center">
-                                <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-white">
-                                    <input
-                                        type="checkbox"
-                                        checked={form.logs.restartAnnouncementEnabled}
-                                        onChange={(e) => update('logs', 'restartAnnouncementEnabled', e.target.checked)}
-                                        className="size-4 accent-cyan-500"
-                                    />
-                                    Annoncer les redémarrages dans les logs
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className="border-t border-slate-700/60 pt-5 space-y-6">
-                            <div>
-                                <h3 className="font-semibold text-white text-base">Photo de profil & Identité locale du bot</h3>
-                                <p className="text-xs text-slate-400 mt-0.5">
-                                    Visualisez l'avatar actuellement actif sur ce serveur, téléchargez-le ou personnalisez son apparence.
-                                </p>
+                    {/* BIENVENUE */}
+                    {activeTab === 'welcome' ? (
+                        <>
+                            <div className="cf-title cf-title--row">
+                                <div>
+                                    <h2>Bienvenue</h2>
+                                    <p>Le message envoyé quand quelqu’un rejoint le serveur.</p>
+                                </div>
+                                <Switch checked={form.welcome.enabled} onChange={(v) => update('welcome', 'enabled', v)} label={form.welcome.enabled ? 'Activé' : 'Désactivé'} />
                             </div>
 
-                            {/* Carte Photo de profil actuelle du bot actif */}
-                            <div className="rounded-xl border border-slate-700/60 bg-gradient-to-br from-slate-900/90 via-slate-900/50 to-slate-950 p-5 shadow-lg">
-                                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                                    <div className="relative group shrink-0">
-                                        {form.profile.hasServerAvatar && form.profile.currentAvatarUrl ? (
-                                            <img
-                                                src={form.profile.currentAvatarUrl}
-                                                alt={form.profile.botDisplayName || 'Avatar du bot'}
-                                                className="size-24 sm:size-28 rounded-2xl object-cover ring-2 ring-cyan-500/40 shadow-cyan-950/40 shadow-xl transition-transform duration-200 group-hover:scale-105"
+                            <div className={form.welcome.enabled ? '' : 'cf-disabled'}>
+                                <Card title="Envoi">
+                                    <div className="cf-grid-3">
+                                        <Field label="Salon">
+                                            <SelectInput value={form.welcome.channelId} onChange={(e) => update('welcome', 'channelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        </Field>
+                                        <Field label="Où envoyer">
+                                            <SelectInput
+                                                value={form.welcome.destination}
+                                                onChange={(e) => update('welcome', 'destination', e.target.value)}
+                                                options={[
+                                                    { value: 'both', label: 'Salon + message privé' },
+                                                    { value: 'channel', label: 'Salon uniquement' },
+                                                    { value: 'dm', label: 'Message privé uniquement' },
+                                                ]}
                                             />
-                                        ) : (
-                                            <img
-                                                src={isIslamActive ? '/icon-islam.png' : (form.profile.globalAvatarUrl || '/icon.png')}
-                                                alt={form.profile.botDisplayName || 'Avatar du bot'}
-                                                className={`size-24 sm:size-28 rounded-2xl object-contain p-2 bg-slate-900/90 ring-2 shadow-xl transition-transform duration-200 group-hover:scale-105 ${
-                                                    isIslamActive
-                                                        ? 'ring-emerald-500/50 shadow-emerald-950/50'
-                                                        : 'ring-cyan-500/40 shadow-cyan-950/40'
-                                                }`}
+                                        </Field>
+                                        <Field label="Quand">
+                                            <SelectInput
+                                                value={form.welcome.trigger}
+                                                onChange={(e) => update('welcome', 'trigger', e.target.value)}
+                                                options={[
+                                                    { value: 'arrivee', label: 'À l’arrivée' },
+                                                    { value: 'role', label: 'Quand un rôle est donné' },
+                                                ]}
                                             />
-                                        )}
-                                        {form.profile.hasServerAvatar ? (
-                                            <span className="absolute -bottom-2 -right-2 rounded-full bg-cyan-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-md">
-                                                Serveur
-                                            </span>
-                                        ) : (
-                                            <span className={`absolute -bottom-2 -right-2 rounded-full px-2 py-0.5 text-[10px] font-bold text-white shadow-md ${
-                                                isIslamActive ? 'bg-emerald-600' : 'bg-slate-700'
-                                            }`}>
-                                                {isIslamActive ? 'Islam' : 'Global'}
-                                            </span>
-                                        )}
+                                        </Field>
                                     </div>
+                                </Card>
 
-                                    <div className="flex-1 text-center sm:text-left space-y-2">
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                                            <h4 className="text-lg font-bold text-white">
-                                                {form.profile.botDisplayName || 'Azim'}
-                                            </h4>
-                                            <span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-400 font-mono">
-                                                {form.profile.botTag || 'Bot Discord'}
-                                            </span>
-                                            {form.profile.hasServerAvatar ? (
-                                                <span className="rounded-full bg-emerald-950/70 border border-emerald-600/50 px-2 py-0.5 text-[11px] font-semibold text-emerald-300">
-                                                    ✨ Avatar personnalisé à ce serveur
-                                                </span>
-                                            ) : (
-                                                <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                                                    isIslamActive
-                                                        ? 'bg-emerald-950/70 border-emerald-600/50 text-emerald-300'
-                                                        : 'bg-slate-800 border-slate-700 text-slate-400'
-                                                }`}>
-                                                    {isIslamActive
-                                                        ? '🕌 Photo officielle Islamique (active par défaut)'
-                                                        : '🌐 Photo officielle de base (processeur bleu)'}
-                                                </span>
-                                            )}
-                                        </div>
+                                <Card title="Messages" desc="Variables : {mention}, {username}, {serveur}, {nbmembres}">
+                                    <div className="cf-grid-2">
+                                        <Field label="Dans le salon">
+                                            <textarea className="ui-input" rows={4} maxLength={2000} value={form.welcome.defaultMessage || ''} onChange={(e) => update('welcome', 'defaultMessage', e.target.value)} />
+                                        </Field>
+                                        <Field label="En message privé">
+                                            <textarea className="ui-input" rows={4} maxLength={2000} value={form.welcome.defaultDmMessage || ''} onChange={(e) => update('welcome', 'defaultDmMessage', e.target.value)} />
+                                        </Field>
+                                    </div>
+                                </Card>
 
-                                        <p className="text-xs text-slate-400 max-w-xl">
-                                            Voici la photo de profil du bot telle qu'elle est affichée aux membres de ce serveur Discord. Vous pouvez la retélécharger en un clic ou définir un avatar spécifique ci-dessous.
-                                        </p>
+                                <Card
+                                    title="Messages selon les rôles"
+                                    desc="Un message différent pour les membres qui ont (ou n’ont pas) certains rôles."
+                                    aside={<button type="button" className="ui-btn" onClick={addWelcomeRule}><Icon name="plus" size={16} /> Ajouter une règle</button>}
+                                >
+                                    {form.welcome.rules.length === 0 ? <p className="cf-empty">Aucune règle : tout le monde reçoit le message ci-dessus.</p> : null}
+                                    <div className="cf-rules">
+                                        {form.welcome.rules.map((rule, index) => {
+                                            const selectedRoleIds = rule.roleIds || (rule.roleId ? [rule.roleId] : []);
+                                            return (
+                                                <div key={index} className="cf-rule">
+                                                    <div className="cf-rule__head">
+                                                        <span>Règle {index + 1}</span>
+                                                        <button type="button" className="ui-icon-btn cf-danger" title="Supprimer la règle" onClick={() => update('welcome', 'rules', form.welcome.rules.filter((_, i) => i !== index))}>
+                                                            <Icon name="close" size={15} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="cf-rule__when">
+                                                        <SelectInput
+                                                            value={`${rule.condition || 'has_role'}_${rule.matchType || 'all'}`}
+                                                            onChange={(e) => {
+                                                                const [cond, match] = e.target.value.split(/_(?=[^_]+$)/);
+                                                                updateRuleField(index, 'condition', cond);
+                                                                updateRuleField(index, 'matchType', match);
+                                                            }}
+                                                            options={[
+                                                                { value: 'has_role_all', label: 'Si le membre a tous ces rôles' },
+                                                                { value: 'has_role_any', label: 'Si le membre a l’un de ces rôles' },
+                                                                { value: 'lacks_role_all', label: 'Si le membre n’a aucun de ces rôles' },
+                                                            ]}
+                                                        />
+                                                        <div className="cf-chips">
+                                                            {selectedRoleIds.map((rid) => (
+                                                                <RoleChip key={rid} name={roleName(rid)} onRemove={() => removeRoleFromRule(index, rid)} />
+                                                            ))}
+                                                            <SelectInput
+                                                                value=""
+                                                                onChange={(e) => addRoleToRule(index, e.target.value)}
+                                                                options={roleOptions.filter((r) => !selectedRoleIds.includes(r.value))}
+                                                                emptyLabel="+ Rôle"
+                                                                className="cf-select--chip"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div className="cf-grid-2">
+                                                        <Field label="Message dans le salon">
+                                                            <TextInput placeholder="Ex : Bienvenue {mention} !" value={rule.message || ''} onChange={(e) => updateRuleField(index, 'message', e.target.value)} />
+                                                        </Field>
+                                                        <Field label="Message privé (facultatif)">
+                                                            <TextInput placeholder="Message privé…" value={rule.dmMessage || ''} onChange={(e) => updateRuleField(index, 'dmMessage', e.target.value)} />
+                                                        </Field>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </Card>
+                            </div>
+                        </>
+                    ) : null}
 
-                                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2">
-                                            <button
-                                                type="button"
-                                                disabled={downloadingAvatar || !form.profile.currentAvatarUrl}
-                                                onClick={handleDownloadAvatar}
-                                                className="btn btn-primary text-xs flex items-center gap-2 shadow-cyan-900/30 shadow-md disabled:opacity-50"
-                                            >
-                                                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                </svg>
-                                                {downloadingAvatar ? 'Téléchargement…' : 'Télécharger la photo de profil'}
+                    {/* NIVEAUX */}
+                    {activeTab === 'levels' ? (
+                        <>
+                            <div className="cf-title cf-title--row">
+                                <div>
+                                    <h2>Niveaux</h2>
+                                    <p>Les membres gagnent de l’XP en discutant et débloquent des rôles.</p>
+                                </div>
+                                <Switch checked={form.rank.enabled} onChange={(v) => update('rank', 'enabled', v)} label={form.rank.enabled ? 'Activé' : 'Désactivé'} />
+                            </div>
+
+                            <div className={form.rank.enabled ? '' : 'cf-disabled'}>
+                                <Card title="Annonces de niveau">
+                                    <div className="cf-grid-2 cf-align-end">
+                                        <Field label="Salon des annonces">
+                                            <SelectInput value={form.rank.announceChannelId} onChange={(e) => update('rank', 'announceChannelId', e.target.value)} options={channelOptions} emptyLabel="Là où le membre écrit" />
+                                        </Field>
+                                        <Switch checked={form.rank.silent} onChange={(v) => update('rank', 'silent', v)} label="Mode silencieux" desc="Ne pas annoncer les passages de niveau" />
+                                    </div>
+                                </Card>
+
+                                <Card
+                                    title="Rôles de récompense"
+                                    desc="Donnés automatiquement quand un membre atteint le niveau."
+                                    aside={<button type="button" className="ui-btn" onClick={() => update('rank', 'rewards', [...form.rank.rewards, { level: 1, roleId: '' }])}><Icon name="plus" size={16} /> Ajouter un palier</button>}
+                                >
+                                    {form.rank.rewards.length === 0 ? <p className="cf-empty">Aucun palier pour l’instant.</p> : null}
+                                    <div className="cf-rewards">
+                                        {form.rank.rewards.map((reward, index) => (
+                                            <div key={index} className="cf-reward">
+                                                <label className="cf-reward__lvl">
+                                                    <span>Niveau</span>
+                                                    <input type="number" min="1" max="200" value={reward.level} onChange={(e) => updateReward(index, 'level', Number(e.target.value))} />
+                                                </label>
+                                                <Icon name="arrowRight" size={16} />
+                                                <SelectInput value={reward.roleId} onChange={(e) => updateReward(index, 'roleId', e.target.value)} options={roleOptions} emptyLabel="Choisir le rôle" />
+                                                <button type="button" className="ui-icon-btn cf-danger" title="Retirer ce palier" onClick={() => update('rank', 'rewards', form.rank.rewards.filter((_, i) => i !== index))}>
+                                                    <Icon name="close" size={15} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        </>
+                    ) : null}
+
+                    {/* ALERTES RÉSEAUX */}
+                    {activeTab === 'social' ? (
+                        <>
+                            <div className="cf-title">
+                                <h2>Alertes réseaux</h2>
+                                <p>Prévenez votre serveur des nouvelles vidéos et des lives.</p>
+                            </div>
+
+                            <div className="cf-grid-2">
+                                <Card title="YouTube" desc="Une alerte à chaque nouvelle vidéo.">
+                                    <div className="cf-stack">
+                                        <Field label="Chaînes suivies" hint="Un identifiant UC… ou un @handle par ligne.">
+                                            <textarea
+                                                className="ui-input cf-mono"
+                                                rows={4}
+                                                value={(form.youtube.channels || []).join('\n')}
+                                                onChange={(e) => update('youtube', 'channels', e.target.value.split(/\r?\n/).map((id) => id.trim()).filter(Boolean))}
+                                            />
+                                        </Field>
+                                        <Field label="Salon des alertes">
+                                            <SelectInput value={form.youtube.targetChannelId} onChange={(e) => update('youtube', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        </Field>
+                                    </div>
+                                </Card>
+
+                                <Card title="TikTok Live" desc="Une alerte quand le créateur lance un live." aside={<Switch checked={form.tiktok.enabled} onChange={(v) => update('tiktok', 'enabled', v)} />}>
+                                    <div className={`cf-stack${form.tiktok.enabled ? '' : ' cf-disabled'}`}>
+                                        <Field label="Pseudo TikTok">
+                                            <TextInput placeholder="@pseudo" value={form.tiktok.username || ''} onChange={(e) => update('tiktok', 'username', e.target.value)} />
+                                        </Field>
+                                        <Field label="Salon des alertes">
+                                            <SelectInput value={form.tiktok.targetChannelId} onChange={(e) => update('tiktok', 'targetChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        </Field>
+                                    </div>
+                                </Card>
+                            </div>
+                        </>
+                    ) : null}
+
+                    {/* PROFIL & LOGS */}
+                    {activeTab === 'profile' ? (
+                        <>
+                            <div className="cf-title">
+                                <h2>Profil & logs</h2>
+                                <p>L’apparence d’Azim sur ce serveur et son salon de diagnostic.</p>
+                            </div>
+
+                            <Card title="Profil du bot" desc="Le nom et l’avatar sont appliqués immédiatement.">
+                                <div className="cf-profile">
+                                    <div className="cf-profile__avatar">
+                                        <img
+                                            src={form.profile.hasServerAvatar && form.profile.currentAvatarUrl
+                                                ? form.profile.currentAvatarUrl
+                                                : (isIslamActive ? '/icon-islam.png' : (form.profile.globalAvatarUrl || '/icon.png'))}
+                                            alt=""
+                                        />
+                                        <span>{form.profile.hasServerAvatar ? 'Avatar du serveur' : 'Avatar par défaut'}</span>
+                                    </div>
+                                    <div className="cf-stack cf-profile__fields">
+                                        <Field label="Nom sur ce serveur">
+                                            <div className="cf-inline">
+                                                <TextInput maxLength={32} placeholder="Azim" value={form.profile.botDisplayName || ''} onChange={(e) => update('profile', 'botDisplayName', e.target.value)} />
+                                                <button type="button" className="ui-btn" disabled={saving || !form.profile.botDisplayName?.trim()} onClick={() => handleUpdateBotName(form.profile.botDisplayName.trim())}>
+                                                    Renommer
+                                                </button>
+                                            </div>
+                                        </Field>
+                                        <Field label="Nouvel avatar" hint="Lien d’image hébergée sur cdn.discordapp.com ou media.discordapp.net.">
+                                            <div className="cf-inline">
+                                                <TextInput type="url" placeholder="https://cdn.discordapp.com/…" value={form.profile.avatarUrl || ''} onChange={(e) => update('profile', 'avatarUrl', e.target.value)} />
+                                                <button type="button" className="ui-btn" disabled={!form.profile.avatarUrl?.trim()} onClick={() => updateAvatar(form.profile.avatarUrl.trim())}>
+                                                    Appliquer
+                                                </button>
+                                            </div>
+                                        </Field>
+                                        <div className="cf-actions">
+                                            <button type="button" className="ui-btn ui-btn--ghost" disabled={downloadingAvatar || !form.profile.currentAvatarUrl} onClick={handleDownloadAvatar}>
+                                                {downloadingAvatar ? 'Téléchargement…' : 'Télécharger l’avatar actuel'}
                                             </button>
-
                                             {form.profile.hasServerAvatar ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => updateAvatar('')}
-                                                    className="btn bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs flex items-center gap-2 font-semibold shadow-md shadow-rose-950/30 transition-all hover:scale-[1.02]"
-                                                    title="Supprimer la photo spécifique à ce serveur et réutiliser la photo de profil de base du bot"
-                                                >
-                                                    <span className="text-sm">🔄</span>
-                                                    Rétablir la photo de profil de base
+                                                <button type="button" className="ui-btn ui-btn--danger" onClick={() => updateAvatar('')}>
+                                                    Revenir à l’avatar par défaut
                                                 </button>
                                             ) : null}
-
-                                            {form.profile.currentAvatarUrl ? (
-                                                <a
-                                                    href={form.profile.currentAvatarUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="btn btn-soft text-xs flex items-center gap-1.5"
-                                                >
-                                                    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                    </svg>
-                                                    Voir en grand
-                                                </a>
-                                            ) : null}
                                         </div>
-
-                                        {form.profile.hasServerAvatar ? (
-                                            <div className="mt-2.5 flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-200">
-                                                <span className="text-base leading-none">💡</span>
-                                                <div>
-                                                    <strong>Une photo personnalisée est actuellement active sur ce serveur.</strong>
-                                                    <p className="mt-0.5 text-slate-300 text-[11px]">Pour réutiliser la photo officielle du bot (le petit processeur bleu), cliquez simplement sur <em>« Rétablir la photo de profil de base »</em> ci-dessus.</p>
-                                                </div>
-                                            </div>
-                                        ) : null}
                                     </div>
                                 </div>
-                            </div>
+                                <div className="cf-sep" />
+                                <Field label="Bio du bot" hint={`${(form.profile.bio || '').length}/190 · enregistrée avec les autres modifications`}>
+                                    <TextInput maxLength={190} placeholder="Description affichée sur le profil du bot…" value={form.profile.bio || ''} onChange={(e) => update('profile', 'bio', e.target.value)} />
+                                </Field>
+                            </Card>
 
-                            <div className="grid gap-5 md:grid-cols-2">
-                                <div>
-                                    <Field label="Nom / Surnom du bot sur ce serveur" hint="Personnalisez le nom affiché du bot sur ce serveur Discord (1 à 32 caractères)">
-                                        <div className="flex gap-2">
-                                            <TextInput
-                                                maxLength={32}
-                                                placeholder="Ex: AzimBot, Assistant, MonBot…"
-                                                value={form.profile.botDisplayName || ''}
-                                                onChange={(e) => update('profile', 'botDisplayName', e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                disabled={saving || !form.profile.botDisplayName?.trim()}
-                                                onClick={() => handleUpdateBotName(form.profile.botDisplayName.trim())}
-                                                className="btn btn-primary text-xs whitespace-nowrap"
-                                            >
-                                                Renommer
-                                            </button>
-                                        </div>
+                            <Card title="Logs" desc="Un salon où Azim signale ses problèmes sur ce serveur.">
+                                <div className="cf-grid-2 cf-align-end">
+                                    <Field label="Salon des logs">
+                                        <SelectInput value={form.logs.channelId} onChange={(e) => update('logs', 'channelId', e.target.value)} options={channelOptions} emptyLabel="Aucun salon" />
                                     </Field>
+                                    <Switch checked={form.logs.restartAnnouncementEnabled} onChange={(v) => update('logs', 'restartAnnouncementEnabled', v)} label="Annoncer les redémarrages" />
                                 </div>
-                                <Field label="Bio personnalisée du bot" hint="Maximum 190 caractères.">
-                                    <TextInput
-                                        maxLength={190}
-                                        placeholder="Description affichée sur le profil du bot…"
-                                        value={form.profile.bio || ''}
-                                        onChange={(e) => update('profile', 'bio', e.target.value)}
-                                    />
-                                </Field>
-                            </div>
+                            </Card>
+                        </>
+                    ) : null}
 
-                            <div className="border-t border-slate-700/60 pt-4">
-                                <Field label="Changer l'avatar du serveur" hint="URL HTTPS hébergée sur cdn.discordapp.com ou media.discordapp.net">
-                                    <TextInput
-                                        type="url"
-                                        placeholder="https://cdn.discordapp.com/…"
-                                        value={form.profile.avatarUrl || ''}
-                                        onChange={(e) => update('profile', 'avatarUrl', e.target.value)}
-                                    />
-                                </Field>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                    <button
-                                        type="button"
-                                        disabled={!form.profile.avatarUrl?.trim()}
-                                        onClick={() => updateAvatar(form.profile.avatarUrl.trim())}
-                                        className="btn btn-soft text-xs disabled:opacity-50"
-                                    >
-                                        Appliquer cet avatar
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => updateAvatar('')}
-                                        className="btn btn-soft text-xs text-rose-300 hover:text-rose-200 flex items-center gap-1.5"
-                                        title="Effacer la photo custom pour revenir à la photo de base"
-                                    >
-                                        <span>🔄</span>
-                                        Rétablir photo de profil de base
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Activité & Santé interne de ce serveur */}
-                        <div className="border-t border-slate-700/60 pt-6 space-y-5">
-                            <div>
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                                        <span>📊</span> Activité & Santé interne de ce serveur
-                                    </h3>
-                                    <span className="text-[11px] font-semibold text-cyan-400 bg-cyan-950/60 border border-cyan-800/60 px-2.5 py-0.5 rounded-full">
-                                        Données 100% isolées à ce serveur
-                                    </span>
-                                </div>
-                                <p className="text-xs text-slate-400 mt-1">
-                                    Ces statistiques et journaux d'erreurs concernent exclusivement l'activité enregistrée sur ce serveur Discord.
-                                </p>
-                            </div>
-
-                            <div className="grid gap-6 md:grid-cols-2">
-                                {/* Commandes les plus utilisées sur ce serveur */}
-                                <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4 space-y-3">
-                                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Commandes utilisées ici</h4>
-                                        <span className="text-xs text-cyan-400 font-semibold">
-                                            {Object.values(form.observability?.commandByName || {}).reduce((a, b) => a + Number(b || 0), 0)} exécutions
-                                        </span>
-                                    </div>
-                                    {Object.keys(form.observability?.commandByName || {}).length ? (
-                                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                            {Object.entries(form.observability.commandByName)
-                                                .sort((a, b) => Number(b[1]) - Number(a[1]))
-                                                .slice(0, 10)
-                                                .map(([cmdName, count], idx) => (
-                                                    <div key={cmdName} className="flex items-center justify-between text-xs bg-slate-800/40 px-3 py-1.5 rounded border border-slate-700/40">
-                                                        <span className="font-mono text-cyan-300 font-semibold">
-                                                            <span className="text-slate-500 mr-2">{idx + 1}.</span>/{cmdName}
-                                                        </span>
-                                                        <span className="font-bold text-white bg-slate-700/50 px-2 py-0.5 rounded text-[11px]">
-                                                            {count}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-slate-500 py-4 text-center">Aucune commande encore exécutée sur ce serveur.</p>
-                                    )}
-                                </div>
-
-                                {/* Erreurs récentes sur ce serveur */}
-                                <div className="rounded-xl border border-slate-700/60 bg-slate-900/50 p-4 space-y-3">
-                                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Erreurs internes du serveur</h4>
-                                        <span className="text-xs text-rose-400 font-semibold">
-                                            {form.observability?.recentErrors?.length || 0} récentes
-                                        </span>
-                                    </div>
-                                    {Array.isArray(form.observability?.recentErrors) && form.observability.recentErrors.length ? (
-                                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                            {form.observability.recentErrors.slice(0, 10).map((err, idx) => (
-                                                <div key={idx} className="rounded border border-rose-900/50 bg-rose-950/20 p-2 text-xs">
-                                                    <div className="flex items-center justify-between text-[11px] text-rose-400 font-semibold">
-                                                        <span>{err.type || 'Erreur'}</span>
-                                                        <time className="text-slate-500">{err.ts ? new Date(err.ts).toLocaleTimeString() : ''}</time>
-                                                    </div>
-                                                    <p className="mt-0.5 text-slate-300 text-[11px] break-words line-clamp-2">{err.message}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-emerald-400/80 py-4 text-center flex items-center justify-center gap-1.5">
-                                            <span>✓</span> Aucune erreur signalée sur ce serveur.
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Choix du Thème si débloqué */}
-                            {isIslamActive ? (
-                                <div className="border-t border-slate-700/60 pt-6">
-                                    <div className="rounded-xl border border-emerald-600/40 bg-gradient-to-r from-emerald-950/40 to-slate-900/80 p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl">🎨</span>
-                                                <h3 className="font-semibold text-white text-base">Thème d'affichage du site</h3>
-                                            </div>
-                                            <p className="text-xs text-slate-300 mt-1">
-                                                Choisissez l'ambiance visuelle du panel pour votre navigation (Mode Islam débloqué).
-                                            </p>
-                                        </div>
-                                        <div className="inline-flex rounded-lg border border-slate-700 bg-slate-900/90 p-1 shrink-0 self-start sm:self-auto">
-                                            <button
-                                                type="button"
-                                                onClick={() => setTheme('cyber')}
-                                                className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
-                                                    theme === 'cyber'
-                                                        ? 'bg-cyan-600 text-white shadow-md shadow-cyan-950/50'
-                                                        : 'text-slate-400 hover:text-slate-200'
-                                                }`}
-                                            >
-                                                <span>🤖</span> Cyber
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setTheme('islam')}
-                                                className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
-                                                    theme === 'islam'
-                                                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md shadow-emerald-950/50'
-                                                        : 'text-slate-400 hover:text-slate-200'
-                                                }`}
-                                            >
-                                                <span>🌙</span> Islam
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : null}
-                        </div>
-                    </section>
-                ) : null}
-
-                {/* 5. ONGLET RÉSEAUX & NIVEAUX */}
-                {activeTab === 'social' ? (
-                    <section className="admin-card space-y-6">
-                        <div className="admin-card-header">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Réseaux Sociaux & Système de Niveaux XP</h2>
-                                <p className="text-sm text-slate-400">Alertes automatiques YouTube / TikTok et récompenses d'activité.</p>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-8 md:grid-cols-2">
-                            {/* YouTube */}
-                            <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 space-y-4">
-                                <h3 className="font-semibold text-cyan-300">Surveillance YouTube</h3>
-                                <Field label="Chaînes YouTube surveillées" hint="Un identifiant de chaîne UC… par ligne.">
-                                    <textarea
-                                        className="form-input min-h-24 resize-y font-mono text-xs"
-                                        value={(form.youtube.channels || []).join('\n')}
-                                        onChange={(e) =>
-                                            update(
-                                                'youtube',
-                                                'channels',
-                                                e.target.value.split(/\r?\n/).map((id) => id.trim()).filter(Boolean)
-                                            )
-                                        }
-                                    />
-                                </Field>
-                                <Field label="Salon de publication des vidéos">
-                                    <SelectInput
-                                        value={form.youtube.targetChannelId}
-                                        onChange={(e) => update('youtube', 'targetChannelId', e.target.value)}
-                                        options={channelOptions}
-                                        emptyLabel="Aucun salon"
-                                    />
-                                </Field>
-                            </div>
-
-                            {/* TikTok */}
-                            <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 space-y-4">
-                                <h3 className="font-semibold text-cyan-300">Alertes TikTok Live</h3>
-                                <label className="flex items-center gap-3 text-sm font-semibold text-white">
-                                    <input
-                                        type="checkbox"
-                                        checked={form.tiktok.enabled}
-                                        onChange={(e) => update('tiktok', 'enabled', e.target.checked)}
-                                        className="size-4 accent-cyan-500"
-                                    />
-                                    Activer les alertes de live TikTok
-                                </label>
-                                <Field label="Pseudo TikTok du créateur">
-                                    <TextInput
-                                        placeholder="@pseudo"
-                                        value={form.tiktok.username || ''}
-                                        onChange={(e) => update('tiktok', 'username', e.target.value)}
-                                    />
-                                </Field>
-                                <Field label="Salon de notification de live">
-                                    <SelectInput
-                                        value={form.tiktok.targetChannelId}
-                                        onChange={(e) => update('tiktok', 'targetChannelId', e.target.value)}
-                                        options={channelOptions}
-                                        emptyLabel="Choisir un salon"
-                                    />
-                                </Field>
-                            </div>
-                        </div>
-
-                        {/* Niveaux et Récompenses XP */}
-                        <div className="border-t border-slate-700/60 pt-6 space-y-4">
-                            <h3 className="font-semibold text-white">Système d'expérience et Niveaux</h3>
-                            <div className="grid gap-5 md:grid-cols-2">
-                                <label className="flex items-center gap-3 text-sm font-semibold text-white">
-                                    <input
-                                        type="checkbox"
-                                        checked={form.rank.enabled}
-                                        onChange={(e) => update('rank', 'enabled', e.target.checked)}
-                                        className="size-4 accent-cyan-500"
-                                    />
-                                    Activer le gain d'XP et les niveaux
-                                </label>
-                                <label className="flex items-center gap-3 text-sm font-semibold text-white">
-                                    <input
-                                        type="checkbox"
-                                        checked={form.rank.silent}
-                                        onChange={(e) => update('rank', 'silent', e.target.checked)}
-                                        className="size-4 accent-cyan-500"
-                                    />
-                                    Mode silencieux (ne pas annoncer les montées de niveau)
-                                </label>
-                                <Field label="Salon des annonces de niveau">
-                                    <SelectInput
-                                        value={form.rank.announceChannelId}
-                                        onChange={(e) => update('rank', 'announceChannelId', e.target.value)}
-                                        options={channelOptions}
-                                        emptyLabel="Dans le salon où le membre écrit"
-                                    />
-                                </Field>
-                            </div>
-
-                            {/* Paliers */}
-                            <div className="mt-4">
-                                <div className="mb-3 flex items-center justify-between">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Rôles de récompense par palier</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => update('rank', 'rewards', [...form.rank.rewards, { level: 1, roleId: '' }])}
-                                        className="btn btn-soft text-xs"
-                                    >
-                                        + Ajouter un palier
-                                    </button>
-                                </div>
-                                {form.rank.rewards.map((reward, index) => (
-                                    <div key={index} className="mb-2 flex flex-wrap items-center gap-3 rounded bg-slate-900/60 p-2.5">
-                                        <div className="w-28">
-                                            <TextInput
-                                                type="number"
-                                                min="1"
-                                                max="200"
-                                                value={reward.level}
-                                                onChange={(e) => updateReward(index, 'level', Number(e.target.value))}
-                                                placeholder="Niveau"
-                                            />
-                                        </div>
-                                        <div className="flex-1 min-w-[200px]">
-                                            <SelectInput
-                                                value={reward.roleId}
-                                                onChange={(e) => updateReward(index, 'roleId', e.target.value)}
-                                                options={roleOptions}
-                                                emptyLabel="Choisir le rôle attribué"
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => update('rank', 'rewards', form.rank.rewards.filter((_, i) => i !== index))}
-                                            className="text-xs text-rose-400 hover:underline"
-                                        >
-                                            Retirer
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                ) : null}
-
-                {/* 6. ONGLET MODE ISLAM / CODE SECRET */}
-                {activeTab === 'islam' ? (
-                    <section className="admin-card space-y-6">
-                        <div className="admin-card-header">
-                            <div>
-                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <span>{isIslamActive ? '🌙' : '🔑'}</span> {isIslamActive ? 'Mode Islam & Spiritualité' : 'Extensions & Code secret'}
-                                </h2>
-                                <p className="text-sm text-slate-400">
-                                    {isIslamActive
-                                        ? 'Configuration des rappels de prière (Adhan), jeûne des Jours Blancs, radio 24/7 et commandes islamiques.'
-                                        : 'Entrez un code d’activation pour débloquer des fonctionnalités supplémentaires sur ce serveur.'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {form.features.islamModeEnabled ? (
-                            <div className="space-y-6">
-                                {/* Statut du mode */}
-                                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-700/60 bg-emerald-950/25 p-4">
-                                    <div className="islam-enabled-status">
-                                        <span>●</span> Mode Islam actuellement ACTIF sur ce serveur (100% gratuit & sans limitation)
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={disableIslamMode}
-                                        disabled={activatingIslam}
-                                        className="btn btn-soft text-xs text-rose-400 border-rose-800/60 hover:bg-rose-950/40 disabled:opacity-50"
-                                    >
-                                        {activatingIslam ? 'Désactivation…' : 'Désactiver le mode Islam'}
-                                    </button>
-                                </div>
-
-                                {/* Choix du Thème du Site (paramètres) */}
-                                <div className="rounded-xl border border-emerald-600/50 bg-gradient-to-r from-emerald-950/60 via-slate-900/80 to-slate-900/90 p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {/* MODE ISLAM / CODE SECRET */}
+                    {activeTab === 'islam' ? (
+                        isIslamActive ? (
+                            <>
+                                <div className="cf-title cf-title--row">
                                     <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xl">🎨</span>
-                                            <h3 className="font-semibold text-white text-base">Thème & Apparence du site</h3>
-                                        </div>
-                                        <p className="text-xs text-slate-300 mt-1">
-                                            Le mode Islam étant débloqué sur votre serveur, vous pouvez choisir d’afficher le site avec le thème Islamique (émeraude & or) ou le thème Cyber classique.
-                                        </p>
+                                        <h2>Mode Islam</h2>
+                                        <p>Rappels de prière, jours blancs, radio Coran et commandes dédiées.</p>
                                     </div>
-                                    <div className="inline-flex rounded-lg border border-slate-700 bg-slate-900/90 p-1 shrink-0 self-start sm:self-auto">
-                                        <button
-                                            type="button"
-                                            onClick={() => setTheme('cyber')}
-                                            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
-                                                theme === 'cyber'
-                                                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-950/50'
-                                                    : 'text-slate-400 hover:text-slate-200'
-                                            }`}
-                                        >
-                                            <span>🤖</span> Thème Cyber
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setTheme('islam')}
-                                            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-md transition-all ${
-                                                theme === 'islam'
-                                                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-md shadow-emerald-950/50'
-                                                    : 'text-slate-400 hover:text-slate-200'
-                                            }`}
-                                        >
-                                            <span>🌙</span> Thème Islam
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* 1. Horaires de Prière & Rappels Adhan Automatiques */}
-                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xl">🕌</span>
-                                        <div>
-                                            <h3 className="font-semibold text-white">Horaires des Prières & Rappels Adhan</h3>
-                                            <p className="text-xs text-slate-400">Calcul automatique des 5 prières quotidiennes (Fajr, Dhuhr, Asr, Maghrib, Isha) et alertes en direct.</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <Field label="Ville de référence" hint="Ex: Paris, Lyon, Marseille, Alger, Casablanca, Bruxelles, Montréal">
-                                            <TextInput
-                                                value={form.islam.prayerCity}
-                                                onChange={(e) => update('islam', 'prayerCity', e.target.value)}
-                                                placeholder="Paris"
-                                            />
-                                        </Field>
-                                        <Field label="Méthode de calcul" hint="Angle astronomique pour Fajr et Isha">
-                                            <SelectInput
-                                                value={form.islam.prayerMethod}
-                                                onChange={(e) => update('islam', 'prayerMethod', Number(e.target.value))}
-                                                options={PRAYER_METHODS}
-                                            />
-                                        </Field>
-                                    </div>
-
-                                    <div className="border-t border-slate-800/80 pt-4 space-y-3">
-                                        <label className="flex items-center gap-3 text-sm font-semibold text-white cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={form.islam.prayerNotificationEnabled}
-                                                onChange={(e) => update('islam', 'prayerNotificationEnabled', e.target.checked)}
-                                                className="size-4 accent-emerald-500 rounded"
-                                            />
-                                            <span>Activer les notifications automatiques à l'heure de chaque prière (Appel Adhan)</span>
-                                        </label>
-
-                                        {form.islam.prayerNotificationEnabled ? (
-                                            <div className="grid gap-4 md:grid-cols-2 pt-2">
-                                                <Field label="Salon Discord pour l'Adhan" hint="Le bot y publiera un embed à l'heure exacte de chaque prière">
-                                                    <SelectInput
-                                                        value={form.islam.prayerChannelId}
-                                                        onChange={(e) => update('islam', 'prayerChannelId', e.target.value)}
-                                                        options={channelOptions}
-                                                        emptyLabel="Choisir un salon textuel"
-                                                    />
-                                                </Field>
-                                                <Field label="Rôle à mentionner (optionnel)" hint="Ex: @Prière ou @Musulmans (laisser vide pour aucune mention)">
-                                                    <SelectInput
-                                                        value={form.islam.prayerRoleId}
-                                                        onChange={(e) => update('islam', 'prayerRoleId', e.target.value)}
-                                                        options={roleOptions}
-                                                        emptyLabel="Aucune mention de rôle"
-                                                    />
-                                                </Field>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
-
-                                {/* 2. Rappel des Jours Blancs (Jeûne Sunnah) */}
-                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xl">🤍</span>
-                                        <div>
-                                            <h3 className="font-semibold text-white">Jeûne des Jours Blancs (Ayyam al-Bid)</h3>
-                                            <p className="text-xs text-slate-400">Rappel automatique de la Sunnah la veille des 13, 14 et 15 de chaque mois hégirien (à 18h00).</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <label className="flex items-center gap-3 text-sm font-semibold text-white cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={form.islam.whiteDaysNotificationEnabled}
-                                                onChange={(e) => update('islam', 'whiteDaysNotificationEnabled', e.target.checked)}
-                                                className="size-4 accent-emerald-500 rounded"
-                                            />
-                                            <span>Activer le rappel automatique la veille du jeûne des Jours Blancs</span>
-                                        </label>
-
-                                        {form.islam.whiteDaysNotificationEnabled ? (
-                                            <div className="max-w-md pt-2">
-                                                <Field label="Salon Discord pour le rappel" hint="Salon où sera publiée l'annonce la veille du 13ème jour">
-                                                    <SelectInput
-                                                        value={form.islam.whiteDaysChannelId}
-                                                        onChange={(e) => update('islam', 'whiteDaysChannelId', e.target.value)}
-                                                        options={channelOptions}
-                                                        emptyLabel="Choisir un salon textuel"
-                                                    />
-                                                </Field>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
-
-                                {/* 3. Radio Coran 24/7 & Récitateurs */}
-                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xl">🎙️</span>
-                                        <div>
-                                            <h3 className="font-semibold text-white">Radio Coranique 24/7 & Audio Vocal</h3>
-                                            <p className="text-xs text-slate-400">Diffusion continue en salon vocal sans interruption ni déconnexion.</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <Field label="Récitateur favori par défaut" hint="Utilisé au lancement de la commande /radio">
-                                            <SelectInput
-                                                value={form.islam.radioDefaultReciter}
-                                                onChange={(e) => update('islam', 'radioDefaultReciter', e.target.value)}
-                                                options={ISLAMIC_RECITERS}
-                                            />
-                                        </Field>
-                                        <div className="flex flex-col justify-center">
-                                            <label className="flex items-center gap-3 text-sm font-semibold text-white cursor-pointer pt-4">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={form.islam.radioAutoReconnect}
-                                                    onChange={(e) => update('islam', 'radioAutoReconnect', e.target.checked)}
-                                                    className="size-4 accent-emerald-500 rounded"
-                                                />
-                                                <span>Reconnexion automatique du flux en cas de micro-coupure réseau</span>
-                                            </label>
-                                            <span className="text-xs text-slate-400 mt-1">Garantit une diffusion 24/7 ininterrompue.</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* 4. Catalogue des 10 Commandes Spirituelles Actives */}
-                                <div className="rounded-lg border border-slate-700/60 bg-slate-900/50 p-5 space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h3 className="font-semibold text-white">Catalogue des 10 Commandes Spirituelles Actives</h3>
-                                            <p className="text-xs text-slate-400">Toutes ces fonctionnalités sont disponibles gratuitement sur votre serveur Discord :</p>
-                                        </div>
-                                        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/30">
-                                            10 Commandes Débloquées
-                                        </span>
-                                    </div>
-
-                                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/priere</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Horaires</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Horaires des 5 prières du jour pour toute ville avec décompte temps réel.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/doua</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Invocations</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Citadelle du Musulman (matin, soir, sommeil, repas, épreuves) avec arabe et phonétique.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/hadith</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Sunnah</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">40 Hadiths Nawawi, Sahih Bukhari & Muslim avec références et leçons éthiques.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/hijri</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Calendrier</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Date lunaire du jour, mois islamique et rappel des 3 Jours Blancs (13, 14, 15).</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/qibla</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Direction</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Cap précis en degrés et distance en km vers la Kaaba sacrée à La Mecque.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/asma</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">99 Noms</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Les 99 Plus Beaux Noms d'Allah avec calligraphie arabe, sens et méditation.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/ramadan</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Jeûne</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Compagnon de jeûne : heures d'Imsak et d'Iftar (Maghrib) et doua de rupture.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/radio</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Audio 24/7</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Diffusion 24/7 en salon vocal avec 22 récitateurs et stations sélectionnables.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/coran</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Lecture</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Lecture et écoute verset par verset du Saint Coran avec traduction en français.</p>
-                                        </div>
-
-                                        <div className="rounded border border-emerald-900/60 bg-slate-900/80 p-3 hover:border-emerald-700/60 transition-colors">
-                                            <div className="flex items-center gap-2">
-                                                <code className="text-sm font-bold text-emerald-400">/quiz</code>
-                                                <span className="text-[10px] text-slate-500 uppercase font-semibold">Quiz</span>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-300">Quiz islamique interactif avec classement des meilleurs joueurs en direct.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-5 space-y-4">
-                                <div>
-                                    <h3 className="font-semibold text-white">Déverrouillage par Code Secret</h3>
-                                    <p className="mt-1 text-sm text-slate-400">
-                                        Entrez votre code d'accès pour débloquer les modules et fonctionnalités supplémentaires sur ce serveur.
-                                    </p>
-                                </div>
-                                <div className="flex max-w-md items-center gap-3">
-                                    <TextInput
-                                        value={islamCode}
-                                        onChange={(e) => setIslamCode(e.target.value)}
-                                        placeholder="Entrez un code secret…"
-                                        autoComplete="off"
-                                        maxLength={64}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={activateSecretCode}
-                                        disabled={activatingIslam || !islamCode.trim()}
-                                        className="btn btn-primary whitespace-nowrap text-sm disabled:opacity-60"
-                                    >
-                                        {activatingIslam ? 'Vérification…' : 'Valider'}
+                                    <button type="button" className="ui-btn ui-btn--danger" onClick={disableIslamMode} disabled={activatingIslam}>
+                                        {activatingIslam ? 'Désactivation…' : 'Désactiver le mode'}
                                     </button>
                                 </div>
-                            </div>
-                        )}
-                    </section>
-                ) : null}
 
-                <div className="gc-savebar">
-                    <span>Pensez à enregistrer après vos modifications.</span>
-                    <button type="submit" disabled={saving} className="gc-save">
-                        {saving ? <span className="gc-save__spinner" /> : <Icon name="check" size={17} />}
-                        {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
-                    </button>
-                </div>
-            </form>
+                                <Card title="Prières" desc="Horaires des 5 prières et rappel à l’heure de chaque prière." aside={<Switch checked={form.islam.prayerNotificationEnabled} onChange={(v) => update('islam', 'prayerNotificationEnabled', v)} />}>
+                                    <div className="cf-grid-2">
+                                        <Field label="Ville">
+                                            <TextInput value={form.islam.prayerCity} onChange={(e) => update('islam', 'prayerCity', e.target.value)} placeholder="Paris" />
+                                        </Field>
+                                        <Field label="Méthode de calcul">
+                                            <SelectInput value={form.islam.prayerMethod} onChange={(e) => update('islam', 'prayerMethod', Number(e.target.value))} options={PRAYER_METHODS} />
+                                        </Field>
+                                        {form.islam.prayerNotificationEnabled ? (
+                                            <>
+                                                <Field label="Salon des rappels">
+                                                    <SelectInput value={form.islam.prayerChannelId} onChange={(e) => update('islam', 'prayerChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                                </Field>
+                                                <Field label="Rôle à mentionner">
+                                                    <SelectInput value={form.islam.prayerRoleId} onChange={(e) => update('islam', 'prayerRoleId', e.target.value)} options={roleOptions} emptyLabel="Aucune mention" />
+                                                </Field>
+                                            </>
+                                        ) : null}
+                                    </div>
+                                </Card>
+
+                                <Card title="Jours blancs" desc="Rappel la veille des 13, 14 et 15 du mois hégirien, à 18 h." aside={<Switch checked={form.islam.whiteDaysNotificationEnabled} onChange={(v) => update('islam', 'whiteDaysNotificationEnabled', v)} />}>
+                                    {form.islam.whiteDaysNotificationEnabled ? (
+                                        <Field label="Salon du rappel">
+                                            <SelectInput value={form.islam.whiteDaysChannelId} onChange={(e) => update('islam', 'whiteDaysChannelId', e.target.value)} options={channelOptions} emptyLabel="Choisir un salon" />
+                                        </Field>
+                                    ) : <p className="cf-empty">Rappel désactivé.</p>}
+                                </Card>
+
+                                <Card title="Radio Coran 24/7" desc="Diffusion continue dans un salon vocal avec /radio.">
+                                    <div className="cf-grid-2 cf-align-end">
+                                        <Field label="Récitateur par défaut">
+                                            <SelectInput value={form.islam.radioDefaultReciter} onChange={(e) => update('islam', 'radioDefaultReciter', e.target.value)} options={ISLAMIC_RECITERS} />
+                                        </Field>
+                                        <Switch checked={form.islam.radioAutoReconnect} onChange={(v) => update('islam', 'radioAutoReconnect', v)} label="Reconnexion automatique" desc="Relance le flux après une coupure" />
+                                    </div>
+                                </Card>
+
+                                <Card title="Commandes débloquées">
+                                    <div className="cf-chips">
+                                        {['priere', 'doua', 'hadith', 'hijri', 'qibla', 'asma', 'ramadan', 'radio', 'coran', 'quiz'].map((c) => (
+                                            <span key={c} className="cf-chip cf-chip--green">/{c}</span>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </>
+                        ) : (
+                            <>
+                                <div className="cf-title">
+                                    <h2>Code secret</h2>
+                                    <p>Entrez un code d’activation pour débloquer des modules supplémentaires sur ce serveur.</p>
+                                </div>
+                                <Card>
+                                    <div className="cf-inline">
+                                        <TextInput value={islamCode} onChange={(e) => setIslamCode(e.target.value)} placeholder="Code secret" autoComplete="off" maxLength={64} />
+                                        <button type="button" onClick={activateSecretCode} disabled={activatingIslam || !islamCode.trim()} className="ui-btn ui-btn--primary">
+                                            {activatingIslam ? 'Vérification…' : 'Valider'}
+                                        </button>
+                                    </div>
+                                </Card>
+                            </>
+                        )
+                    ) : null}
+
+                    {/* Barre d'enregistrement : visible seulement s'il y a des changements */}
+                    <div className={`gc-savebar${isDirty ? ' is-visible' : ''}`} aria-hidden={!isDirty}>
+                        <span><i /> Modifications non enregistrées</span>
+                        <div className="cf-actions">
+                            <button type="button" className="ui-btn ui-btn--ghost" onClick={discardChanges} disabled={saving} tabIndex={isDirty ? 0 : -1}>Annuler</button>
+                            <button type="submit" disabled={saving} className="ui-btn ui-btn--primary" tabIndex={isDirty ? 0 : -1}>
+                                {saving ? 'Enregistrement…' : 'Enregistrer'}
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </main>
     );

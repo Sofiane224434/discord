@@ -67,7 +67,6 @@ function Settings() {
                                 <small>@{user.username}</small>
                             </div>
                             <div className="set-account__actions">
-                                <Link to="/dashboard" className="ui-btn"><Icon name="server" size={16} /> Mes serveurs</Link>
                                 <button type="button" onClick={logout} className="ui-btn ui-btn--danger">
                                     <Icon name="logout" size={16} /> Déconnexion
                                 </button>

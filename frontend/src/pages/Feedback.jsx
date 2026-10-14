@@ -256,14 +256,9 @@ export default function Feedback() {
                     <h1>Retours & idées</h1>
                     <p>Un bug ou une idée pour Azim ? Dites-le nous ici, ou avec <code>/report</code> sur Discord.</p>
                 </div>
-                <div className="pg-head__actions">
-                    <button type="button" className="ui-btn" onClick={() => openForm('suggestion')}>
-                        <Icon name="sparkles" size={16} /> Proposer une idée
-                    </button>
-                    <button type="button" className="ui-btn ui-btn--primary" onClick={() => openForm('bug')}>
-                        <Icon name="bug" size={16} /> Signaler un bug
-                    </button>
-                </div>
+                <button type="button" className="ui-btn ui-btn--primary" onClick={() => openForm()}>
+                    <Icon name="plus" size={16} /> Nouveau retour
+                </button>
             </header>
 
             {submitSuccess ? <div role="status" className="ui-flash ui-flash--ok"><Icon name="check" size={18} /> {submitSuccess}</div> : null}

@@ -106,8 +106,8 @@ function Home() {
                             <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
                                 <DiscordIcon /> Ajouter à Discord
                             </a>
-                            <Link className="azh-btn azh-btn--ghost" to="/dashboard">
-                                Ouvrir le panel <Icon name="arrowRight" size={17} />
+                            <Link className="azh-btn azh-btn--ghost" to="/#features">
+                                Voir les fonctionnalités <Icon name="arrowRight" size={17} />
                             </Link>
                         </div>
                         <ul className="azh-facts">
@@ -305,7 +305,6 @@ function Home() {
                         <a className="azh-btn azh-btn--light" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
                             <DiscordIcon /> Ajouter à Discord
                         </a>
-                        <Link className="azh-btn azh-btn--outline" to="/docs/accueil">Lire la documentation</Link>
                     </div>
                 </div>
             </section>

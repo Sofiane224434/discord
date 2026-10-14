@@ -114,9 +114,6 @@ function Header() {
                                         <strong>{user.username}</strong>
                                         <small>Connecté avec Discord</small>
                                     </div>
-                                    <Link to="/dashboard" onClick={() => setUserMenuOpen(false)} className="az-user__item" role="menuitem">
-                                        <Icon name="server" size={16} /> Mes serveurs
-                                    </Link>
                                     <Link to="/settings" onClick={() => setUserMenuOpen(false)} className="az-user__item" role="menuitem">
                                         <Icon name="settings" size={16} /> Paramètres
                                     </Link>

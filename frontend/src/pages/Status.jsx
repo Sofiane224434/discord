@@ -24,12 +24,19 @@ function formatUptime(seconds) {
     return `${m} min`;
 }
 
+// Formule Discord : shard = (id_serveur >> 22) % nombre_de_shards
+function shardForGuild(guildId, shardCount) {
+    return Number((BigInt(guildId) >> 22n) % BigInt(Math.max(1, shardCount)));
+}
+
 function Status() {
     const [health, setHealth] = useState(null);
     const [failed, setFailed] = useState(false);
     const [loading, setLoading] = useState(true);
     const [lastChecked, setLastChecked] = useState(null);
     const [secondsLeft, setSecondsLeft] = useState(REFRESH_SECONDS);
+    const [guildQuery, setGuildQuery] = useState('');
+    const [searched, setSearched] = useState(null);
 
     const fetchStatus = useCallback(async () => {
         setLoading(true);
@@ -61,6 +68,12 @@ function Status() {
     }, [secondsLeft, fetchStatus]);
 
     const services = health?.services || {};
+    const discord = services.botApi?.discord || null;
+    const shardCount = discord?.shardCount || 1;
+    const shards = discord?.shards?.length
+        ? discord.shards
+        : Array.from({ length: shardCount }, (_, id) => ({ id, ping: discord?.ping ?? null, ready: Boolean(discord?.ready) }));
+
     const rows = [
         { name: 'Site web', desc: 'Pages et panel de gestion', icon: 'book', state: 'ok' },
         { name: 'API', desc: 'Serveur qui alimente le panel', icon: 'server', state: failed ? 'error' : health ? 'ok' : 'unknown' },
@@ -78,16 +91,28 @@ function Status() {
     }[overall];
 
     const metrics = [
-        { label: 'Réponse de l’API', value: health?.responseMs != null ? `${health.responseMs} ms` : '—', icon: 'activity' },
-        { label: 'Réponse du bot', value: services.botApi?.responseMs != null ? `${services.botApi.responseMs} ms` : '—', icon: 'terminal' },
-        { label: 'Bot en ligne depuis', value: formatUptime(services.botApi?.uptimeSeconds), icon: 'refresh' },
+        { label: 'Latence Discord', value: discord?.ping != null ? `${discord.ping} ms` : '—', icon: 'activity' },
+        { label: 'Serveurs', value: discord ? discord.guildCount.toLocaleString('fr-FR') : '—', icon: 'server' },
+        { label: 'En ligne depuis', value: formatUptime(services.botApi?.uptimeSeconds), icon: 'refresh' },
     ];
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const id = guildQuery.trim();
+        if (!/^\d{17,20}$/.test(id)) {
+            setSearched({ error: 'Un ID de serveur Discord contient 17 à 20 chiffres. Clic droit sur le serveur → « Copier l’identifiant ».' });
+            return;
+        }
+        setSearched({ guildId: id, shardId: shardForGuild(id, shardCount) });
+    };
+
+    const matchedShard = searched?.shardId != null ? shards.find((s) => s.id === searched.shardId) : null;
 
     return (
         <main className="pg pg--narrow" id="main" tabIndex="-1">
             <header className="pg-head">
                 <h1>Statuts</h1>
-                <p>L’état d’Azim et de ses services, vérifié automatiquement toutes les {REFRESH_SECONDS} secondes.</p>
+                <p>L’état d’Azim en temps réel. Entrez l’ID de votre serveur pour voir sur quel shard il se trouve.</p>
             </header>
 
             <section className={`st-hero is-${overall}`} aria-live="polite">
@@ -116,6 +141,58 @@ function Status() {
                 ))}
             </section>
 
+            <section className="ui-card st-clusters">
+                <div className="st-clusters__head">
+                    <h2>Clusters</h2>
+                    <form className="st-search" onSubmit={handleSearch}>
+                        <label className="ui-search">
+                            <Icon name="search" size={16} />
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                placeholder="ID de votre serveur"
+                                value={guildQuery}
+                                onChange={(e) => { setGuildQuery(e.target.value); setSearched(null); }}
+                                aria-label="ID du serveur Discord"
+                            />
+                        </label>
+                        <button type="submit" className="ui-btn ui-btn--primary">Trouver</button>
+                    </form>
+                </div>
+
+                {searched?.error ? <div className="ui-flash ui-flash--error"><Icon name="alert" size={18} /> {searched.error}</div> : null}
+                {searched?.guildId ? (
+                    <div className={`st-found${matchedShard?.ready === false ? ' is-down' : ''}`}>
+                        <Icon name={matchedShard?.ready === false ? 'alert' : 'check'} size={18} />
+                        <span>
+                            Le serveur <code>{searched.guildId}</code> est sur le <strong>cluster 0</strong>, <strong>shard {searched.shardId}</strong>
+                            {matchedShard ? ` — ${matchedShard.ready ? 'opérationnel' : 'perturbé'}${matchedShard.ping != null ? ` · ${matchedShard.ping} ms` : ''}` : ''}.
+                        </span>
+                    </div>
+                ) : null}
+
+                <article className="st-cluster">
+                    <header>
+                        <span className={`st-cluster__dot${discord?.ready ? ' is-on' : ''}`} />
+                        <strong>Cluster 0</strong>
+                        <span className="st-cluster__meta">
+                            {shardCount} shard{shardCount > 1 ? 's' : ''}
+                            {discord ? ` · ${discord.guildCount.toLocaleString('fr-FR')} serveurs` : ''}
+                        </span>
+                    </header>
+                    <div className="st-shards">
+                        {shards.map((shard) => (
+                            <div key={shard.id} className={`st-shard${shard.ready ? ' is-on' : ''}${searched?.shardId === shard.id ? ' is-match' : ''}`}>
+                                <span>Shard {shard.id}</span>
+                                <strong>{shard.ping != null ? `${shard.ping} ms` : '—'}</strong>
+                                <i />
+                            </div>
+                        ))}
+                    </div>
+                </article>
+            </section>
+
             <section className="ui-card st-services">
                 <h2>Services</h2>
                 <ul>
@@ -135,8 +212,7 @@ function Status() {
             </section>
 
             <p className="st-help">
-                Un problème qui n’apparaît pas ici ? <Link to="/feedback">Signalez-le</Link> ou passez sur le{' '}
-                <a href="https://discord.gg/azim" target="_blank" rel="noreferrer">serveur support</a>.
+                Un problème qui n’apparaît pas ici ? <Link to="/feedback">Signalez-le</Link>.
             </p>
         </main>
     );

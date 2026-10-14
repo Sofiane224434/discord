@@ -93,7 +93,7 @@ export function installMockApi() {
             return json({
                 status: 'ok',
                 timestamp: new Date().toISOString(),
-                services: { db: { status: 'ok' }, botApi: { status: 'ok', responseMs: 38, uptimeSeconds: 93_000 }, oauth: { status: 'ok' } },
+                services: { db: { status: 'ok' }, botApi: { status: 'ok', responseMs: 38, uptimeSeconds: 93_000, discord: { ready: true, ping: 41, guildCount: 4, shardCount: 1, shards: [{ id: 0, ping: 41, ready: true }] } }, oauth: { status: 'ok' } },
             });
         }
         if (path === '/feedback' && method === 'GET') return json({ reports });

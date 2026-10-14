@@ -1,177 +1,144 @@
 // pages/Status.jsx
-import { useState, useEffect } from 'react';
-import { useTheme } from '../context/ThemeContext.jsx';
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { systemService } from '../services/api.js';
+import Icon from '../components/Icon.jsx';
+
+const REFRESH_SECONDS = 30;
+
+const STATE_LABELS = {
+    ok: 'Opérationnel',
+    degraded: 'Dégradé',
+    error: 'Hors service',
+    unconfigured: 'Non configuré',
+    unknown: 'Inconnu',
+};
+
+function formatUptime(seconds) {
+    if (!seconds) return '—';
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    if (d) return `${d} j ${h} h`;
+    if (h) return `${h} h ${m} min`;
+    return `${m} min`;
+}
 
 function Status() {
-    const { theme } = useTheme();
+    const [health, setHealth] = useState(null);
+    const [failed, setFailed] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [healthData, setHealthData] = useState(null);
-    const [searchGuildId, setSearchGuildId] = useState('');
-    const [searchedShard, setSearchedShard] = useState(null);
     const [lastChecked, setLastChecked] = useState(null);
+    const [secondsLeft, setSecondsLeft] = useState(REFRESH_SECONDS);
 
-    // Fonction de rechargement des métriques
-    const fetchStatus = async () => {
+    const fetchStatus = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await systemService.getHealth();
-            setHealthData(data);
-            setLastChecked(new Date());
+            setHealth(await systemService.getHealth());
+            setFailed(false);
         } catch {
-            setHealthData(null);
-            setLastChecked(new Date());
+            setHealth(null);
+            setFailed(true);
         } finally {
+            setLastChecked(new Date());
+            setSecondsLeft(REFRESH_SECONDS);
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchStatus();
-        const timer = setInterval(fetchStatus, 30000);
+    }, [fetchStatus]);
+
+    // Compte à rebours, puis rafraîchissement automatique à zéro
+    useEffect(() => {
+        const timer = setInterval(() => setSecondsLeft((prev) => Math.max(0, prev - 1)), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    // Formule Discord de Sharding : (guild_id >> 22) % total_shards
-    // Pour moins de 2500 serveurs, 1 seule shard (Shard 0) sur l'Instance/Cluster 0
-    const TOTAL_SHARDS = 1;
+    useEffect(() => {
+        if (secondsLeft === 0) fetchStatus();
+    }, [secondsLeft, fetchStatus]);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        const trimmed = searchGuildId.trim();
-        if (!/^\d{17,20}$/.test(trimmed)) {
-            setSearchedShard(null);
-            return;
-        }
+    const services = health?.services || {};
+    const rows = [
+        { name: 'Site web', desc: 'Pages et panel de gestion', icon: 'book', state: 'ok' },
+        { name: 'API', desc: 'Serveur qui alimente le panel', icon: 'server', state: failed ? 'error' : health ? 'ok' : 'unknown' },
+        { name: 'Bot Discord', desc: 'Commandes, IA, alertes et radio', icon: 'sparkles', state: services.botApi?.status || 'unknown' },
+        { name: 'Base de données', desc: 'Comptes et réglages des serveurs', icon: 'fileText', state: services.db?.status || 'unknown' },
+        { name: 'Connexion Discord', desc: 'Connexion au panel via Discord', icon: 'key', state: services.oauth?.status || 'unknown' },
+    ];
 
-        const calculatedShard = Number((BigInt(trimmed) >> 22n) % BigInt(TOTAL_SHARDS));
-        setSearchedShard({
-            guildId: trimmed,
-            shardId: calculatedShard,
-            clusterId: 0,
-            status: 'online',
-            ping: 36
-        });
-    };
+    const overall = failed ? 'down' : !health ? 'loading' : rows.every((r) => r.state === 'ok') ? 'ok' : 'partial';
+    const heading = {
+        ok: 'Tout fonctionne normalement',
+        partial: 'Perturbation partielle',
+        down: 'Service injoignable',
+        loading: 'Vérification en cours…',
+    }[overall];
+
+    const metrics = [
+        { label: 'Réponse de l’API', value: health?.responseMs != null ? `${health.responseMs} ms` : '—', icon: 'activity' },
+        { label: 'Réponse du bot', value: services.botApi?.responseMs != null ? `${services.botApi.responseMs} ms` : '—', icon: 'terminal' },
+        { label: 'Bot en ligne depuis', value: formatUptime(services.botApi?.uptimeSeconds), icon: 'refresh' },
+    ];
 
     return (
-        <div className="clusters-page" id="main" role="main" tabIndex="-1">
-            {/* 1. ENTÊTE DE LA PAGE FAÇON DRAFTBOT */}
-            <div className="top">
-                <h1 className="font-title">Statuts</h1>
-                <p>
-                    Bienvenue sur la page Statuts d'Azim. Vous pouvez y retrouver les différents clusters représentant les shards ainsi que leur statut en temps réel.
-                    <br />
-                    Vous pourrez ainsi être au courant lorsqu'il y a un problème et savoir si cela affecte votre serveur.
-                </p>
-            </div>
+        <main className="pg pg--narrow" id="main" tabIndex="-1">
+            <header className="pg-head">
+                <h1>Statuts</h1>
+                <p>L’état d’Azim et de ses services, vérifié automatiquement toutes les {REFRESH_SECONDS} secondes.</p>
+            </header>
 
-            {/* 2. BARRE DE RECHERCHE D'ID DE SERVEUR + BOUTON RAFRAÎCHIR */}
-            <div id="clusters-list">
-                <form onSubmit={handleSearch} className="search-cluster">
-                    <input
-                        className="input"
-                        type="text"
-                        value={searchGuildId}
-                        onChange={(e) => setSearchGuildId(e.target.value)}
-                        placeholder="ID du serveur"
-                        inputMode="numeric"
-                        autoComplete="off"
-                    />
-                    <button
-                        type="button"
-                        onClick={fetchStatus}
-                        className="reload-btn"
-                        title="Recharger les données de statut"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            className={loading ? 'animate-spin' : ''}
-                        >
-                            <path
-                                fill="currentColor"
-                                d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.9 5.9 0 0 1 6 12c0-3.31 2.69-6 6-6m6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26"
-                            />
-                        </svg>
-                    </button>
-                </form>
-
-                {/* Résultat de la recherche de serveur */}
-                {searchedShard && (
-                    <div style={{
-                        marginBottom: '24px',
-                        padding: '14px 18px',
-                        borderRadius: '4px',
-                        background: 'rgba(32, 185, 242, 0.1)',
-                        border: '1px solid #20b9f2',
-                        color: '#ffffff',
-                        fontSize: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '10px'
-                    }}>
-                        <div>
-                            <span>✓ Serveur <strong>{searchedShard.guildId}</strong> assigné au </span>
-                            <span style={{ color: '#20b9f2', fontWeight: 'bold' }}>Cluster #{searchedShard.clusterId}</span>
-                            <span> (Shard {searchedShard.shardId})</span>
-                        </div>
-                        <span style={{ color: '#10b981', fontFamily: 'monospace', fontWeight: 'bold' }}>
-                            ● Opérationnel · ~{searchedShard.ping} ms
-                        </span>
-                    </div>
-                )}
-
-                {/* 3. LISTE DES CLUSTERS (Adapté à < 2500 serveurs = Cluster 0 avec Shard 0) */}
-                <div className="clusters">
-                    <div className="draft-cluster-card">
-                        <div className="draft-cluster-header">
-                            <div className="draft-cluster-title">
-                                <span className="draft-cluster-status-dot" />
-                                <span>Cluster #0 (Instance Principale)</span>
-                            </div>
-                            <div className="draft-cluster-metrics">
-                                <span>Serveurs : <strong>&lt; 2 500</strong></span>
-                                <span>Latence Gateway : <strong style={{ color: '#10b981' }}>~36 ms</strong></span>
-                                <span>Statut : <strong style={{ color: '#10b981' }}>En ligne</strong></span>
-                            </div>
-                        </div>
-
-                        <div className="draft-cluster-body">
-                            <div className="draft-shards-grid">
-                                <div className={`draft-shard-item ${searchedShard && searchedShard.shardId === 0 ? 'is-match' : ''}`}>
-                                    <div className="draft-shard-id">
-                                        <span>Shard 0</span>
-                                        <span style={{ fontSize: '10px', color: '#10b981' }}>●</span>
-                                    </div>
-                                    <div className="draft-shard-ping">
-                                        36 ms
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <section className={`st-hero is-${overall}`} aria-live="polite">
+                <span className="st-hero__icon">
+                    <Icon name={overall === 'ok' ? 'check' : overall === 'loading' ? 'refresh' : 'alert'} size={30} strokeWidth={2.5} />
+                </span>
+                <div className="st-hero__text">
+                    <h2>{heading}</h2>
+                    <p>
+                        {lastChecked ? `Vérifié à ${lastChecked.toLocaleTimeString('fr-FR')}` : 'Première vérification…'}
+                        {' · '}prochaine dans {secondsLeft} s
+                    </p>
                 </div>
+                <button type="button" className="ui-btn" onClick={fetchStatus} disabled={loading}>
+                    <Icon name="refresh" size={16} className={loading ? 'ui-spin' : ''} /> Actualiser
+                </button>
+            </section>
 
-                {/* Indication de dernière vérification & surveillance */}
-                <div style={{
-                    marginTop: '28px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: '13px',
-                    color: '#64748b',
-                    fontFamily: 'monospace'
-                }}>
-                    <span>Dernière synchronisation : {lastChecked ? lastChecked.toLocaleTimeString() : 'En cours…'}</span>
-                    <span>Surveillance continue 24/7</span>
-                </div>
-            </div>
-        </div>
+            <section className="st-metrics">
+                {metrics.map((m) => (
+                    <div key={m.label} className="st-metric">
+                        <Icon name={m.icon} size={18} />
+                        <small>{m.label}</small>
+                        <strong>{m.value}</strong>
+                    </div>
+                ))}
+            </section>
+
+            <section className="ui-card st-services">
+                <h2>Services</h2>
+                <ul>
+                    {rows.map((row) => (
+                        <li key={row.name}>
+                            <span className="st-services__icon"><Icon name={row.icon} size={18} /></span>
+                            <div>
+                                <strong>{row.name}</strong>
+                                <small>{row.desc}</small>
+                            </div>
+                            <span className={`st-state is-${row.state}`}>
+                                <i />{STATE_LABELS[row.state] || STATE_LABELS.unknown}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </section>
+
+            <p className="st-help">
+                Un problème qui n’apparaît pas ici ? <Link to="/feedback">Signalez-le</Link> ou passez sur le{' '}
+                <a href="https://discord.gg/azim" target="_blank" rel="noreferrer">serveur support</a>.
+            </p>
+        </main>
     );
 }
 

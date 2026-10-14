@@ -97,7 +97,15 @@ export const discordService = {
 }
 
 export const systemService = {
-    getHealth: () => fetchAPI('/system/health'),
+    // Le backend répond 503 quand un service est dégradé : on lit quand même le détail.
+    // `responseMs` = temps de réponse mesuré côté navigateur.
+    getHealth: async () => {
+        const startedAt = performance.now();
+        const response = await fetch(`${API_URL}/system/health`);
+        const data = await response.json().catch(() => null);
+        if (!data) throw { status: response.status, message: 'Réponse de statut illisible.' };
+        return { ...data, responseMs: Math.round(performance.now() - startedAt) };
+    },
 };
 
 export const feedbackService = {

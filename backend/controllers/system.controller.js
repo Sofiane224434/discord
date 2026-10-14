@@ -15,9 +15,14 @@ async function checkBotAPI() {
     try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 3000);
+        const startedAt = Date.now();
         const res = await fetch(`${base}/health`, { signal: controller.signal });
+        const responseMs = Date.now() - startedAt;
         clearTimeout(tid);
-        return { status: res.ok ? 'ok' : 'degraded' };
+        // On ne renvoie que des infos publiques (pas les erreurs détaillées du bot)
+        const body = await res.json().catch(() => ({}));
+        const uptimeSeconds = Number(body?.observability?.uptimeSeconds) || null;
+        return { status: res.ok ? 'ok' : 'degraded', responseMs, uptimeSeconds };
     } catch {
         return { status: 'error' };
     }

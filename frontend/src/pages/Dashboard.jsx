@@ -264,12 +264,12 @@ function Dashboard() {
                             : 'Azim pas encore installé'}
                     </p>
                     {guild.connected && guild.canManage ? (
-                        <Link to={`/dashboard/servers/${guild.id}/config`} className="pnl-btn pnl-btn--primary">
+                        <Link to={`/dashboard/servers/${guild.id}/config`} className="ui-btn ui-btn--primary">
                             Configurer <Icon name="arrowRight" size={16} />
                         </Link>
                     ) : null}
                     {!guild.connected ? (
-                        <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="pnl-btn">
+                        <button type="button" onClick={() => inviteBot(guild.id)} disabled={inviteLoading === guild.id} className="ui-btn">
                             <Icon name="plus" size={16} /> {inviteLoading === guild.id ? 'Ouverture…' : 'Ajouter Azim'}
                         </button>
                     ) : null}
@@ -297,21 +297,21 @@ function Dashboard() {
                     </div>
                 </div>
                 <div className="pnl-head__actions">
-                    <Link to="/login" className="pnl-btn pnl-btn--ghost" title="Recharger la liste de vos serveurs depuis Discord">
+                    <Link to="/login" className="ui-btn ui-btn--ghost" title="Recharger la liste de vos serveurs depuis Discord">
                         Resynchroniser Discord
                     </Link>
-                    <button type="button" onClick={loadData} disabled={refreshing} className="pnl-btn">
-                        <Icon name="refresh" size={16} className={refreshing ? 'pnl-spin' : ''} /> {refreshing ? 'Actualisation…' : 'Actualiser'}
+                    <button type="button" onClick={loadData} disabled={refreshing} className="ui-btn">
+                        <Icon name="refresh" size={16} className={refreshing ? 'ui-spin' : ''} /> {refreshing ? 'Actualisation…' : 'Actualiser'}
                     </button>
                 </div>
             </header>
 
             {error ? <div role="alert" className="pnl-alert"><Icon name="alert" size={18} /> {error}</div> : null}
 
-            <section className="pnl-stats" aria-label="Statistiques du bot">
+            <section className="ui-stats" aria-label="Statistiques du bot">
                 {cards.map((card) => (
-                    <article className="pnl-stat" key={card.label}>
-                        <span className="pnl-stat__icon"><Icon name={card.icon} size={20} /></span>
+                    <article className="ui-stat" key={card.label}>
+                        <span className="ui-stat__icon"><Icon name={card.icon} size={20} /></span>
                         <div>
                             <small>{card.label}</small>
                             <strong>{loading ? '—' : card.value}</strong>
@@ -350,9 +350,9 @@ function Dashboard() {
                                 <>
                                     <p>Azim n’est installé sur aucun serveur que vous administrez.</p>
                                     {inviteableGuilds.length ? (
-                                        <button type="button" className="pnl-btn pnl-btn--primary" onClick={() => setServerTab('invite')}>Voir les serveurs à inviter</button>
+                                        <button type="button" className="ui-btn ui-btn--primary" onClick={() => setServerTab('invite')}>Voir les serveurs à inviter</button>
                                     ) : (
-                                        <Link to="/login" className="pnl-btn">Resynchroniser mes serveurs Discord</Link>
+                                        <Link to="/login" className="ui-btn">Resynchroniser mes serveurs Discord</Link>
                                     )}
                                 </>
                             ) : currentTab.id === 'invite' ? (

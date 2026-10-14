@@ -27,14 +27,23 @@ i18n
     },
   });
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
+function start() {
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </React.StrictMode>
+  );
+}
+
+// Mode aperçu local (npm run dev:mock) : fausse API, jamais inclus en production
+if (import.meta.env.DEV && import.meta.env.VITE_MOCK_API === '1') {
+  import('./dev/mockApi.js').then((m) => { m.installMockApi(); start(); });
+} else {
+  start();
+}

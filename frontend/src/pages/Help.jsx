@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { SUPPORT_URL } from '../config/links.js';
 
 const questions = [
     {
@@ -56,7 +57,7 @@ function Help() {
                     <h2>Vous n’avez pas trouvé la réponse ?</h2>
                     <p>Venez poser votre question sur le serveur de support.</p>
                 </div>
-                <a href="https://discord.gg/xy3NpkjYsF" target="_blank" rel="noreferrer" className="btn btn-primary">Rejoindre le support <span aria-hidden="true">↗</span></a>
+                <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="btn btn-primary">Rejoindre le support <span aria-hidden="true">↗</span></a>
             </section>
 
             <div className="help-quick-links">

@@ -2,9 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from './Icon.jsx';
+import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
 
-const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
-const SUPPORT_URL = 'https://discord.gg/azim';
 
 function Footer() {
     const { i18n } = useTranslation();

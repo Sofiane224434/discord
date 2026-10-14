@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from '../components/Icon.jsx';
+import { ADD_BOT_URL } from '../config/links.js';
 
-const ADD_TO_SERVER_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
 
 function DiscordIcon() {
     return (
@@ -103,7 +103,7 @@ function Home() {
                             Français, gratuit, prêt en une minute.
                         </p>
                         <div className="azh-cta">
-                            <a className="azh-btn azh-btn--primary" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
+                            <a className="azh-btn azh-btn--primary" href={ADD_BOT_URL} target="_blank" rel="noreferrer">
                                 <DiscordIcon /> Ajouter à Discord
                             </a>
                             <Link className="azh-btn azh-btn--ghost" to="/#features">
@@ -302,7 +302,7 @@ function Home() {
                     <h2>Prêt à ajouter Azim ?</h2>
                     <p>Gratuit, sans inscription, configurable depuis Discord ou le panel.</p>
                     <div className="azh-cta">
-                        <a className="azh-btn azh-btn--light" href={ADD_TO_SERVER_URL} target="_blank" rel="noreferrer">
+                        <a className="azh-btn azh-btn--light" href={ADD_BOT_URL} target="_blank" rel="noreferrer">
                             <DiscordIcon /> Ajouter à Discord
                         </a>
                     </div>

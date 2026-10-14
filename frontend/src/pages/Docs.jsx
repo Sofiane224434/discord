@@ -2,8 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
+import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
 
-const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
 
 // Données exhaustives de la documentation
 const DOCS_DATA = [
@@ -900,7 +900,7 @@ function Docs() {
                                             <p className="doc-support-callout__text">
                                                 Si vous souhaitez contacter le <strong>Support</strong>, retrouvez-nous sur Discord en{' '}
                                                 <a
-                                                    href="https://discord.gg/azim"
+                                                    href={SUPPORT_URL}
                                                     target="_blank"
                                                     rel="noreferrer"
                                                     className="doc-support-callout__link"
@@ -1051,7 +1051,7 @@ function Docs() {
                                     </Link>
                                 </li>
                                 <li>
-                                    <a href="https://discord.gg/azim" target="_blank" rel="noreferrer" className="doc-tocs__quick-link">
+                                    <a href={SUPPORT_URL} target="_blank" rel="noreferrer" className="doc-tocs__quick-link">
                                         <span className="doc-tocs__quick-icon">🎧</span>
                                         <span>Support Discord</span>
                                     </a>

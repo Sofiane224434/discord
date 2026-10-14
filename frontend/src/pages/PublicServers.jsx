@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { systemService } from '../services/api.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import LoadingScreen from '../components/LoadingScreen.jsx';
+import { ADD_BOT_URL } from '../config/links.js';
 
 function PublicServers() {
     const { theme } = useTheme();
@@ -45,7 +46,7 @@ function PublicServers() {
 
             <section className="module-cta site-panel">
                 <div><p className="site-eyebrow">AJOUTER AZIM</p><h2>Ajouter le bot à un serveur</h2><p>Après l’installation, choisissez les commandes et salons à utiliser.</p></div>
-                <a href="https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands" target="_blank" rel="noreferrer" className="btn btn-primary">Ajouter Azim <span aria-hidden="true">↗</span></a>
+                <a href={ADD_BOT_URL} target="_blank" rel="noreferrer" className="btn btn-primary">Ajouter Azim <span aria-hidden="true">↗</span></a>
             </section>
         </main>
     );

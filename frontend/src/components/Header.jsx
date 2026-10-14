@@ -3,9 +3,8 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import Icon from './Icon.jsx';
+import { SUPPORT_URL, ADD_BOT_URL } from '../config/links.js';
 
-const ADD_BOT_URL = 'https://discord.com/oauth2/authorize?client_id=1462543984584032430&permissions=268823632&scope=bot%20applications.commands';
-const SUPPORT_URL = 'https://discord.gg/azim';
 
 function Header() {
     const { user, isAuthenticated, logout } = useAuth();

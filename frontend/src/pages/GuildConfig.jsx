@@ -339,6 +339,10 @@ function serializeForm(form) {
         rank: form.rank,
         islam: form.islam,
         commands: form.commands,
+        // Onglet Serveur & modération : sans eux, la barre « Enregistrer » n'apparaissait pas
+        language: form.language,
+        moderation: form.moderation,
+        showcase: { enabled: form.showcase.enabled, channelId: form.showcase.channelId || '' },
     });
 }
 

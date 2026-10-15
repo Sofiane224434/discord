@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth.js';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useTranslation } from 'react-i18next';
 import Icon from './Icon.jsx';
+import NotificationBell from './NotificationBell.jsx';
 import LanguageSwitch from './LanguageSwitch.jsx';
 import { SUPPORT_URL, openAddBot } from '../config/links.js';
 
@@ -95,6 +96,7 @@ function Header() {
                         <span>{t('header.support')}</span>
                     </a>
 
+                    {isAuthenticated && user ? <NotificationBell /> : null}
                     {isAuthenticated && user ? (
                         <div className="az-user" ref={menuRef}>
                             <button

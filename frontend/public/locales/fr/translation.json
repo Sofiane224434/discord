@@ -185,7 +185,12 @@
     "loading": "Inscription…",
     "already_account": "Déjà un compte ?",
     "login_link": "Se connecter",
-    "lead": "Créez un accès au site, puis connectez Discord pour retrouver vos serveurs."
+    "lead": "Créez un accès au site, puis connectez Discord pour retrouver vos serveurs.",
+    "terms_before": "J’accepte les",
+    "terms_link": "conditions d’utilisation",
+    "terms_and": "et la",
+    "privacy_link": "politique de confidentialité",
+    "terms_required": "Acceptez les conditions d’utilisation pour créer votre compte."
   },
   "dashboard": {
     "title": "Console Azim - {{name}}",
@@ -309,7 +314,10 @@
     "passwords_mismatch": "Les mots de passe ne correspondent pas",
     "password_too_short": "Le mot de passe doit contenir au moins 6 caractères",
     "login_error": "Erreur de connexion",
-    "register_error": "Erreur lors de l'inscription"
+    "register_error": "Erreur lors de l'inscription",
+    "page_title": "Cette page n’a pas pu s’afficher",
+    "page_lead": "Le site vient peut-être d’être mis à jour. Rechargez la page pour récupérer la dernière version.",
+    "reload": "Recharger la page"
   },
   "footer": {
     "tagline": "Le bot Discord français et gratuit : IA, modération, niveaux et alertes réseaux.",
@@ -332,7 +340,9 @@
     "help": "Centre d’aide",
     "legal": "© {{year}} AzimBot · azim404.com · Non affilié à Discord Inc.",
     "site_language": "Langue du site",
-    "privacy": "Confidentialité"
+    "privacy": "Confidentialité",
+    "terms": "CGU",
+    "legal_notice": "Mentions légales"
   },
   "common": {
     "save": "Enregistrer",
@@ -370,7 +380,9 @@
     "home_label": "Accueil AzimBot",
     "main_nav": "Navigation principale",
     "admin": "Administration",
-    "commands": "Commandes"
+    "commands": "Commandes",
+    "notifications": "Notifications",
+    "notifications_new": "{{count}} nouvelle(s) réponse(s) à vos retours"
   },
   "panel": {
     "hello": "Bonjour {{name}}",
@@ -492,7 +504,8 @@
     "delete": "Supprimer",
     "delete_confirm": "Supprimer définitivement ce retour ?",
     "err_admin": "Action impossible pour le moment.",
-    "delete_message": "Le retour et sa réponse seront supprimés pour tout le monde."
+    "delete_message": "Le retour et sa réponse seront supprimés pour tout le monde.",
+    "new_reply": "Nouvelle réponse"
   },
   "settings": {
     "title": "Paramètres",
@@ -808,7 +821,12 @@
     "social_empty": "Aucun compte suivi pour le moment.",
     "social_add": "Ajouter",
     "yt_add_ph": "@pseudo, lien de la chaîne ou ID UC…",
-    "tiktok_accounts": "Comptes suivis"
+    "tiktok_accounts": "Comptes suivis",
+    "social_search": "Rechercher parmi {{count}} comptes",
+    "social_no_match": "Aucun compte ne correspond à cette recherche.",
+    "page_prev": "Page précédente",
+    "page_next": "Page suivante",
+    "page_range": "{{from}}–{{to}} sur {{total}}"
   },
   "loading": {
     "default": "Chargement en cours…",
@@ -877,5 +895,17 @@
     "notice": "Ce site ne dépose aucun cookie : il garde seulement votre session, votre langue et votre thème dans le navigateur.",
     "notice_link": "Confidentialité",
     "notice_ok": "Compris"
+  },
+  "password": {
+    "rules_label": "Règles du mot de passe",
+    "rule_length": "Au moins {{n}} caractères",
+    "rule_lower": "Une lettre minuscule",
+    "rule_upper": "Une lettre majuscule",
+    "rule_digit": "Un chiffre",
+    "rule_special": "Un caractère spécial (! ? # @…)",
+    "too_weak": "Ce mot de passe n’est pas assez robuste : suivez les règles indiquées.",
+    "force_title": "Choisissez un mot de passe plus robuste",
+    "force_lead": "Pour protéger votre compte, les mots de passe doivent maintenant respecter des règles plus strictes. Votre mot de passe actuel ne les respecte pas : changez-le pour continuer.",
+    "force_submit": "Changer le mot de passe"
   }
 }

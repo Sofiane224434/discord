@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
 import { authService, startDiscordLogin } from '../services/api.js';
 import Icon from './Icon.jsx';
-
-const MIN_PASSWORD_LENGTH = 8;
+import PasswordRules from './PasswordRules.jsx';
+import { isStrongPassword } from '../utils/passwordPolicy.js';
 
 // Champ « mot de passe actuel », affiché seulement quand il est exigé
 function CurrentPasswordField({ value, onChange, withDiscord }) {
@@ -219,8 +219,9 @@ function AccountSettings() {
                                 {needsPassword ? <CurrentPasswordField value={currentPassword} onChange={setCurrentPassword} withDiscord={user.hasDiscord} /> : null}
                                 <div className="acc-form__grid">
                                     <label className="ui-field">
-                                        <span className="ui-field__label">{t('account.new_password')} <em>{t('account.min_chars', { n: MIN_PASSWORD_LENGTH })}</em></span>
-                                        <input type="password" className="ui-input" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                                        <span className="ui-field__label">{t('account.new_password')}</span>
+                                        <input type="password" className="ui-input" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                                        <PasswordRules password={newPassword} />
                                     </label>
                                     <label className="ui-field">
                                         <span className="ui-field__label">{t('account.confirm')}</span>
@@ -230,7 +231,7 @@ function AccountSettings() {
                                 {error ? <div role="alert" className="ui-flash ui-flash--error"><Icon name="alert" size={18} /> {error}</div> : null}
                                 <div className="acc-form__actions">
                                     <button type="button" className="ui-btn ui-btn--ghost" onClick={resetForms}>{t('common.cancel')}</button>
-                                    <button type="submit" className="ui-btn ui-btn--primary" disabled={busy || mustReauth || newPassword.length < MIN_PASSWORD_LENGTH}>
+                                    <button type="submit" className="ui-btn ui-btn--primary" disabled={busy || mustReauth || !isStrongPassword(newPassword)}>
                                         {busy ? t('common.saving') : t('common.save')}
                                     </button>
                                 </div>

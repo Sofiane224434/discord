@@ -191,9 +191,22 @@ function SelectInput({ value, onChange, options, emptyLabel, className = '' }) {
 }
 
 // Chaînes YouTube / comptes TikTok suivis : photo, nom, @pseudo, lien, suppression et ajout
+const SOCIAL_PAGE_SIZE = 10;
+
 function SocialAccounts({ items, profiles, onChange, platform, placeholder, t }) {
     const [draft, setDraft] = useState('');
+    const [query, setQuery] = useState('');
+    const [page, setPage] = useState(0);
     const byId = Object.fromEntries((profiles || []).map((profile) => [profile.id, profile]));
+    // Recherche sur le nom, le @pseudo ou l'identifiant ; 10 chaînes par page
+    const needle = query.trim().toLowerCase();
+    const matches = needle
+        ? items.filter((id) => [id, byId[id]?.name, byId[id]?.handle].some((text) => String(text || '').toLowerCase().includes(needle)))
+        : items;
+    const pageCount = Math.max(1, Math.ceil(matches.length / SOCIAL_PAGE_SIZE));
+    const currentPage = Math.min(page, pageCount - 1);
+    const visible = matches.slice(currentPage * SOCIAL_PAGE_SIZE, (currentPage + 1) * SOCIAL_PAGE_SIZE);
+    const showTools = items.length > SOCIAL_PAGE_SIZE;
     const add = () => {
         const value = draft.trim();
         if (!value || items.includes(value)) return;
@@ -202,9 +215,21 @@ function SocialAccounts({ items, profiles, onChange, platform, placeholder, t })
     };
     return (
         <div className="cf-social">
-            {items.length ? (
+            {showTools ? (
+                <label className="ui-search cf-social__search">
+                    <Icon name="search" size={16} />
+                    <input
+                        type="search"
+                        value={query}
+                        placeholder={t('config.social_search', { count: items.length })}
+                        onChange={(e) => { setQuery(e.target.value); setPage(0); }}
+                    />
+                </label>
+            ) : null}
+            {items.length && !matches.length ? <p className="cf-empty">{t('config.social_no_match')}</p> : null}
+            {matches.length ? (
                 <ul className="cf-social__list">
-                    {items.map((id) => {
+                    {visible.map((id) => {
                         const profile = byId[id];
                         return (
                             <li key={id} className="cf-social__item">
@@ -229,7 +254,19 @@ function SocialAccounts({ items, profiles, onChange, platform, placeholder, t })
                         );
                     })}
                 </ul>
-            ) : <p className="cf-empty">{t('config.social_empty')}</p>}
+            ) : null}
+            {!items.length ? <p className="cf-empty">{t('config.social_empty')}</p> : null}
+            {pageCount > 1 ? (
+                <div className="cf-pager">
+                    <button type="button" className="ui-icon-btn" aria-label={t('config.page_prev')} disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>
+                        <Icon name="chevronLeft" size={16} />
+                    </button>
+                    <span>{t('config.page_range', { from: currentPage * SOCIAL_PAGE_SIZE + 1, to: Math.min((currentPage + 1) * SOCIAL_PAGE_SIZE, matches.length), total: matches.length })}</span>
+                    <button type="button" className="ui-icon-btn" aria-label={t('config.page_next')} disabled={currentPage >= pageCount - 1} onClick={() => setPage(currentPage + 1)}>
+                        <Icon name="chevronRight" size={16} />
+                    </button>
+                </div>
+            ) : null}
             <div className="cf-social__add">
                 <input
                     className="ui-input"

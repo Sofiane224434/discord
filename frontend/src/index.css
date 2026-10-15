@@ -8476,3 +8476,131 @@ button.ft__linkbtn:hover {
 	background: transparent;
 	color: var(--azim-accent-strong);
 }
+
+/* Écran de secours quand une page plante */
+.err-boundary {
+	padding-top: 80px;
+	padding-bottom: 80px;
+	text-align: center;
+}
+
+.err-boundary p {
+	margin: 12px 0 24px;
+	color: var(--azim-ink-soft);
+}
+
+/* Règles du mot de passe, cochées pendant la saisie */
+.pw-rules {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+	gap: 4px 14px;
+	margin: 8px 0 0;
+	padding: 0;
+	list-style: none;
+	color: var(--azim-ink-muted);
+	font-size: 12.5px;
+}
+
+.pw-rules li {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.pw-rules li.is-ok {
+	color: var(--azim-success);
+}
+
+.pw-force__card {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.reg-terms {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.reg-terms input {
+	margin-top: 3px;
+}
+
+/* Cloche des notifications dans l'en-tête */
+.az-bell {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	color: var(--azim-ink-soft);
+	transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.az-bell:hover,
+.az-bell.is-active {
+	background: var(--azim-panel);
+	color: var(--azim-ink);
+}
+
+.az-bell.has-news {
+	color: var(--azim-ink);
+}
+
+.az-bell__badge {
+	position: absolute;
+	top: 3px;
+	right: 0;
+	min-width: 20px;
+	padding: 1px 5px;
+	border-radius: 999px;
+	background: var(--azim-coral);
+	color: #1a0805;
+	font-size: 11px;
+	font-weight: 800;
+	line-height: 16px;
+	text-align: center;
+}
+
+/* Retour avec une nouvelle réponse de l'équipe */
+.fb-fresh {
+	padding: 2px 8px;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--azim-coral) 18%, transparent);
+	color: var(--azim-coral);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.fb-item.is-fresh {
+	border-color: color-mix(in srgb, var(--azim-coral) 45%, transparent);
+}
+
+/* Chaînes suivies : recherche et pages */
+.cf-social__search {
+	margin-bottom: 10px;
+}
+
+.cf-pager {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 10px;
+	color: var(--azim-ink-soft);
+	font-size: 13px;
+}
+
+.prv-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--azim-accent);
+	font-size: 14px;
+	font-weight: 700;
+	text-decoration: none;
+}

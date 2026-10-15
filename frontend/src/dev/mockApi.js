@@ -9,6 +9,7 @@
 const now = Date.now();
 const ago = (minutes) => new Date(now - minutes * 60_000).toISOString();
 
+let notifSeen = false;
 let USER = { id: 1, username: 'claude-apercu', firstname: 'Claude', email: null, createdAt: '2026-03-02T10:00:00Z', avatarUrl: '/icon.png', hasDiscord: true, hasPassword: false, recentDiscordAuth: true, role: new URLSearchParams(window.location.search).get('mock_role') || 'superadmin' };
 
 const DISCORD_GUILDS = [
@@ -122,6 +123,9 @@ export function installMockApi() {
                 services: { db: { status: 'ok' }, botApi: { status: 'ok', responseMs: 38, uptimeSeconds: 93_000, discord: { ready: true, ping: 41, guildCount: 4, shardCount: 1, shards: [{ id: 0, ping: 41, ready: true }] } }, oauth: { status: 'ok' } },
             });
         }
+        // Aperçu : une réponse non lue jusqu'à l'ouverture de la page Retours
+        if (path === '/feedback/notifications') return json({ count: notifSeen ? 0 : 1, ids: notifSeen ? [] : [reports[1]?.id].filter(Boolean) });
+        if (path === '/feedback/notifications/seen') { notifSeen = true; return json({ count: 0 }); }
         if (path === '/feedback' && method === 'GET') return json({ reports, scope: loggedIn ? 'all' : 'guest' });
         if (path === '/feedback' && method === 'POST') {
             const body = JSON.parse(init.body || '{}');

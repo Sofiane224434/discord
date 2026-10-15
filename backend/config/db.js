@@ -37,6 +37,10 @@ const USER_COLUMNS = {
     role: "VARCHAR(20) NOT NULL DEFAULT 'user'",
     banned_at: 'DATETIME NULL',
     ban_reason: 'VARCHAR(300) NULL',
+    // Mot de passe trop faible détecté à la connexion : changement obligatoire
+    password_weak: 'TINYINT(1) NOT NULL DEFAULT 0',
+    // Dernière visite de la page Retours & idées (notifications des réponses)
+    feedback_seen_at: 'DATETIME NULL',
 };
 
 export async function ensureSchema() {

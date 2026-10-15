@@ -2,7 +2,7 @@
 import { query } from '../config/db.js'; // Extension .js obligatoire ! ⬅️
 import bcrypt from 'bcrypt';
 
-const PUBLIC_COLUMNS = 'id, email, firstname, lastname, created_at, discord_id, discord_username, discord_avatar, has_password, role, banned_at, ban_reason';
+const PUBLIC_COLUMNS = 'id, email, firstname, lastname, created_at, discord_id, discord_username, discord_avatar, has_password, role, banned_at, ban_reason, password_weak, feedback_seen_at';
 
 // Compte propriétaire du site : toujours super administrateur
 export const SUPERADMIN_EMAIL = String(process.env.SUPERADMIN_EMAIL || 'sofiane.kherarfa@laplateforme.io').toLowerCase();
@@ -49,6 +49,8 @@ export function toPublicUser(row) {
         hasDiscord: Boolean(row.discord_id),
         hasPassword: row.has_password === undefined ? true : Boolean(row.has_password),
         role: resolveRole(row),
+        // Mot de passe à remplacer par un mot de passe robuste avant de continuer
+        mustChangePassword: Boolean(row.password_weak) && Boolean(row.has_password),
     };
 }
 
@@ -101,7 +103,13 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     },
     async setPassword(id, plainPassword) {
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
-        await query('UPDATE users SET password = ?, has_password = 1 WHERE id = ?', [hashedPassword, id]);
+        await query('UPDATE users SET password = ?, has_password = 1, password_weak = 0 WHERE id = ?', [hashedPassword, id]);
+    },
+    async markWeakPassword(id, weak) {
+        await query('UPDATE users SET password_weak = ? WHERE id = ?', [weak ? 1 : 0, id]);
+    },
+    async setFeedbackSeen(id) {
+        await query('UPDATE users SET feedback_seen_at = NOW() WHERE id = ?', [id]);
     },
     async setEmail(id, email) {
         await query('UPDATE users SET email = ? WHERE id = ?', [email.toLowerCase(), id]);

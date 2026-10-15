@@ -6,6 +6,7 @@ import { useConfirm } from '../hooks/useConfirm.jsx';
 import { feedbackService } from '../services/api.js';
 import { useAuth } from '../hooks/useAuth.js';
 import LoadingScreen from '../components/LoadingScreen.jsx';
+import { NOTIFICATIONS_EVENT } from '../components/NotificationBell.jsx';
 
 const MAX_TITLE_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 2000;
@@ -72,6 +73,19 @@ export default function Feedback() {
 
     useEffect(() => {
         loadReports();
+    }, [user?.id]);
+
+    // Retours avec une nouvelle réponse : signalés ici, puis marqués comme vus (la pastille de l'en-tête disparaît)
+    const [freshIds, setFreshIds] = useState([]);
+    useEffect(() => {
+        if (!user) return;
+        feedbackService.getNotifications()
+            .then((data) => {
+                setFreshIds(Array.isArray(data?.ids) ? data.ids : []);
+                return feedbackService.markNotificationsSeen();
+            })
+            .then(() => window.dispatchEvent(new CustomEvent(NOTIFICATIONS_EVENT, { detail: { count: 0 } })))
+            .catch(() => null);
     }, [user?.id]);
 
     // Garde le filtre dans l'adresse : un lien « Idées » ramène bien aux idées
@@ -403,11 +417,12 @@ export default function Feedback() {
                     {filteredReports.map((item) => {
                         const isBug = item.type === 'bug';
                         return (
-                            <article key={item.id} className={`fb-item ${isBug ? 'is-bug' : 'is-idea'}`}>
+                            <article key={item.id} className={`fb-item ${isBug ? 'is-bug' : 'is-idea'}${freshIds.includes(item.id) ? ' is-fresh' : ''}`}>
                                 <span className="fb-item__icon"><Icon name={isBug ? 'bug' : 'sparkles'} size={20} /></span>
                                 <div className="fb-item__body">
                                     <div className="fb-item__top">
                                         <h3>{item.title}</h3>
+                                        {freshIds.includes(item.id) ? <span className="fb-fresh">{t('feedback.new_reply')}</span> : null}
                                         <span className={`fb-status is-${item.status || 'open'}`}>{STATUS_LABELS[item.status] || STATUS_LABELS.open}</span>
                                     </div>
                                     <p>{item.description}</p>

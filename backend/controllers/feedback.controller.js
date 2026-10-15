@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import User from '../models/user.model.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -158,6 +159,44 @@ export const createFeedback = async (req, res) => {
     saveLocalReports(reports);
 
     return res.status(201).json({ success: true, report: newReport });
+};
+
+// Notifications : retours de la personne qui ont reçu une réponse ou changé de statut depuis sa dernière visite
+function hasNewsFor(report, seenAt) {
+    const updated = Date.parse(report.reply?.at || report.updatedAt || 0);
+    const created = Date.parse(report.createdAt || 0);
+    const touchedByStaff = Boolean(report.reply?.text) || (report.status && report.status !== 'open');
+    if (!touchedByStaff || !updated || updated - created < 1000) return false;
+    return !seenAt || updated > Date.parse(seenAt);
+}
+
+async function loadReports() {
+    const baseUrl = getBaseUrl();
+    if (baseUrl) {
+        try {
+            const response = await fetch(`${baseUrl}/reports`, { headers: getBotHeaders(), signal: AbortSignal.timeout(BOT_TIMEOUT_MS) });
+            if (response.ok) {
+                const data = await response.json();
+                return Array.isArray(data.reports) ? data.reports : [];
+            }
+        } catch {
+            // repli local ci-dessous
+        }
+    }
+    return loadLocalReports();
+}
+
+// GET /api/feedback/notifications — nombre de retours avec du nouveau (réponse ou statut)
+export const getFeedbackNotifications = async (req, res) => {
+    const reports = (await loadReports()).filter((report) => isOwnReport(report, req.user));
+    const fresh = reports.filter((report) => hasNewsFor(report, req.user.feedback_seen_at));
+    res.json({ count: fresh.length, ids: fresh.map((report) => report.id) });
+};
+
+// POST /api/feedback/notifications/seen — la personne a ouvert la page Retours & idées
+export const markFeedbackSeen = async (req, res) => {
+    await User.setFeedbackSeen(req.user.id);
+    res.json({ count: 0 });
 };
 
 const STATUSES = ['open', 'in_progress', 'resolved', 'closed'];

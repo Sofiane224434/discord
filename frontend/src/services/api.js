@@ -125,6 +125,9 @@ export const systemService = {
 };
 
 export const feedbackService = {
+    // Réponses de l'équipe pas encore vues (pastille de l'en-tête)
+    getNotifications: () => fetchAPI('/feedback/notifications'),
+    markNotificationsSeen: () => fetchAPI('/feedback/notifications/seen', { method: 'POST' }),
     getFeedbacks: (params = {}) => {
         const q = new URLSearchParams(params).toString();
         return fetchAPI(`/feedback${q ? `?${q}` : ''}`);

@@ -185,7 +185,12 @@
     "loading": "Creating account…",
     "already_account": "Already have an account?",
     "login_link": "Sign in",
-    "lead": "Create a website account, then connect Discord to find your servers."
+    "lead": "Create a website account, then connect Discord to find your servers.",
+    "terms_before": "I accept the",
+    "terms_link": "terms of use",
+    "terms_and": "and the",
+    "privacy_link": "privacy policy",
+    "terms_required": "Accept the terms of use to create your account."
   },
   "dashboard": {
     "title": "Azim Console - {{name}}",
@@ -309,7 +314,10 @@
     "passwords_mismatch": "Passwords don't match",
     "password_too_short": "Password must be at least 6 characters",
     "login_error": "Sign in failed",
-    "register_error": "Registration failed"
+    "register_error": "Registration failed",
+    "page_title": "This page could not be displayed",
+    "page_lead": "The website may have just been updated. Reload the page to get the latest version.",
+    "reload": "Reload the page"
   },
   "footer": {
     "tagline": "The free French Discord bot: AI, moderation, levels and social alerts.",
@@ -332,7 +340,9 @@
     "help": "Help center",
     "legal": "© {{year}} AzimBot · azim404.com · Not affiliated with Discord Inc.",
     "site_language": "Site language",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "terms": "Terms of use",
+    "legal_notice": "Legal notice"
   },
   "common": {
     "save": "Save",
@@ -370,7 +380,9 @@
     "home_label": "AzimBot home",
     "main_nav": "Main navigation",
     "admin": "Admin",
-    "commands": "Commands"
+    "commands": "Commands",
+    "notifications": "Notifications",
+    "notifications_new": "{{count}} new reply(ies) to your feedback"
   },
   "panel": {
     "hello": "Hi {{name}}",
@@ -492,7 +504,8 @@
     "delete": "Delete",
     "delete_confirm": "Delete this report for good?",
     "err_admin": "This action is not possible right now.",
-    "delete_message": "The report and its reply will be deleted for everyone."
+    "delete_message": "The report and its reply will be deleted for everyone.",
+    "new_reply": "New reply"
   },
   "settings": {
     "title": "Settings",
@@ -808,7 +821,12 @@
     "social_empty": "No account followed yet.",
     "social_add": "Add",
     "yt_add_ph": "@handle, channel link or UC… ID",
-    "tiktok_accounts": "Followed accounts"
+    "tiktok_accounts": "Followed accounts",
+    "social_search": "Search among {{count}} accounts",
+    "social_no_match": "No account matches this search.",
+    "page_prev": "Previous page",
+    "page_next": "Next page",
+    "page_range": "{{from}}–{{to}} of {{total}}"
   },
   "loading": {
     "default": "Loading…",
@@ -877,5 +895,17 @@
     "notice": "This website sets no cookies: it only keeps your session, language and theme in your browser.",
     "notice_link": "Privacy",
     "notice_ok": "Got it"
+  },
+  "password": {
+    "rules_label": "Password rules",
+    "rule_length": "At least {{n}} characters",
+    "rule_lower": "A lowercase letter",
+    "rule_upper": "An uppercase letter",
+    "rule_digit": "A digit",
+    "rule_special": "A special character (! ? # @…)",
+    "too_weak": "This password is not strong enough: follow the rules shown.",
+    "force_title": "Choose a stronger password",
+    "force_lead": "To protect your account, passwords must now follow stricter rules. Your current password does not: change it to continue.",
+    "force_submit": "Change password"
   }
 }

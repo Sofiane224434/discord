@@ -3,12 +3,15 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth.js';
+import PasswordRules from '../components/PasswordRules.jsx';
+import { isStrongPassword } from '../utils/passwordPolicy.js';
 
 function Register() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        acceptTerms: false,
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -17,9 +20,10 @@ function Register() {
     const navigate = useNavigate();
 
     const handleChange = (e) => {
+        const { name, type, checked, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [e.target.name]: e.target.value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
@@ -31,8 +35,12 @@ function Register() {
             setError(t('errors.passwords_mismatch'));
             return;
         }
-        if (formData.password.length < 6) {
-            setError(t('errors.password_too_short'));
+        if (!isStrongPassword(formData.password)) {
+            setError(t('password.too_weak'));
+            return;
+        }
+        if (!formData.acceptTerms) {
+            setError(t('register.terms_required'));
             return;
         }
 
@@ -80,8 +88,10 @@ function Register() {
                             onChange={handleChange}
                             required
                             disabled={loading}
+                            autoComplete="new-password"
                             className="form-input disabled:bg-gray-100"
                         />
+                        <PasswordRules password={formData.password} />
                     </div>
                     <div>
                         <label className="auth-card-label block text-sm font-medium mb-1">{t('register.confirm_password')}</label>
@@ -95,6 +105,13 @@ function Register() {
                             className="form-input disabled:bg-gray-100"
                         />
                     </div>
+                    {/* Acceptation des CGU et de la politique de confidentialité, obligatoire */}
+                    <label className="reg-terms">
+                        <input type="checkbox" name="acceptTerms" checked={formData.acceptTerms} onChange={handleChange} required />
+                        <span>
+                            {t('register.terms_before')} <Link to="/cgu" target="_blank" className="auth-card-link">{t('register.terms_link')}</Link> {t('register.terms_and')} <Link to="/confidentialite" target="_blank" className="auth-card-link">{t('register.privacy_link')}</Link>.
+                        </span>
+                    </label>
                     <button
                         type="submit"
                         disabled={loading}

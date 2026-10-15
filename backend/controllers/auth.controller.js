@@ -2,10 +2,10 @@
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import User, { toPublicUser } from '../models/user.model.js';
+import { isStrongPassword, passwordError, PASSWORD_MAX_LENGTH } from '../config/password-policy.js';
 
 // Une connexion Discord récente vaut confirmation d'identité pour les comptes sans mot de passe
 const DISCORD_REAUTH_WINDOW_SECONDS = 10 * 60;
-const MIN_PASSWORD_LENGTH = 8;
 
 // Génère un token JWT (auth = méthode de connexion : 'password' ou 'discord')
 export const generateToken = (user, discordGuildIds = [], auth = 'password') => {
@@ -49,6 +49,8 @@ export const register = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ error: 'Email et mot de passe requis' });
         }
+        const weakReason = passwordError(password);
+        if (weakReason) return res.status(400).json({ error: weakReason, code: 'WEAK_PASSWORD' });
         const existingUser = await User.findByEmail(email);
         if (existingUser) {
             return res.status(409).json({ error: 'Email déjà utilisé' });
@@ -71,8 +73,11 @@ export const login = async (req, res) => {
         if (user.banned_at) {
             return res.status(403).json({ error: 'Ce compte a été suspendu.', hint: user.ban_reason || undefined });
         }
+        // Règle rétroactive : un ancien mot de passe trop faible doit être changé avant de continuer
+        const weak = !isStrongPassword(password);
+        if (weak !== Boolean(user.password_weak)) await User.markWeakPassword(user.id, weak);
         const token = generateToken(user);
-        res.json({ user: toPublicUser(user), token });
+        res.json({ user: toPublicUser({ ...user, password_weak: weak ? 1 : 0 }), token });
     } catch (error) {
         res.status(500).json({ error: 'Erreur serveur' });
     }
@@ -91,7 +96,10 @@ export const getProfile = async (req, res) => {
 // PUT /api/auth/password — définir ou changer son mot de passe
 const passwordSchema = z.object({
     currentPassword: z.string().optional(),
-    newPassword: z.string().min(MIN_PASSWORD_LENGTH, `Le mot de passe doit faire au moins ${MIN_PASSWORD_LENGTH} caractères`).max(128, 'Mot de passe trop long'),
+    newPassword: z.string().max(PASSWORD_MAX_LENGTH, 'Mot de passe trop long').superRefine((value, ctx) => {
+        const problem = passwordError(value);
+        if (problem) ctx.addIssue({ code: 'custom', message: problem });
+    }),
 });
 
 export const changePassword = async (req, res) => {

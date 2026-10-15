@@ -37,6 +37,8 @@ function Footer() {
                 { label: t('footer.settings'), to: '/settings' },
                 { label: t('footer.help'), to: '/docs/faq' },
                 { label: t('footer.privacy'), to: '/confidentialite' },
+                { label: t('footer.terms'), to: '/cgu' },
+                { label: t('footer.legal_notice'), to: '/mentions-legales' },
             ],
         },
     ];

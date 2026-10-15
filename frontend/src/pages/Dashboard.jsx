@@ -152,7 +152,7 @@ function Dashboard() {
     const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
 
     // 2. Autres serveurs où le bot est présent : Bot présent mais SANS perm de gestion
-    // Le serveur officiel Azim As-Sunnah est toujours affiché, en premier ; les autres serveurs en mode Islam restent masqués
+    // Le serveur officiel Azim As-Sunnah est toujours affiché, en premier ; tous les serveurs du bot sont listés
     const otherBotGuilds = useMemo(() => {
         const result = [];
         const addedIds = new Set(manageableGuilds.map((g) => g.id));
@@ -161,10 +161,6 @@ function Dashboard() {
         for (const g of userGuildMap.values()) {
             if (!addedIds.has(g.id) && connectedGuildIds.has(g.id)) {
                 const botGuild = (overview?.guilds || []).find((bg) => String(bg.id) === g.id);
-                // Si le serveur a le mode islam actif et que l'utilisateur n'a aucun droit dessus, masqué
-                if (botGuild?.islamModeEnabled && g.id !== HOME_GUILD_ID) {
-                    continue;
-                }
                 result.push({
                     ...g,
                     iconUrl: g.iconUrl || botGuild?.iconUrl || getDiscordGuildIcon(g),
@@ -182,10 +178,6 @@ function Dashboard() {
         if (Array.isArray(overview?.guilds)) {
             for (const bg of overview.guilds) {
                 const id = String(bg.id);
-                // Si le serveur a le mode islam et que l'utilisateur n'a aucun droit de gestion, masqué du site
-                if (bg.islamModeEnabled && id !== HOME_GUILD_ID) {
-                    continue;
-                }
                 if (!addedIds.has(id)) {
                     result.push({
                         id,

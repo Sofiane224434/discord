@@ -433,6 +433,54 @@ const DOCS_FR = [
                     ]
                 }
             },
+            {
+                slug: 'lecture',
+                title: 'YouTube en vocal',
+                icon: 'music',
+                summary: 'Écouter le son ou regarder une vidéo YouTube ensemble dans un salon vocal.',
+                sections: [
+                    { id: 'lecture-audio', label: 'Le son en vocal' },
+                    { id: 'lecture-video', label: 'La vidéo ensemble' },
+                ],
+                content: {
+                    badge: 'Musique & vidéos',
+                    heading: 'YouTube en vocal',
+                    lead: 'Lancez n’importe quelle vidéo YouTube, par son lien ou par une recherche : le son dans le salon vocal, ou la vidéo à regarder ensemble.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'lecture-audio',
+                            title: 'Le son dans le salon vocal',
+                            paragraphs: [
+                                'Rejoignez un salon vocal et lancez `/lecture audio`. Si une lecture est déjà en cours dans ce salon, la vidéo s’ajoute à la file d’attente. Les boutons du message permettent de mettre en pause, passer à la suivante ou arrêter.',
+                                'Plusieurs salons du même serveur peuvent écouter en même temps, grâce aux bots d’appoint (comme pour la radio).'
+                            ],
+                            codeList: [
+                                { cmd: '/lecture audio recherche:lofi hip hop', desc: 'Cherche sur YouTube et lit le premier résultat.' },
+                                { cmd: '/lecture audio recherche:https://youtu.be/…', desc: 'Lit la vidéo de ce lien (vidéo, short ou direct).' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'lecture-video',
+                            title: 'La vidéo, à regarder ensemble',
+                            paragraphs: [
+                                '`/lecture video` ouvre l’Activité d’Azim dans votre salon vocal avec la vidéo demandée. Les membres du salon peuvent la rejoindre ; chacun la regarde depuis le début.',
+                                'La vidéo démarre sans le son : cliquez sur « Activer le son ».'
+                            ],
+                            codeList: [
+                                { cmd: '/lecture video recherche:https://youtu.be/…', desc: 'Ouvre cette vidéo dans le salon vocal.' }
+                            ]
+                        },
+                        {
+                            type: 'hint',
+                            variant: 'info',
+                            title: 'Bon à savoir',
+                            text: 'Les vidéos privées, réservées aux membres d’une chaîne ou limitées par âge ne peuvent pas être lues.'
+                        }
+                    ]
+                }
+            },
         ]
     },
     {

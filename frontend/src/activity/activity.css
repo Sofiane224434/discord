@@ -256,3 +256,8 @@ body {
 		bottom: 12px;
 	}
 }
+
+.act-sources[hidden],
+.act-live[hidden] {
+	display: none;
+}

@@ -433,6 +433,54 @@ const DOCS_EN = [
                     ]
                 }
             },
+            {
+                slug: 'lecture',
+                title: 'YouTube in voice',
+                icon: 'music',
+                summary: 'Listen to a YouTube video’s sound, or watch it together, in a voice channel.',
+                sections: [
+                    { id: 'lecture-audio', label: 'Sound in voice' },
+                    { id: 'lecture-video', label: 'Watch together' },
+                ],
+                content: {
+                    badge: 'Music & videos',
+                    heading: 'YouTube in voice',
+                    lead: 'Start any YouTube video, from its link or a search: the sound in the voice channel, or the video to watch together.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'lecture-audio',
+                            title: 'Sound in the voice channel',
+                            paragraphs: [
+                                'Join a voice channel and run `/play audio`. If something is already playing in that channel, the video is added to the queue. The message buttons pause, skip or stop.',
+                                'Several channels of the same server can listen at once, thanks to helper bots (as with the radio).'
+                            ],
+                            codeList: [
+                                { cmd: '/play audio query:lofi hip hop', desc: 'Searches YouTube and plays the first result.' },
+                                { cmd: '/play audio query:https://youtu.be/…', desc: 'Plays the video at this link (video, short or live).' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'lecture-video',
+                            title: 'The video, watched together',
+                            paragraphs: [
+                                '`/play video` opens Azim’s Activity in your voice channel with the requested video. Members of the channel can join it; each one watches from the start.',
+                                'The video starts muted: click “Turn sound on”.'
+                            ],
+                            codeList: [
+                                { cmd: '/play video query:https://youtu.be/…', desc: 'Opens this video in the voice channel.' }
+                            ]
+                        },
+                        {
+                            type: 'hint',
+                            variant: 'info',
+                            title: 'Good to know',
+                            text: 'Private, members-only or age-restricted videos cannot be played.'
+                        }
+                    ]
+                }
+            },
         ]
     },
     {

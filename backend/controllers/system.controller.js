@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import { query } from '../config/db.js';
 
 async function checkDB() {
@@ -90,5 +91,44 @@ export const getCommands = async (_req, res) => {
         return res.status(502).json({ error: 'Liste des commandes indisponible', details: process.env.NODE_ENV === 'production' ? undefined : error.message });
     } finally {
         clearTimeout(timeout);
+    }
+};
+
+// --- Activité Discord (/activite) : vidéo demandée avec /lecture video, ou La Mecque en direct ---
+function botRequest(path, signal) {
+    const baseUrl = (process.env.BOT_API_URL || '').trim().replace(/\/+$/, '');
+    if (!baseUrl) throw new Error('Bot API non configurée');
+    const headers = {};
+    if (process.env.BOT_API_TOKEN) headers['x-dashboard-token'] = process.env.BOT_API_TOKEN;
+    return fetch(`${baseUrl}${path}`, { headers, signal });
+}
+
+export const getActivity = async (req, res) => {
+    const { channelId } = req.params;
+    if (!/^\d{5,25}$/.test(channelId)) return res.status(400).json({ error: 'Salon invalide' });
+    try {
+        // La recherche YouTube peut prendre quelques secondes
+        const response = await botRequest(`/activity/${channelId}`, AbortSignal.timeout(45000));
+        const data = await response.json();
+        return res.status(response.ok ? 200 : 502).json(data);
+    } catch {
+        return res.json({ type: 'mecque' });
+    }
+};
+
+// Flux vidéo relayé depuis le bot (le bot seul peut lire YouTube : les adresses sont liées à son IP)
+export const streamYoutubeVideo = async (req, res) => {
+    const { id } = req.params;
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) return res.status(400).json({ error: 'Vidéo invalide' });
+    const controller = new AbortController();
+    req.on('close', () => controller.abort());
+    try {
+        const response = await botRequest(`/media/youtube/${id}/video`, controller.signal);
+        if (!response.ok || !response.body) return res.status(response.status || 502).json({ error: 'Vidéo indisponible' });
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Cache-Control', 'no-store');
+        Readable.fromWeb(response.body).on('error', () => res.end()).pipe(res);
+    } catch {
+        if (!res.headersSent) res.status(502).json({ error: 'Vidéo indisponible' });
     }
 };

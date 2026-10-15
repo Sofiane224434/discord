@@ -39,10 +39,12 @@ const TEXT = {
     fr: {
         live: 'En direct', connecting: 'Connexion au direct…', unmute: 'Activer le son', mute: 'Couper le son',
         retry: 'Réessayer', failed: 'Le direct ne répond pas pour le moment.', fullscreen: 'Plein écran', camera: 'Caméra',
+        video: 'Vidéo', preparing: 'Préparation de la vidéo…', videoFailed: 'Cette vidéo ne peut pas être lue pour le moment.',
     },
     en: {
         live: 'Live', connecting: 'Connecting to the live stream…', unmute: 'Turn sound on', mute: 'Mute',
         retry: 'Try again', failed: 'The live stream is not responding right now.', fullscreen: 'Full screen', camera: 'Camera',
+        video: 'Video', preparing: 'Preparing the video…', videoFailed: 'This video cannot be played right now.',
     },
 };
 
@@ -58,6 +60,7 @@ const retryBtn = document.getElementById('retry');
 const soundBtn = document.getElementById('sound');
 const sourcesNav = document.getElementById('sources');
 const title = document.getElementById('title');
+const liveBadge = document.querySelector('.act-live');
 
 let hls = null;
 let current = SOURCES[0];
@@ -80,6 +83,8 @@ function hideState() {
 }
 
 function renderSources() {
+    // Une seule source : pas de choix à afficher
+    sourcesNav.hidden = SOURCES.length < 2;
     sourcesNav.replaceChildren(...SOURCES.map((source) => {
         const button = document.createElement('button');
         button.type = 'button';
@@ -93,7 +98,8 @@ function renderSources() {
         button.addEventListener('click', () => select(source));
         return button;
     }));
-    title.textContent = `${current.label[lang]} · ${current.detail[lang]}`;
+    title.textContent = current.type === 'youtube' ? current.detail[lang] : `${current.label[lang]} · ${current.detail[lang]}`;
+    liveBadge.hidden = current.type === 'youtube' && !current.isLive;
 }
 
 function play(url) {
@@ -127,15 +133,30 @@ function play(url) {
     }
 }
 
+// Vidéo YouTube : un fichier MP4 envoyé au fur et à mesure par le serveur d'Azim
+function playFile(url) {
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+    showState(t.preparing);
+    video.src = url;
+    video.play().catch(() => null);
+}
+
 function select(source) {
     current = source;
     urlIndex = 0;
     renderSources();
-    play(current.urls[0]);
+    if (source.type === 'youtube') playFile(source.urls[0]);
+    else play(current.urls[0]);
 }
 
 video.addEventListener('playing', hideState);
-video.addEventListener('waiting', () => showState(t.connecting));
+video.addEventListener('waiting', () => showState(current.type === 'youtube' ? t.preparing : t.connecting));
+video.addEventListener('error', () => {
+    if (current.type === 'youtube') showState(t.videoFailed, { loading: false, retry: true });
+});
 
 retryBtn.addEventListener('click', () => select(current));
 
@@ -166,9 +187,36 @@ async function start() {
             console.warn('[Activité] SDK Discord :', error);
         }
     }
-    renderSources();
     renderSound();
-    play(current.urls[0]);
+
+    // Vidéo demandée avec /lecture video dans ce salon vocal ? Sinon, La Mecque en direct.
+    const channelId = params.get('channel_id');
+    if (channelId) {
+        renderSources();
+        showState(t.preparing);
+        try {
+            const res = await fetch(`/api/system/activity/${encodeURIComponent(channelId)}`);
+            const data = await res.json();
+            if (data.type === 'youtube' && data.video?.id) {
+                SOURCES.unshift({
+                    id: 'youtube',
+                    type: 'youtube',
+                    isLive: Boolean(data.video.isLive),
+                    label: { fr: t.video, en: t.video },
+                    detail: { fr: data.video.title, en: data.video.title },
+                    urls: [`/api/system/youtube/${data.video.id}/video`],
+                });
+                return select(SOURCES[0]);
+            }
+            if (data.type === 'youtube' && data.error) {
+                renderSources();
+                return showState(`${t.videoFailed} (${data.error})`, { loading: false });
+            }
+        } catch (error) {
+            console.warn('[Activité] Vidéo demandée :', error);
+        }
+    }
+    select(SOURCES[0]);
 }
 
 start();

@@ -8661,3 +8661,12 @@ html {
 	background: var(--azim-panel-raised);
 	color: var(--azim-ink);
 }
+
+.gc-savebar__error {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--azim-coral);
+	font-size: 14px;
+	font-weight: 600;
+}

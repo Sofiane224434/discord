@@ -132,3 +132,26 @@ export const streamYoutubeVideo = async (req, res) => {
         if (!res.headersSent) res.status(502).json({ error: 'Vidéo indisponible' });
     }
 };
+
+// --- Directs de La Mecque et Médine en HD (1080p) depuis Aloula, la plateforme de la télévision saoudienne ---
+// L'adresse du flux est signée et expire après quelques heures : on en redemande une, gardée 30 minutes.
+const ALOULA_CHANNELS = { mecque: 7, medine: 6 };
+const liveCache = new Map(); // nom -> { at, url }
+const LIVE_TTL_MS = 30 * 60 * 1000;
+
+export const getLiveStream = async (req, res) => {
+    const channelId = ALOULA_CHANNELS[req.params.name];
+    if (!channelId) return res.status(404).json({ error: 'Direct inconnu' });
+    const cached = liveCache.get(req.params.name);
+    if (cached && Date.now() - cached.at < LIVE_TTL_MS) return res.json({ url: cached.url });
+    try {
+        const response = await fetch(`https://aloula.faulio.com/api/v1.1/channels/${channelId}/player`, { signal: AbortSignal.timeout(8000) });
+        const data = await response.json();
+        const url = data?.streams?.hls;
+        if (!response.ok || typeof url !== 'string' || !url.startsWith('https://live.kwikmotion.com/')) throw new Error('Flux absent');
+        liveCache.set(req.params.name, { at: Date.now(), url });
+        return res.json({ url });
+    } catch {
+        return res.status(502).json({ error: 'Direct HD indisponible' });
+    }
+};

@@ -7,10 +7,11 @@ import { DiscordSDK, patchUrlMappings } from '@discord/embedded-app-sdk';
 import { DISCORD_CLIENT_ID } from '../config/links.js';
 import './activity.css';
 
-// Chaque source a un flux principal (720p) et un flux de secours
+// Chaque direct : flux HD d'Aloula (1080p, adresse signée fournie par le serveur d'Azim), puis flux de secours
 const SOURCES = [
     {
         id: 'mecque',
+        aloula: 'mecque',
         label: { fr: 'La Mecque', en: 'Mecca' },
         detail: { fr: 'Masjid al-Haram', en: 'Masjid al-Haram' },
         urls: [
@@ -20,6 +21,7 @@ const SOURCES = [
     },
     {
         id: 'medine',
+        aloula: 'medine',
         label: { fr: 'Médine', en: 'Medina' },
         detail: { fr: 'Masjid an-Nabawi', en: 'Masjid an-Nabawi' },
         urls: [
@@ -33,6 +35,7 @@ const SOURCES = [
 const URL_MAPPINGS = [
     { prefix: '/flux-holol', target: 'win.holol.com' },
     { prefix: '/flux-globecast', target: 'cdn-globecast.akamaized.net' },
+    { prefix: '/flux-kwik', target: 'live.kwikmotion.com' },
 ];
 
 const TEXT = {
@@ -50,6 +53,8 @@ const TEXT = {
 
 const params = new URLSearchParams(window.location.search);
 const inDiscord = params.has('frame_id');
+// Dans Discord, les appels au serveur d'Azim passent par « /.proxy » (les adresses /api sont réservées par Discord)
+const API = inDiscord ? '/.proxy/api' : '/api';
 const lang = (params.get('locale') || navigator.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
 const t = TEXT[lang];
 
@@ -125,7 +130,8 @@ function play(url) {
     showState(t.connecting);
 
     if (Hls.isSupported()) {
-        hls = new Hls({ liveSyncDurationCount: 3, enableWorker: true });
+        // Débit supposé élevé au départ : le direct démarre directement en bonne qualité au lieu de la plus basse
+        hls = new Hls({ liveSyncDurationCount: 3, enableWorker: true, abrEwmaDefaultEstimate: 6_000_000, capLevelToPlayerSize: false });
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => null));
         hls.on(Hls.Events.ERROR, (_event, data) => {
             if (!data.fatal) return;
@@ -159,12 +165,31 @@ function playFile(url) {
     video.play().catch(() => null);
 }
 
-function select(source) {
+// Adresse signée du direct HD (valable quelques heures), demandée au serveur d'Azim
+async function liveUrl(name) {
+    try {
+        const res = await fetch(`${API}/system/live/${name}`);
+        const data = await res.json();
+        return res.ok && data.url ? data.url : null;
+    } catch {
+        return null;
+    }
+}
+
+async function select(source) {
     current = source;
     urlIndex = 0;
     renderSources();
-    if (source.type === 'youtube') playFile(source.urls[0]);
-    else play(current.urls[0]);
+    if (source.type === 'youtube') return playFile(source.urls[0]);
+    showState(t.connecting);
+    if (source.aloula && !source.hdLoaded) {
+        source.hdLoaded = true;
+        // Flux de secours gardés à part : un nouvel essai ne les duplique pas
+        source.fallback = source.fallback || source.urls;
+        const hd = await liveUrl(source.aloula);
+        source.urls = hd ? [hd, ...source.fallback] : source.fallback;
+    }
+    if (current === source) play(source.urls[0]);
 }
 
 video.addEventListener('playing', hideState);
@@ -173,7 +198,7 @@ video.addEventListener('error', () => {
     if (current.type === 'youtube') showState(t.videoFailed, { loading: false, retry: true });
 });
 
-retryBtn.addEventListener('click', () => select(current));
+retryBtn.addEventListener('click', () => { current.hdLoaded = false; select(current); });
 
 // Lecture automatique sans son (règle des navigateurs) : le son s'active d'un clic
 function renderSound() {
@@ -210,7 +235,7 @@ async function start() {
         renderSources();
         showState(t.preparing);
         try {
-            const res = await fetch(`/api/system/activity/${encodeURIComponent(channelId)}`);
+            const res = await fetch(`${API}/system/activity/${encodeURIComponent(channelId)}`);
             const data = await res.json();
             if (data.type === 'youtube' && data.video?.id) {
                 SOURCES.unshift({
@@ -219,7 +244,7 @@ async function start() {
                     isLive: Boolean(data.video.isLive),
                     label: { fr: t.video, en: t.video },
                     detail: { fr: data.video.title, en: data.video.title },
-                    urls: [`/api/system/youtube/${data.video.id}/video`],
+                    urls: [`${API}/system/youtube/${data.video.id}/video`],
                 });
                 loop = Boolean(data.video.loop);
                 renderLoop();

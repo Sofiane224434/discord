@@ -1446,7 +1446,8 @@ function GuildConfig() {
 
                     {/* Barre d'enregistrement : visible seulement s'il y a des changements */}
                     <div className={`gc-savebar${isDirty ? ' is-visible' : ''}`} aria-hidden={!isDirty}>
-                        <span><i /> {t('config.unsaved')}</span>
+                        {/* Erreur d'enregistrement affichée ici, là où on vient de cliquer */}
+                        {error ? <span className="gc-savebar__error" role="alert"><Icon name="alert" size={16} /> {error}</span> : <span><i /> {t('config.unsaved')}</span>}
                         <div className="cf-actions">
                             <button type="button" className="ui-btn ui-btn--ghost" onClick={discardChanges} disabled={saving} tabIndex={isDirty ? 0 : -1}>{t('common.cancel')}</button>
                             <button type="submit" disabled={saving} className="ui-btn ui-btn--primary" tabIndex={isDirty ? 0 : -1}>

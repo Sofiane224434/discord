@@ -457,7 +457,8 @@ const DOCS_EN = [
                             ],
                             codeList: [
                                 { cmd: '/play audio query:lofi hip hop', desc: 'Searches YouTube and plays the first result.' },
-                                { cmd: '/play audio query:https://youtu.be/…', desc: 'Plays the video at this link (video, short or live).' }
+                                { cmd: '/play audio query:https://youtu.be/…', desc: 'Plays the video at this link (video, short or live).' },
+                                { cmd: '/play audio query:… loop:True', desc: 'Replays the video in a loop (also with the player’s Loop button).' }
                             ]
                         },
                         {
@@ -469,7 +470,8 @@ const DOCS_EN = [
                                 'The video starts muted: click “Turn sound on”.'
                             ],
                             codeList: [
-                                { cmd: '/play video query:https://youtu.be/…', desc: 'Opens this video in the voice channel.' }
+                                { cmd: '/play video query:https://youtu.be/…', desc: 'Opens this video in the voice channel.' },
+                                { cmd: '/play video query:… loop:True', desc: 'The video restarts at the end (Loop button in the Activity).' }
                             ]
                         },
                         {

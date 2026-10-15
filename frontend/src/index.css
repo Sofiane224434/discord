@@ -8461,9 +8461,9 @@ button.ft__linkbtn:hover {
 	white-space: nowrap;
 }
 
-/* « Toutes les commandes » : légèrement surligné dans le menu de la doc */
+/* « Toutes les commandes » : contour fin et texte couleur accent, distinct du survol (fond) et de la page active (fond accent) */
 .dc-nav__link--featured {
-	background: color-mix(in srgb, var(--azim-accent) 9%, transparent);
+	border: 1px solid color-mix(in srgb, var(--azim-accent) 45%, transparent);
 	color: var(--azim-accent);
 }
 
@@ -8471,7 +8471,8 @@ button.ft__linkbtn:hover {
 	color: var(--azim-accent);
 }
 
-.dc-nav__link--featured.is-active {
-	background: color-mix(in srgb, var(--azim-accent) 15%, transparent);
-	color: var(--azim-ink);
+.dc-nav__link--featured:hover {
+	border-color: var(--azim-accent);
+	background: transparent;
+	color: var(--azim-accent-strong);
 }

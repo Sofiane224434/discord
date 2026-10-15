@@ -457,7 +457,8 @@ const DOCS_FR = [
                             ],
                             codeList: [
                                 { cmd: '/lecture audio recherche:lofi hip hop', desc: 'Cherche sur YouTube et lit le premier résultat.' },
-                                { cmd: '/lecture audio recherche:https://youtu.be/…', desc: 'Lit la vidéo de ce lien (vidéo, short ou direct).' }
+                                { cmd: '/lecture audio recherche:https://youtu.be/…', desc: 'Lit la vidéo de ce lien (vidéo, short ou direct).' },
+                                { cmd: '/lecture audio recherche:… boucle:Oui', desc: 'Rejoue la vidéo en boucle (aussi avec le bouton Boucle du lecteur).' }
                             ]
                         },
                         {
@@ -469,7 +470,8 @@ const DOCS_FR = [
                                 'La vidéo démarre sans le son : cliquez sur « Activer le son ».'
                             ],
                             codeList: [
-                                { cmd: '/lecture video recherche:https://youtu.be/…', desc: 'Ouvre cette vidéo dans le salon vocal.' }
+                                { cmd: '/lecture video recherche:https://youtu.be/…', desc: 'Ouvre cette vidéo dans le salon vocal.' },
+                                { cmd: '/lecture video recherche:… boucle:Oui', desc: 'La vidéo recommence à la fin (bouton Boucle dans l’Activité).' }
                             ]
                         },
                         {

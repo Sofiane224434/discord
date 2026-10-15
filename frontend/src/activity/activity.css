@@ -261,3 +261,7 @@ body {
 .act-live[hidden] {
 	display: none;
 }
+
+.act-btn[hidden] {
+	display: none;
+}

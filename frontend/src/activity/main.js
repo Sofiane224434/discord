@@ -39,12 +39,12 @@ const TEXT = {
     fr: {
         live: 'En direct', connecting: 'Connexion au direct…', unmute: 'Activer le son', mute: 'Couper le son',
         retry: 'Réessayer', failed: 'Le direct ne répond pas pour le moment.', fullscreen: 'Plein écran', camera: 'Caméra',
-        video: 'Vidéo', preparing: 'Préparation de la vidéo…', videoFailed: 'Cette vidéo ne peut pas être lue pour le moment.',
+        video: 'Vidéo', loop: 'Boucle', preparing: 'Préparation de la vidéo…', videoFailed: 'Cette vidéo ne peut pas être lue pour le moment.',
     },
     en: {
         live: 'Live', connecting: 'Connecting to the live stream…', unmute: 'Turn sound on', mute: 'Mute',
         retry: 'Try again', failed: 'The live stream is not responding right now.', fullscreen: 'Full screen', camera: 'Camera',
-        video: 'Video', preparing: 'Preparing the video…', videoFailed: 'This video cannot be played right now.',
+        video: 'Video', loop: 'Loop', preparing: 'Preparing the video…', videoFailed: 'This video cannot be played right now.',
     },
 };
 
@@ -61,6 +61,8 @@ const soundBtn = document.getElementById('sound');
 const sourcesNav = document.getElementById('sources');
 const title = document.getElementById('title');
 const liveBadge = document.querySelector('.act-live');
+const loopBtn = document.getElementById('loop');
+let loop = false;
 
 let hls = null;
 let current = SOURCES[0];
@@ -100,7 +102,20 @@ function renderSources() {
     }));
     title.textContent = current.type === 'youtube' ? current.detail[lang] : `${current.label[lang]} · ${current.detail[lang]}`;
     liveBadge.hidden = current.type === 'youtube' && !current.isLive;
+    loopBtn.hidden = current.type !== 'youtube' || current.isLive;
 }
+
+function renderLoop() {
+    loopBtn.querySelector('span').textContent = t.loop;
+    loopBtn.classList.toggle('act-btn--primary', loop);
+    loopBtn.setAttribute('aria-pressed', String(loop));
+}
+loopBtn.addEventListener('click', () => { loop = !loop; renderLoop(); });
+
+// Le flux est envoyé au fur et à mesure (pas de retour en arrière) : en boucle, on le redemande depuis le début
+video.addEventListener('ended', () => {
+    if (current.type === 'youtube' && loop) playFile(`${current.urls[0]}?r=${Date.now()}`);
+});
 
 function play(url) {
     if (hls) {
@@ -206,6 +221,8 @@ async function start() {
                     detail: { fr: data.video.title, en: data.video.title },
                     urls: [`/api/system/youtube/${data.video.id}/video`],
                 });
+                loop = Boolean(data.video.loop);
+                renderLoop();
                 return select(SOURCES[0]);
             }
             if (data.type === 'youtube' && data.error) {

@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import User, { toPublicUser } from '../models/user.model.js';
+import { forgetUserReports } from './feedback.controller.js';
 import { isStrongPassword, passwordError, PASSWORD_MAX_LENGTH } from '../config/password-policy.js';
 
 // Une connexion Discord récente vaut confirmation d'identité pour les comptes sans mot de passe
@@ -148,6 +149,8 @@ export const deleteAccount = async (req, res) => {
         }
         const check = await confirmIdentity(req, currentPassword);
         if (!check.user) return res.status(check.status).json(check.body);
+        // Droit à l'oubli : les retours envoyés depuis ce compte sont effacés avec lui
+        await forgetUserReports(check.user).catch(() => 0);
         await User.remove(check.user.id);
         res.json({ message: 'Compte supprimé.' });
     } catch (error) {

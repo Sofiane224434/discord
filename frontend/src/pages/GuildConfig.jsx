@@ -69,7 +69,7 @@ const EMPTY_CONFIG = {
     // Langue du bot (commandes et réponses), modération et vitrine : mêmes réglages que /langue, /mod et /vitrine
     language: 'fr',
     moderation: { logChannelId: '', dmOnSanction: true },
-    showcase: { enabled: false, url: null, channelId: '' },
+    showcase: { enabled: false, url: null, channelId: '', hidden: false },
     islam: {
         prayerCity: 'Paris',
         prayerMethod: 12,
@@ -342,7 +342,7 @@ function serializeForm(form) {
         // Onglet Serveur & modération : sans eux, la barre « Enregistrer » n'apparaissait pas
         language: form.language,
         moderation: form.moderation,
-        showcase: { enabled: form.showcase.enabled, channelId: form.showcase.channelId || '' },
+        showcase: { enabled: form.showcase.enabled, channelId: form.showcase.channelId || '', hidden: Boolean(form.showcase.hidden) },
     });
 }
 
@@ -367,23 +367,6 @@ function GuildConfig() {
     const [activatingIslam, setActivatingIslam] = useState(false);
     const [commandSearch, setCommandSearch] = useState('');
     const [downloadingAvatar, setDownloadingAvatar] = useState(false);
-    const [copiedKeyIndex, setCopiedKeyIndex] = useState(null);
-    const [copiedAllKeys, setCopiedAllKeys] = useState(false);
-
-    const copyKeyToClipboard = (keyString, index) => {
-        navigator.clipboard.writeText(keyString);
-        setCopiedKeyIndex(index);
-        setTimeout(() => setCopiedKeyIndex(null), 2000);
-    };
-
-    const copyAllKeysToClipboard = () => {
-        const allKeys = form.ai.keysPreviews.map((k) => k.key || k.preview).filter(Boolean);
-        if (!allKeys.length) return;
-        navigator.clipboard.writeText(allKeys.join('\n'));
-        setCopiedAllKeys(true);
-        setTimeout(() => setCopiedAllKeys(null), 2500);
-    };
-
     const detectedGroqKeys = useMemo(() => {
         return [...new Set(newKey.match(/gsk_[A-Za-z0-9_-]{16,}/g) || [])];
     }, [newKey]);
@@ -508,7 +491,7 @@ function GuildConfig() {
                 commands: commandsPayload,
                 language: form.language,
                 moderation: { logChannelId: form.moderation.logChannelId || null, dmOnSanction: form.moderation.dmOnSanction },
-                showcase: { enabled: form.showcase.enabled, channelId: form.showcase.channelId || null },
+                showcase: { enabled: form.showcase.enabled, channelId: form.showcase.channelId || null, hidden: Boolean(form.showcase.hidden) },
             });
             await refresh();
             setNotice(t('config.n_saved'));
@@ -902,35 +885,25 @@ function GuildConfig() {
                             <Card
                                 title={t('config.keys')}
                                 desc={t('config.keys_desc')}
-                                aside={form.ai.keysPreviews.length ? (
-                                    <button type="button" className="ui-btn" onClick={copyAllKeysToClipboard}>
-                                        <Icon name={copiedAllKeys ? 'check' : 'fileText'} size={16} /> {copiedAllKeys ? t('config.copied_all') : t('config.copy_all')}
-                                    </button>
-                                ) : null}
                             >
                                 {form.ai.keysPreviews.length ? (
                                     <ul className="cf-keys">
-                                        {form.ai.keysPreviews.map((key) => {
-                                            const fullKey = key.key || key.preview || '';
-                                            return (
-                                                <li key={key.index}>
-                                                    <span className="cf-keys__n">#{key.index}</span>
-                                                    <code>{fullKey}</code>
-                                                    <button type="button" className="ui-icon-btn" onClick={() => copyKeyToClipboard(fullKey, key.index)} title={t('common.copy')}>
-                                                        <Icon name={copiedKeyIndex === key.index ? 'check' : 'fileText'} size={15} />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="ui-icon-btn cf-danger"
-                                                        disabled={form.ai.keysCount <= 1}
-                                                        onClick={() => manageKey({ removeKeyIndex: key.index })}
-                                                        title={form.ai.keysCount <= 1 ? t('config.key_keep_one') : t('config.delete')}
-                                                    >
-                                                        <Icon name="close" size={15} />
-                                                    </button>
-                                                </li>
-                                            );
-                                        })}
+                                        {/* Clés enregistrées chiffrées : le panel ne reçoit qu'un aperçu masqué */}
+                                        {form.ai.keysPreviews.map((key) => (
+                                            <li key={key.index}>
+                                                <span className="cf-keys__n">#{key.index}</span>
+                                                <code>{key.masked}</code>
+                                                <button
+                                                    type="button"
+                                                    className="ui-icon-btn cf-danger"
+                                                    onClick={() => manageKey({ removeKeyIndex: key.index })}
+                                                    title={t('config.delete')}
+                                                    aria-label={t('config.delete')}
+                                                >
+                                                    <Icon name="close" size={15} />
+                                                </button>
+                                            </li>
+                                        ))}
                                     </ul>
                                 ) : <p className="cf-empty">{t('config.keys_empty')}</p>}
 
@@ -1288,7 +1261,7 @@ function GuildConfig() {
                             <Card
                                 title={t('config.showcase_title')}
                                 desc={t('config.showcase_desc')}
-                                aside={<Switch checked={form.showcase.enabled} onChange={(v) => update('showcase', 'enabled', v)} label={form.showcase.enabled ? t('config.enabled') : t('config.disabled')} />}
+                                aside={<Switch checked={form.showcase.enabled} onChange={(v) => { update('showcase', 'enabled', v); if (v) update('showcase', 'hidden', false); }} label={form.showcase.enabled ? t('config.enabled') : t('config.disabled')} />}
                             >
                                 <div className={`cf-grid-2 cf-align-end${form.showcase.enabled ? '' : ' cf-disabled'}`}>
                                     <Field label={t('config.showcase_channel')} hint={t('config.showcase_channel_hint')}>
@@ -1299,6 +1272,12 @@ function GuildConfig() {
                                     ) : null}
                                 </div>
                             </Card>
+
+                            <Card
+                                title={t('config.anonymous_title')}
+                                desc={t('config.anonymous_desc')}
+                                aside={<Switch checked={Boolean(form.showcase.hidden)} onChange={(v) => { update('showcase', 'hidden', v); if (v) update('showcase', 'enabled', false); }} label={form.showcase.hidden ? t('config.enabled') : t('config.disabled')} />}
+                            />
                         </>
                     ) : null}
 

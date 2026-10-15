@@ -55,6 +55,8 @@ function normalizeOverview(payload = {}) {
                 islamModeEnabled: Boolean(guild.islamModeEnabled),
                 // Lien d'invitation autorisé avec /vitrine (carte cliquable dans « Autres serveurs »)
                 publicInviteUrl: typeof guild.publicInviteUrl === 'string' && guild.publicInviteUrl.startsWith('https://discord.gg/') ? guild.publicInviteUrl : null,
+                // Serveur qui ne veut pas apparaître dans « Autres serveurs » (/vitrine anonyme ou panel)
+                directoryHidden: Boolean(guild.directoryHidden),
                 observability: guild.observability || null,
             }))
             : [],

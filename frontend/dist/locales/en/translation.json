@@ -431,7 +431,11 @@
     "hours": "{{h}} h {{m}} min",
     "minutes": "{{m}} min",
     "join": "Join {{name}}",
-    "join_hint": "Join the server"
+    "join_hint": "Join the server",
+    "anonymous_one": "+{{count}} anonymous server",
+    "anonymous_other": "+{{count}} anonymous servers",
+    "anonymous_hint": "These servers use Azim but chose not to be listed here.",
+    "hidden_admin": "Anonymous on the website (only visible to administrators)."
   },
   "feedback": {
     "title": "Feedback & ideas",
@@ -652,11 +656,8 @@
     "ai_prompt_count": "{{count}}/6000 characters",
     "ai_prompt_ph": "You are Azim, this Discord server’s assistant. Be friendly and casual…",
     "keys": "Groq API keys",
-    "keys_desc": "Only used for this server. Key changes are saved immediately.",
-    "copy_all": "Copy all",
-    "copied_all": "Copied",
-    "keys_empty": "No key: the AI uses the shared, more limited quota.",
-    "key_keep_one": "Keep at least one key",
+    "keys_desc": "Used only for this server, stored encrypted and never shown in full again. Changes are saved immediately.",
+    "keys_empty": "No key of its own: the AI uses Azim’s default keys, with a shared quota.",
     "delete": "Delete",
     "add_keys": "Add keys",
     "keys_detected": "{{count}} key(s) detected",
@@ -831,7 +832,9 @@
     "social_no_match": "No account matches this search.",
     "page_prev": "Previous page",
     "page_next": "Next page",
-    "page_range": "{{from}}–{{to}} of {{total}}"
+    "page_range": "{{from}}–{{to}} of {{total}}",
+    "anonymous_title": "Anonymous server",
+    "anonymous_desc": "This server is not listed in “Other servers” on the website: it only counts in “+x anonymous servers”. Same setting as /showcase anonymous."
   },
   "loading": {
     "default": "Loading…",

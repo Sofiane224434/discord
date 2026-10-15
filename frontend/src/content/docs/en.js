@@ -135,7 +135,7 @@ const DOCS_EN = [
                                     ['Ban, kick, time out members', '`/mod ban`, `/mod kick`, `/mod timeout`', 'For moderation'],
                                     ['Manage channels', '`/mod lock`, `/mod slowmode`, `/purge channel`', 'For moderation'],
                                     ['Create invite', 'Your server’s link on the website (`/showcase`)', 'Optional'],
-                                    ['Connect & speak (voice)', 'Quran radio (Islam mode)', 'Optional']
+                                    ['Connect & speak (voice)', 'YouTube sound in voice channels (`/play audio`)', 'Optional']
                                 ]
                             }
                         },
@@ -243,7 +243,7 @@ const DOCS_EN = [
                                     ['Reply language', '`/config ai_language`', 'Language the AI answers in'],
                                     ['Instructions', '`/config ai_prompt`', 'Personality, tone and rules of the assistant'],
                                     ['Trigger name', '`/config ai_name`', 'The name that makes the AI answer in a message'],
-                                    ['Groq keys', '`/config ai_key_add`', 'Your own AI keys (masked in lists)']
+                                    ['Groq keys', '`/config ai_key_add`', 'Your own AI keys: stored encrypted, never shown in full again, and each one can be removed (`/config ai_key_remove`). Without a key, Azim uses its default keys.']
                                 ]
                             }
                         },
@@ -454,7 +454,7 @@ const DOCS_EN = [
                             title: 'Sound in the voice channel',
                             paragraphs: [
                                 'Join a voice channel and run `/play audio`. If something is already playing in that channel, the video is added to the queue. The message buttons pause, skip or stop.',
-                                'Several channels of the same server can listen at once, thanks to helper bots (as with the radio).'
+                                'Several channels of the same server can listen at once, thanks to helper bots.'
                             ],
                             codeList: [
                                 { cmd: '/play audio query:lofi hip hop', desc: 'Searches YouTube and plays the first result.' },
@@ -509,7 +509,8 @@ const DOCS_EN = [
                             id: 'commande-mod',
                             title: 'The /mod command',
                             paragraphs: [
-                                'Each action checks your Discord permissions: for example, `/mod ban` needs “Ban Members”.'
+                                'By default, `/mod` and `/purge` are only visible to and usable by administrators. The panel (Commands tab) can open them to specific roles.',
+                                'Each action also checks your Discord permissions: for example, `/mod ban` needs “Ban Members”.'
                             ],
                             codeList: [
                                 { cmd: '/mod ban member:@Member reason:Spam', desc: 'Bans a member (option: delete their recent messages).' },
@@ -589,7 +590,8 @@ const DOCS_EN = [
                             ],
                             codeList: [
                                 { cmd: '/showcase enable:True channel:#welcome', desc: 'Creates an invite to this channel and shows it on the website.' },
-                                { cmd: '/showcase enable:False', desc: 'Removes the link from the website.' }
+                                { cmd: '/showcase enable:False', desc: 'Removes the link from the website.' },
+                                { cmd: '/showcase enable:False anonymous:True', desc: 'The server is no longer listed under “Other servers”: it only counts among the anonymous servers.' }
                             ]
                         },
                         {
@@ -646,7 +648,8 @@ const DOCS_EN = [
                             title: 'Permissions & roles',
                             paragraphs: [
                                 'If Azim cannot give a role or sanction a member, move its role higher in the server’s role list.',
-                                'If a moderation command is refused, check that Azim’s role has the matching permission (see Installation).'
+                                'If a moderation command is refused, check that Azim’s role has the matching permission (see Installation).',
+                                'Each command only shows up in Discord for the people who can use it: commands reserved for administrators or “Manage Server” are invisible to other members, and a command disabled in the panel disappears. A command opened to specific roles stays visible to everyone, but Azim refuses other members; to hide it as well, set it in Server Settings > Integrations > Azim.'
                             ]
                         },
                         {

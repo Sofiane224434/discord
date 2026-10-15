@@ -8,7 +8,6 @@ import { botService, discordService } from '../services/api.js';
 import Icon from '../components/Icon.jsx';
 
 // Serveur officiel d'Azim
-const HOME_GUILD_ID = '1283533269047971894';
 
 function hasManageGuildPermission(guild) {
     if (guild?.owner) return true;
@@ -166,6 +165,7 @@ function Dashboard() {
                     iconUrl: g.iconUrl || botGuild?.iconUrl || getDiscordGuildIcon(g),
                     memberCount: g.memberCount || botGuild?.memberCount || null,
                     publicInviteUrl: botGuild?.publicInviteUrl || null,
+                    featured: Boolean(botGuild?.featured),
                     connected: true,
                     canManage: false,
                     isMember: true,
@@ -185,6 +185,8 @@ function Dashboard() {
                         iconUrl: bg.iconUrl,
                         memberCount: bg.memberCount,
                         publicInviteUrl: bg.publicInviteUrl || null,
+                        featured: Boolean(bg.featured),
+                        directoryHidden: Boolean(bg.directoryHidden),
                         connected: true,
                         canManage: false,
                         fromBotList: true,
@@ -193,24 +195,23 @@ function Dashboard() {
                 }
             }
         }
-        // Azim As-Sunnah est toujours présenté ici, même pour les personnes qui le gèrent
-        if (!result.some((g) => g.id === HOME_GUILD_ID)) {
-            const home = (overview?.guilds || []).find((bg) => String(bg.id) === HOME_GUILD_ID);
-            if (home) {
-                result.push({
-                    id: HOME_GUILD_ID,
-                    name: home.name,
-                    iconUrl: home.iconUrl,
-                    memberCount: home.memberCount,
-                    publicInviteUrl: home.publicInviteUrl || null,
-                    connected: true,
-                    canManage: false,
-                    fromBotList: true,
-                });
-            }
+        // Le serveur mis en avant par le site est toujours présenté ici, même pour les personnes qui le gèrent
+        const featured = (overview?.guilds || []).find((bg) => bg.featured);
+        if (featured && !result.some((g) => g.id === String(featured.id))) {
+            result.push({
+                id: String(featured.id),
+                name: featured.name,
+                iconUrl: featured.iconUrl,
+                memberCount: featured.memberCount,
+                publicInviteUrl: featured.publicInviteUrl || null,
+                featured: true,
+                connected: true,
+                canManage: false,
+                fromBotList: true,
+            });
         }
-        // Azim As-Sunnah d'abord, puis les serveurs ayant autorisé leur lien (/vitrine) ; l'ordre reste stable sinon
-        const rank = (guild) => (guild.id === HOME_GUILD_ID ? 2 : guild.publicInviteUrl ? 1 : 0);
+        // Serveur mis en avant d'abord, puis les serveurs ayant autorisé leur lien (/vitrine) ; l'ordre reste stable sinon
+        const rank = (guild) => (guild.featured ? 2 : guild.publicInviteUrl ? 1 : 0);
         return result.sort((a, b) => rank(b) - rank(a));
     }, [userGuildMap, connectedGuildIds, manageableGuilds, overview]);
 
@@ -260,7 +261,7 @@ function Dashboard() {
     const serverTabs = [
         { id: 'manage', label: t('panel.tab_manage'), list: manageableGuilds },
         { id: 'invite', label: t('panel.tab_invite'), list: inviteableGuilds },
-        { id: 'other', label: t('panel.tab_other'), list: otherBotGuilds },
+        { id: 'other', label: t('panel.tab_other'), list: otherBotGuilds, extra: Number(overview?.hiddenGuildCount || 0) },
     ];
     const currentTab = serverTabs.find((tab) => tab.id === serverTab) || serverTabs[0];
     const isOnline = bot.status === 'online';
@@ -294,7 +295,7 @@ function Dashboard() {
                         </button>
                     ) : null}
                     {guild.connected && !guild.canManage ? (
-                        <span className="pnl-guild__note">{guild.publicInviteUrl ? t('panel.join_hint') : t('panel.readonly')}</span>
+                        <span className="pnl-guild__note">{guild.directoryHidden ? t('panel.hidden_admin') : guild.publicInviteUrl ? t('panel.join_hint') : t('panel.readonly')}</span>
                     ) : null}
                 </div>
             </article>
@@ -352,14 +353,27 @@ function Dashboard() {
                                     className={`pnl-tab${serverTab === tab.id ? ' is-active' : ''}`}
                                     onClick={() => setServerTab(tab.id)}
                                 >
-                                    {tab.label} <span>{tab.list.length}</span>
+                                    {tab.label} <span>{tab.list.length + (tab.extra || 0)}</span>
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {currentTab.list.length ? (
-                        <div className="pnl-guilds">{currentTab.list.map(renderGuildCard)}</div>
+                    {currentTab.list.length || currentTab.extra ? (
+                        <div className="pnl-guilds">
+                            {currentTab.list.map(renderGuildCard)}
+                            {/* Serveurs qui ont choisi de ne pas apparaître (/vitrine anonyme) : seulement leur nombre */}
+                            {currentTab.extra ? (
+                                <article className="pnl-guild pnl-guild--anon">
+                                    <div className="pnl-guild__banner" />
+                                    <div className="pnl-guild__body">
+                                        <span className="pnl-guild__icon pnl-guild__icon--fallback"><Icon name="lock" size={22} /></span>
+                                        <h3>{t('panel.anonymous', { count: currentTab.extra })}</h3>
+                                        <p>{t('panel.anonymous_hint')}</p>
+                                    </div>
+                                </article>
+                            ) : null}
+                        </div>
                     ) : (
                         <div className="pnl-empty">
                             <Icon name="server" size={28} />

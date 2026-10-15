@@ -4361,6 +4361,20 @@ html.theme-transitioning::after {
 	opacity: 0.35;
 }
 
+.pnl-guild--anon {
+	border-style: dashed;
+	background: transparent;
+}
+
+.pnl-guild--anon:hover {
+	border-color: color-mix(in srgb, var(--azim-line) 70%, transparent);
+	transform: none;
+}
+
+.pnl-guild--anon .pnl-guild__banner {
+	opacity: 0.25;
+}
+
 .pnl-guild__note {
 	color: var(--azim-ink-muted);
 	font-size: 12px;

@@ -187,6 +187,22 @@ async function loadReports() {
     return loadLocalReports();
 }
 
+// Droit à l'oubli : supprime tous les retours envoyés par cette personne (suppression de compte)
+export async function forgetUserReports(user) {
+    const own = (await loadReports()).filter((report) => isOwnReport(report, user));
+    const baseUrl = getBaseUrl();
+    for (const report of own) {
+        if (!baseUrl) break;
+        await fetch(`${baseUrl}/reports/${encodeURIComponent(report.id)}`, {
+            method: 'DELETE', headers: getBotHeaders(), signal: AbortSignal.timeout(BOT_TIMEOUT_MS),
+        }).catch(() => null);
+    }
+    const local = loadLocalReports();
+    const kept = local.filter((report) => !isOwnReport(report, user));
+    if (kept.length !== local.length) saveLocalReports(kept);
+    return own.length;
+}
+
 // GET /api/feedback/notifications — nombre de retours avec du nouveau (réponse ou statut)
 export const getFeedbackNotifications = async (req, res) => {
     const reports = (await loadReports()).filter((report) => isOwnReport(report, req.user));

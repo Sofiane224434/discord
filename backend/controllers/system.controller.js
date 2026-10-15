@@ -112,7 +112,8 @@ export const getActivity = async (req, res) => {
         const data = await response.json();
         return res.status(response.ok ? 200 : 502).json(data);
     } catch {
-        return res.json({ type: 'mecque' });
+        // Bot injoignable : on ne sait pas si le serveur est en mode Islam, donc pas de directs de La Mecque
+        return res.json({ type: 'none' });
     }
 };
 

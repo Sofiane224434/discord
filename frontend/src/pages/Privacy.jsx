@@ -8,7 +8,7 @@ const CONTENT = {
     fr: {
         title: 'Confidentialité',
         lead: 'Ce que le site et le bot AzimBot enregistrent, pourquoi, et comment le supprimer.',
-        updated: 'Mise à jour : 14 octobre 2026',
+        updated: 'Mise à jour : 15 octobre 2026',
         sections: [
             {
                 icon: 'users',
@@ -21,7 +21,9 @@ const CONTENT = {
                 list: [
                     'Sur le site : votre compte Discord (identifiant, pseudo, avatar, adresse e-mail si vous la partagez), la liste des serveurs que vous gérez, les réglages que vous enregistrez et les retours que vous envoyez.',
                     'Par le bot : les identifiants Discord des membres, leurs niveaux et points d’expérience, les avertissements de modération, et le nom et l’heure des commandes utilisées.',
-                    'Les questions posées avec /ask, le temps de générer la réponse.',
+                    'Les réglages de chaque serveur faits avec les commandes ou le panel : salons, rôles, messages de bienvenue, consignes de l’IA, comptes YouTube et TikTok suivis.',
+                    'Les clés API Groq qu’un serveur ajoute pour son IA : enregistrées chiffrées (AES-256), elles ne sont plus jamais affichées en entier, ni sur le panel ni dans Discord, et chacune peut être supprimée à tout moment.',
+                    'Les questions posées avec /ask, le temps de générer la réponse, et les vidéos demandées avec /lecture, le temps de les lire.',
                 ],
             },
             {
@@ -49,13 +51,15 @@ const CONTENT = {
             {
                 icon: 'shield',
                 title: 'Durée et sécurité',
-                body: ['Les données sont gardées tant que votre compte existe ou tant que le bot est sur le serveur concerné. Les échanges passent en HTTPS et les mots de passe sont chiffrés.'],
+                body: ['Les données sont gardées tant que votre compte existe ou tant que le bot est sur le serveur concerné. Les échanges passent en HTTPS, les mots de passe sont hachés et les clés API chiffrées. Le panel ne reçoit que les données des serveurs que vous gérez.'],
             },
             {
                 icon: 'check',
                 title: 'Vos droits',
                 body: [
-                    'Vous pouvez consulter, corriger ou supprimer vos données. La suppression du compte se fait dans Paramètres, en un clic. Pour le reste, contactez-nous sur le serveur support.',
+                    'Vous pouvez consulter, corriger ou supprimer vos données.',
+                    'Droit à l’oubli : supprimer votre compte (Paramètres) efface immédiatement et définitivement votre compte et les retours envoyés depuis celui-ci.',
+                    'Pour effacer les données du bot qui vous concernent (niveaux, avertissements) ou celles d’un serveur que vous gérez (réglages, clés IA), demandez-le sur le serveur support : c’est fait sous un mois. Les clés IA peuvent aussi être supprimées vous-même depuis le panel ou avec /config ia_cle_supprimer.',
                     'Vous pouvez aussi adresser une réclamation à la CNIL (cnil.fr).',
                 ],
             },
@@ -66,7 +70,7 @@ const CONTENT = {
     en: {
         title: 'Privacy',
         lead: 'What the AzimBot website and bot store, why, and how to delete it.',
-        updated: 'Last updated: October 14, 2026',
+        updated: 'Last updated: October 15, 2026',
         sections: [
             {
                 icon: 'users',
@@ -79,7 +83,9 @@ const CONTENT = {
                 list: [
                     'On the website: your Discord account (ID, username, avatar, email address if you share it), the servers you manage, the settings you save and the feedback you send.',
                     'By the bot: members’ Discord IDs, their levels and experience points, moderation warnings, and the name and time of the commands used.',
-                    'Questions asked with /ask, while the answer is generated.',
+                    'Each server’s settings made with commands or the panel: channels, roles, welcome messages, AI instructions, followed YouTube and TikTok accounts.',
+                    'Groq API keys a server adds for its AI: stored encrypted (AES-256), they are never shown in full again, neither in the panel nor in Discord, and each one can be removed at any time.',
+                    'Questions asked with /ask, while the answer is generated, and videos requested with /play, while they play.',
                 ],
             },
             {
@@ -107,13 +113,15 @@ const CONTENT = {
             {
                 icon: 'shield',
                 title: 'Retention and security',
-                body: ['Data is kept as long as your account exists, or as long as the bot is on the server concerned. Traffic uses HTTPS and passwords are hashed.'],
+                body: ['Data is kept as long as your account exists, or as long as the bot is on the server concerned. Traffic uses HTTPS, passwords are hashed and API keys encrypted. The panel only receives data for the servers you manage.'],
             },
             {
                 icon: 'check',
                 title: 'Your rights',
                 body: [
-                    'You can view, correct or delete your data. You can delete your account in Settings, in one click. For anything else, contact us on the support server.',
+                    'You can view, correct or delete your data.',
+                    'Right to be forgotten: deleting your account (Settings) immediately and permanently erases your account and the feedback sent from it.',
+                    'To erase the bot’s data about you (levels, warnings) or a server you manage (settings, AI keys), ask on the support server: it is done within one month. You can also remove AI keys yourself from the panel or with /config ai_key_remove.',
                     'You can also file a complaint with your data protection authority (CNIL in France).',
                 ],
             },

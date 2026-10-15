@@ -135,7 +135,7 @@ const DOCS_FR = [
                                     ['Bannir, expulser, exclure temporairement', '`/mod bannir`, `/mod expulser`, `/mod exclure`', 'Pour la modération'],
                                     ['Gérer les salons', '`/mod verrouiller`, `/mod mode_lent`, `/purge salon`', 'Pour la modération'],
                                     ['Créer une invitation', 'Lien de votre serveur sur le site (`/vitrine`)', 'Optionnel'],
-                                    ['Se connecter & parler (vocal)', 'Radio Coran (mode Islam)', 'Optionnel']
+                                    ['Se connecter & parler (vocal)', 'Son des vidéos YouTube dans les salons vocaux (`/lecture audio`)', 'Optionnel']
                                 ]
                             }
                         },
@@ -243,7 +243,7 @@ const DOCS_FR = [
                                     ['Langue de réponse', '`/config ia_langue`', 'Langue dans laquelle l’IA répond'],
                                     ['Consignes', '`/config ia_prompt`', 'Personnalité, ton et règles de l’assistant'],
                                     ['Nom déclencheur', '`/config nomai`', 'Le nom qui fait répondre l’IA dans un message'],
-                                    ['Clés Groq', '`/config ia_cle_ajouter`', 'Vos propres clés pour l’IA (masquées dans les listes)']
+                                    ['Clés Groq', '`/config ia_cle_ajouter`', 'Vos propres clés pour l’IA : enregistrées chiffrées, jamais réaffichées en entier, et chacune peut être retirée (`/config ia_cle_supprimer`). Sans clé, Azim utilise ses clés par défaut.']
                                 ]
                             }
                         },
@@ -454,7 +454,7 @@ const DOCS_FR = [
                             title: 'Le son dans le salon vocal',
                             paragraphs: [
                                 'Rejoignez un salon vocal et lancez `/lecture audio`. Si une lecture est déjà en cours dans ce salon, la vidéo s’ajoute à la file d’attente. Les boutons du message permettent de mettre en pause, passer à la suivante ou arrêter.',
-                                'Plusieurs salons du même serveur peuvent écouter en même temps, grâce aux bots d’appoint (comme pour la radio).'
+                                'Plusieurs salons du même serveur peuvent écouter en même temps, grâce aux bots d’appoint.'
                             ],
                             codeList: [
                                 { cmd: '/lecture audio recherche:lofi hip hop', desc: 'Cherche sur YouTube et lit le premier résultat.' },
@@ -509,7 +509,8 @@ const DOCS_FR = [
                             id: 'commande-mod',
                             title: 'La commande /mod',
                             paragraphs: [
-                                'Chaque action vérifie vos permissions Discord : il faut par exemple « Bannir des membres » pour `/mod bannir`.'
+                                'Par défaut, `/mod` et `/purge` ne sont visibles et utilisables que par les administrateurs. Le panel (onglet Commandes) peut les ouvrir à certains rôles.',
+                                'Chaque action vérifie aussi vos permissions Discord : il faut par exemple « Bannir des membres » pour `/mod bannir`.'
                             ],
                             codeList: [
                                 { cmd: '/mod bannir membre:@Membre raison:Spam', desc: 'Bannit un membre (option : supprimer ses messages récents).' },
@@ -589,7 +590,8 @@ const DOCS_FR = [
                             ],
                             codeList: [
                                 { cmd: '/vitrine activer:Oui salon:#bienvenue', desc: 'Crée une invitation vers ce salon et l’affiche sur le site.' },
-                                { cmd: '/vitrine activer:Non', desc: 'Retire le lien du site.' }
+                                { cmd: '/vitrine activer:Non', desc: 'Retire le lien du site.' },
+                                { cmd: '/vitrine activer:Non anonyme:Oui', desc: 'Le serveur n’apparaît plus dans « Autres serveurs » : il compte seulement parmi les serveurs anonymes.' }
                             ]
                         },
                         {
@@ -646,7 +648,8 @@ const DOCS_FR = [
                             title: 'Permissions & rôles',
                             paragraphs: [
                                 'Si Azim n’arrive pas à donner un rôle ou à sanctionner un membre, placez son rôle plus haut dans la liste des rôles du serveur.',
-                                'Si une commande de modération est refusée, vérifiez que le rôle d’Azim a la permission correspondante (voir Installation).'
+                                'Si une commande de modération est refusée, vérifiez que le rôle d’Azim a la permission correspondante (voir Installation).',
+                                'Chaque commande n’apparaît dans Discord que pour les personnes qui peuvent l’utiliser : les commandes réservées aux administrateurs ou à « Gérer le serveur » sont invisibles pour les autres membres, et une commande désactivée dans le panel disparaît. Une commande ouverte à certains rôles reste visible de tous, mais Azim refuse les autres membres ; pour la cacher aussi, réglez-la dans Paramètres du serveur > Intégrations > Azim.'
                             ]
                         },
                         {

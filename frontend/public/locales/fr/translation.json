@@ -431,7 +431,11 @@
     "hours": "{{h}} h {{m}} min",
     "minutes": "{{m}} min",
     "join": "Rejoindre {{name}}",
-    "join_hint": "Rejoindre le serveur"
+    "join_hint": "Rejoindre le serveur",
+    "anonymous_one": "+{{count}} serveur anonyme",
+    "anonymous_other": "+{{count}} serveurs anonymes",
+    "anonymous_hint": "Ces serveurs utilisent Azim mais ont choisi de ne pas apparaître ici.",
+    "hidden_admin": "Anonyme sur le site (visible seulement par l’administration)."
   },
   "feedback": {
     "title": "Retours & idées",
@@ -652,11 +656,8 @@
     "ai_prompt_count": "{{count}}/6000 caractères",
     "ai_prompt_ph": "Tu es Azim, l’assistant de ce serveur Discord. Tu tutoies les membres…",
     "keys": "Clés API Groq",
-    "keys_desc": "Utilisées uniquement pour ce serveur. Les modifications de clés sont enregistrées immédiatement.",
-    "copy_all": "Tout copier",
-    "copied_all": "Copiées",
-    "keys_empty": "Aucune clé : l’IA utilise le quota partagé, plus limité.",
-    "key_keep_one": "Gardez au moins une clé",
+    "keys_desc": "Utilisées uniquement pour ce serveur, enregistrées chiffrées et jamais réaffichées en entier. Les modifications sont enregistrées immédiatement.",
+    "keys_empty": "Aucune clé propre à ce serveur : l’IA utilise les clés par défaut d’Azim, au quota partagé.",
     "delete": "Supprimer",
     "add_keys": "Ajouter des clés",
     "keys_detected": "{{count}} clé(s) détectée(s)",
@@ -831,7 +832,9 @@
     "social_no_match": "Aucun compte ne correspond à cette recherche.",
     "page_prev": "Page précédente",
     "page_next": "Page suivante",
-    "page_range": "{{from}}–{{to}} sur {{total}}"
+    "page_range": "{{from}}–{{to}} sur {{total}}",
+    "anonymous_title": "Serveur anonyme",
+    "anonymous_desc": "Ce serveur n’apparaît pas dans « Autres serveurs » sur le site : il compte seulement dans « +x serveurs anonymes ». Même réglage que /vitrine anonyme."
   },
   "loading": {
     "default": "Chargement en cours…",

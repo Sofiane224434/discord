@@ -43,11 +43,13 @@ const TEXT = {
         live: 'En direct', connecting: 'Connexion au direct…', unmute: 'Activer le son', mute: 'Couper le son',
         retry: 'Réessayer', failed: 'Le direct ne répond pas pour le moment.', fullscreen: 'Plein écran', camera: 'Caméra',
         video: 'Vidéo', loop: 'Boucle', preparing: 'Préparation de la vidéo…', videoFailed: 'Cette vidéo ne peut pas être lue pour le moment.',
+        nothing: 'Aucune vidéo demandée dans ce salon. Lancez-en une avec /lecture video.',
     },
     en: {
         live: 'Live', connecting: 'Connecting to the live stream…', unmute: 'Turn sound on', mute: 'Mute',
         retry: 'Try again', failed: 'The live stream is not responding right now.', fullscreen: 'Full screen', camera: 'Camera',
         video: 'Video', loop: 'Loop', preparing: 'Preparing the video…', videoFailed: 'This video cannot be played right now.',
+        nothing: 'No video requested in this channel. Start one with /play video.',
     },
 };
 
@@ -256,11 +258,12 @@ async function start() {
                 renderLoop();
                 return select(SOURCES[0]);
             }
-            if (data.type === 'youtube' && data.error) {
+            if ((data.type === 'youtube' && data.error) || data.type === 'none') {
+                // Erreur de la vidéo, ou serveur sans mode Islam (pas de directs de La Mecque) : seulement un message
                 SOURCES.splice(0, SOURCES.length);
                 current = { id: 'youtube', type: 'youtube', label: { fr: t.video, en: t.video }, detail: { fr: t.video, en: t.video }, urls: [] };
                 renderSources();
-                return showState(`${t.videoFailed} (${data.error})`, { loading: false });
+                return showState(data.type === 'none' ? t.nothing : `${t.videoFailed} (${data.error})`, { loading: false });
             }
         } catch (error) {
             console.warn('[Activité] Vidéo demandée :', error);

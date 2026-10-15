@@ -181,7 +181,8 @@ const DOCS_EN = [
                                 { cmd: '/ask question:Hello Azim!', desc: 'Asks the AI assistant a question.' },
                                 { cmd: '/website', desc: 'Gives the link to the website and panel.' },
                                 { cmd: '/version', desc: 'Shows the bot version and what’s new (history option).' },
-                                { cmd: '/report', desc: 'Reports a bug or suggests an idea to the team.' }
+                                { cmd: '/report', desc: 'Reports a bug or suggests an idea to the team.' },
+                                { cmd: '/code value:…', desc: 'Turns an extension module on or off with an access code (administrators).' }
                             ]
                         },
                         {

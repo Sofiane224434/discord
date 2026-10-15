@@ -53,6 +53,8 @@ function normalizeOverview(payload = {}) {
                 memberCount: Number(guild.memberCount || 0),
                 iconUrl: guild.iconUrl || null,
                 islamModeEnabled: Boolean(guild.islamModeEnabled),
+                // Lien d'invitation autorisé avec /vitrine (carte cliquable dans « Autres serveurs »)
+                publicInviteUrl: typeof guild.publicInviteUrl === 'string' && guild.publicInviteUrl.startsWith('https://discord.gg/') ? guild.publicInviteUrl : null,
                 observability: guild.observability || null,
             }))
             : [],

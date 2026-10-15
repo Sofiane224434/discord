@@ -181,7 +181,8 @@ const DOCS_FR = [
                                 { cmd: '/ask question:Bonjour Azim !', desc: 'Pose une question à l’assistant IA.' },
                                 { cmd: '/site', desc: 'Donne le lien du site et du panel.' },
                                 { cmd: '/version', desc: 'Affiche la version du bot et les nouveautés (option historique).' },
-                                { cmd: '/report', desc: 'Signale un bug ou propose une idée à l’équipe.' }
+                                { cmd: '/report', desc: 'Signale un bug ou propose une idée à l’équipe.' },
+                                { cmd: '/code valeur:…', desc: 'Active ou désactive un module d’extension avec un code d’accès (administrateurs).' }
                             ]
                         },
                         {

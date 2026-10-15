@@ -27,6 +27,7 @@ function overview(islam, empty) {
         { id: '113', name: 'Les Codeurs', memberCount: 311, observability: { commandByName: { ask: 25, code: 14 } } },
         { id: '222', name: 'Gaming FR', memberCount: 520, publicInviteUrl: 'https://discord.gg/exemple' },
         { id: '444', name: 'Club Lecture', memberCount: 95 },
+        { id: '1283533269047971894', name: 'Azim As-Sunnah', memberCount: 1200, islamModeEnabled: true, publicInviteUrl: 'https://discord.gg/sunnah' },
     ];
     return {
         bot: { status: 'online', latency: 42, uptime: 93_000 },

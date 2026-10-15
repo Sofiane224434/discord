@@ -7,6 +7,9 @@ import { managesIslamGuild } from '../context/islamAccess.js';
 import { botService, discordService } from '../services/api.js';
 import Icon from '../components/Icon.jsx';
 
+// Serveur officiel d'Azim
+const HOME_GUILD_ID = '1283533269047971894';
+
 function hasManageGuildPermission(guild) {
     if (guild?.owner) return true;
     try {
@@ -149,6 +152,7 @@ function Dashboard() {
     const maxCommandCount = Math.max(1, ...topCommands.map((command) => Number(command.count || 0)));
 
     // 2. Autres serveurs où le bot est présent : Bot présent mais SANS perm de gestion
+    // Le serveur officiel Azim As-Sunnah est toujours affiché, en premier ; les autres serveurs en mode Islam restent masqués
     const otherBotGuilds = useMemo(() => {
         const result = [];
         const addedIds = new Set(manageableGuilds.map((g) => g.id));
@@ -158,7 +162,7 @@ function Dashboard() {
             if (!addedIds.has(g.id) && connectedGuildIds.has(g.id)) {
                 const botGuild = (overview?.guilds || []).find((bg) => String(bg.id) === g.id);
                 // Si le serveur a le mode islam actif et que l'utilisateur n'a aucun droit dessus, masqué
-                if (botGuild?.islamModeEnabled || g.id === '1283533269047971894') {
+                if (botGuild?.islamModeEnabled && g.id !== HOME_GUILD_ID) {
                     continue;
                 }
                 result.push({
@@ -179,7 +183,7 @@ function Dashboard() {
             for (const bg of overview.guilds) {
                 const id = String(bg.id);
                 // Si le serveur a le mode islam et que l'utilisateur n'a aucun droit de gestion, masqué du site
-                if (bg.islamModeEnabled || id === '1283533269047971894') {
+                if (bg.islamModeEnabled && id !== HOME_GUILD_ID) {
                     continue;
                 }
                 if (!addedIds.has(id)) {
@@ -197,8 +201,25 @@ function Dashboard() {
                 }
             }
         }
-        // Serveurs ayant autorisé leur lien (/vitrine) en premier, l'ordre reste stable sinon
-        return result.sort((a, b) => Number(Boolean(b.publicInviteUrl)) - Number(Boolean(a.publicInviteUrl)));
+        // Azim As-Sunnah est toujours présenté ici, même pour les personnes qui le gèrent
+        if (!result.some((g) => g.id === HOME_GUILD_ID)) {
+            const home = (overview?.guilds || []).find((bg) => String(bg.id) === HOME_GUILD_ID);
+            if (home) {
+                result.push({
+                    id: HOME_GUILD_ID,
+                    name: home.name,
+                    iconUrl: home.iconUrl,
+                    memberCount: home.memberCount,
+                    publicInviteUrl: home.publicInviteUrl || null,
+                    connected: true,
+                    canManage: false,
+                    fromBotList: true,
+                });
+            }
+        }
+        // Azim As-Sunnah d'abord, puis les serveurs ayant autorisé leur lien (/vitrine) ; l'ordre reste stable sinon
+        const rank = (guild) => (guild.id === HOME_GUILD_ID ? 2 : guild.publicInviteUrl ? 1 : 0);
+        return result.sort((a, b) => rank(b) - rank(a));
     }, [userGuildMap, connectedGuildIds, manageableGuilds, overview]);
 
     // 3. Serveurs où l'utilisateur a la perm de gérer, mais le bot n'est pas encore présent (à inviter)
@@ -281,7 +302,7 @@ function Dashboard() {
                         </button>
                     ) : null}
                     {guild.connected && !guild.canManage ? (
-                        <span className="pnl-guild__note">{t('panel.readonly')}</span>
+                        <span className="pnl-guild__note">{guild.publicInviteUrl ? t('panel.join_hint') : t('panel.readonly')}</span>
                     ) : null}
                 </div>
             </article>

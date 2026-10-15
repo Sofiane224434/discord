@@ -48,8 +48,7 @@ function Header() {
     };
 
     const navItems = [
-        { label: t('header.commands'), to: '/docs/commandes', match: '/docs/commandes' },
-        { label: t('header.docs'), to: '/docs/accueil', match: '/docs', exclude: '/docs/commandes' },
+        { label: t('header.docs'), to: '/docs/accueil', match: '/docs' },
         ...(isAuthenticated ? [{ label: t('header.panel'), to: '/dashboard', match: '/dashboard' }] : []),
         { label: t('header.status'), to: '/status', match: '/status' },
         { label: t('header.feedback'), to: '/feedback', match: '/feedback' },

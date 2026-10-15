@@ -8460,3 +8460,18 @@ button.ft__linkbtn:hover {
 	clip: rect(0 0 0 0);
 	white-space: nowrap;
 }
+
+/* « Toutes les commandes » : légèrement surligné dans le menu de la doc */
+.dc-nav__link--featured {
+	background: color-mix(in srgb, var(--azim-accent) 9%, transparent);
+	color: var(--azim-accent);
+}
+
+.dc-nav__link--featured .azim-icon {
+	color: var(--azim-accent);
+}
+
+.dc-nav__link--featured.is-active {
+	background: color-mix(in srgb, var(--azim-accent) 15%, transparent);
+	color: var(--azim-ink);
+}

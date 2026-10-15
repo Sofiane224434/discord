@@ -1,5 +1,6 @@
 // content/docs/fr.js — contenu de la documentation (français)
 // Même structure (slugs, ids de sections) que en.js : seuls les textes changent.
+// La liste complète des commandes (/docs/commandes) est lue en direct sur le bot : ici, seulement les guides.
 import { ADD_BOT_URL } from '../../config/links.js';
 
 const DOCS_FR = [
@@ -10,11 +11,11 @@ const DOCS_FR = [
                 slug: 'accueil',
                 title: 'Accueil',
                 icon: 'book',
-                summary: 'Présentation globale d’AzimBot, fonctionnalités phares et architecture.',
+                summary: 'Présentation d’AzimBot, ses fonctionnalités et comment démarrer.',
                 sections: [
                     { id: 'introduction', label: 'Introduction' },
                     { id: 'fonctionnalites-cles', label: 'Fonctionnalités clés' },
-                    { id: 'architecture', label: 'Architecture & Sécurité' },
+                    { id: 'architecture', label: 'Réglages & sécurité' },
                     { id: 'demarrage-rapide', label: 'Démarrage rapide' },
                 ],
                 content: {
@@ -26,43 +27,44 @@ const DOCS_FR = [
                             type: 'hint',
                             variant: 'info',
                             title: 'Première utilisation',
-                            text: 'Pour démarrer en moins de 2 minutes, invitez simplement AzimBot avec les permissions recommandées et tapez `/help` ou accédez à votre panel web.'
+                            text: 'Invitez AzimBot avec les permissions recommandées, puis tapez `/help` sur votre serveur ou ouvrez le panel web pour tout régler.'
                         },
                         {
                             type: 'section',
                             id: 'introduction',
                             title: 'Qu’est-ce qu’AzimBot ?',
                             paragraphs: [
-                                'AzimBot combine tous les outils indispensables pour gérer, animer et sécuriser un serveur Discord au sein d’une seule interface moderne.',
-                                'Finis les 10 bots différents qui se chevauchent : AzimBot gère votre assistant IA, vos messages d’accueil personnalisés, vos niveaux d’XP, votre modération et vos alertes de réseaux sociaux.'
+                                'AzimBot réunit les outils pour gérer, animer et protéger un serveur Discord dans un seul bot, gratuit et en français.',
+                                'Plus besoin de 10 bots différents : AzimBot gère l’assistant IA, l’accueil des membres, les niveaux, la modération et les alertes YouTube et TikTok.'
                             ]
                         },
                         {
                             type: 'section',
                             id: 'fonctionnalites-cles',
-                            title: 'Les piliers fondamentaux',
+                            title: 'Les fonctionnalités',
                             items: [
-                                { strong: 'Assistant IA Avancé :', text: 'Réponses conversationnelles contextuelles, personnalisation du prompt par serveur et analyse multimodale.' },
-                                { strong: 'Modération & Protection :', text: 'Filtres antispam, purge de salon ciblée avec /purge, permissions d’accès strictes et logs détaillés.' },
-                                { strong: 'Accueil & Rôles automatiques :', text: 'Messages de bienvenue immersifs, messages privés, attribution de rôle automatique dès l’arrivée.' },
-                                { strong: 'Niveaux & Engagement :', text: 'Système d’XP actif par message, cartes de profil /rank et rôles de récompense configurables.' },
-                                { strong: 'Veille Réseaux :', text: 'Notifications instantanées pour vos chaînes YouTube et lives TikTok en temps réel.' }
+                                { strong: 'Assistant IA :', text: 'réponses avec `/ask` ou dans un salon dédié, consignes et langue réglables par serveur.' },
+                                { strong: 'Modération :', text: '`/mod` pour bannir, expulser, exclure, avertir, verrouiller un salon ; `/purge` supprime jusqu’à 1000 messages ou vide un salon entier.' },
+                                { strong: 'Accueil des membres :', text: 'messages de bienvenue dans un salon ou en privé, règles selon les rôles.' },
+                                { strong: 'Niveaux :', text: 'XP par message, cartes `/rank`, classement et rôles de récompense.' },
+                                { strong: 'Alertes réseaux :', text: 'nouvelles vidéos YouTube et lives TikTok annoncés automatiquement.' },
+                                { strong: 'Français ou anglais :', text: '`/langue` passe les commandes et les réponses d’Azim dans la langue de votre serveur.' }
                             ]
                         },
                         {
                             type: 'hint',
                             variant: 'tip',
                             isIslamic: true,
-                            title: 'Mode & Thème Islamique Dédié',
-                            text: 'AzimBot intègre un module spirituel complet exclusif (Horaires de prière, Coran audio 24/7 dans les salons vocaux, Invocations de la Citadelle du Musulman et Hadiths authentiques), activable via code secret ou depuis les paramètres de votre serveur.'
+                            title: 'Mode Islam',
+                            text: 'Sur les serveurs en mode Islam : horaires de prière, radio Coran dans les salons vocaux, La Mecque en direct avec `/mecque`, invocations, hadiths, quiz et compagnon du Ramadan.'
                         },
                         {
                             type: 'section',
                             id: 'architecture',
-                            title: 'Architecture & Sécurité',
+                            title: 'Réglages & sécurité',
                             paragraphs: [
-                                'Tous les réglages sont cloisonnés par serveur : les configurations IA, les mots interdits et les salons sont strictement isolés dans une base de données sécurisée.',
-                                'Le bot respecte scrupuleusement les dernières normes de Discord (Slash Commands V10, Discord.js v14 et OAuth2 avec chiffrement JWT).'
+                                'Chaque serveur a ses propres réglages : IA, salons, langue, modération. Tout ce qui se règle par commande se règle aussi sur le panel.',
+                                'Seuls les membres qui gèrent un serveur peuvent modifier ses réglages, après connexion avec leur compte Discord.'
                             ]
                         },
                         {
@@ -70,17 +72,31 @@ const DOCS_FR = [
                             id: 'demarrage-rapide',
                             title: 'Prêt à configurer ?',
                             paragraphs: [
-                                'Suivez le guide d’installation ci-après pour autoriser le bot sur votre serveur et attribuer les rôles nécessaires.'
+                                'Suivez le guide d’installation pour ajouter le bot et lui donner les bons rôles, puis consultez la liste de toutes les commandes.'
                             ]
                         }
                     ]
                 }
             },
             {
+                slug: 'commandes',
+                title: 'Toutes les commandes',
+                icon: 'terminal',
+                featured: true,
+                summary: 'Toutes les commandes d’AzimBot, avec leurs sous-commandes et options, toujours à jour.',
+                sections: [],
+                content: {
+                    badge: 'Répertoire complet',
+                    heading: 'Toutes les commandes d’AzimBot',
+                    lead: 'Toutes les commandes d’Azim avec leurs sous-commandes et options. La liste est lue directement sur le bot : elle est toujours à jour.',
+                    blocks: []
+                }
+            },
+            {
                 slug: 'installation',
                 title: 'Installation',
                 icon: 'settings',
-                summary: 'Comment inviter le bot et configurer les permissions Discord requises.',
+                summary: 'Inviter le bot et lui donner les permissions Discord nécessaires.',
                 sections: [
                     { id: 'invitation', label: 'Inviter le bot' },
                     { id: 'permissions', label: 'Permissions requises' },
@@ -88,49 +104,54 @@ const DOCS_FR = [
                 ],
                 content: {
                     badge: 'Guide d’installation',
-                    heading: 'Installation & Droits Discord',
-                    lead: 'Apprenez à ajouter AzimBot sur votre serveur Discord en quelques clics et assurez-vous que ses permissions lui permettent de fonctionner à 100%.',
+                    heading: 'Installation & permissions',
+                    lead: 'Ajoutez AzimBot à votre serveur en quelques clics et vérifiez qu’il a les permissions dont il a besoin.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'invitation',
                             title: '1. Inviter AzimBot sur votre serveur',
                             paragraphs: [
-                                'Cliquez sur le bouton ci-dessous pour ouvrir le portail officiel d’autorisation OAuth2 de Discord :',
+                                'Le bouton ci-dessous ouvre la page d’autorisation officielle de Discord, avec les permissions recommandées déjà cochées.',
                             ],
                             actionButton: { label: 'Ajouter AzimBot à Discord ↗', url: ADD_BOT_URL }
                         },
                         {
                             type: 'hint',
                             variant: 'warning',
-                            title: 'Droit d’administration du serveur',
-                            text: 'Vous devez posséder la permission "Gérer le serveur" ou être le propriétaire du serveur Discord pour pouvoir y ajouter un bot.'
+                            title: 'Droit requis',
+                            text: 'Il faut la permission « Gérer le serveur » (ou être propriétaire) pour ajouter un bot.'
                         },
                         {
                             type: 'section',
                             id: 'permissions',
-                            title: '2. Tableau des permissions recommandées',
-                            paragraphs: [
-                                'Pour exploiter l’intégralité des fonctionnalités, voici les autorisations essentielles accordées lors de l’invitation :'
-                            ],
+                            title: '2. Permissions recommandées',
                             table: {
                                 headers: ['Permission Discord', 'Utilité', 'Obligatoire'],
                                 rows: [
-                                    ['Voir les salons & Envoyer des messages', 'Permet à Azim d’écouter et répondre aux commandes', 'Oui'],
-                                    ['Gérer les rôles', 'Attribution des rôles de bienvenue et récompenses de niveaux', 'Oui'],
-                                    ['Gérer les messages', 'Nécessaire pour la commande de modération /purge', 'Oui'],
-                                    ['Intégrer des liens & Joindre des fichiers', 'Affichage des embeds riches et cartes de niveau', 'Oui'],
-                                    ['Se connecter & Parler (Vocal)', 'Diffusion audio et annonces vocales', 'Optionnel']
+                                    ['Voir les salons, envoyer des messages, intégrer des liens', 'Répondre aux commandes avec des messages enrichis', 'Oui'],
+                                    ['Gérer les rôles', 'Rôles de bienvenue et de récompense de niveau', 'Oui'],
+                                    ['Gérer les messages', '`/purge messages`', 'Pour la modération'],
+                                    ['Bannir, expulser, exclure temporairement', '`/mod bannir`, `/mod expulser`, `/mod exclure`', 'Pour la modération'],
+                                    ['Gérer les salons', '`/mod verrouiller`, `/mod mode_lent`, `/purge salon`', 'Pour la modération'],
+                                    ['Créer une invitation', 'Lien de votre serveur sur le site (`/vitrine`)', 'Optionnel'],
+                                    ['Se connecter & parler (vocal)', 'Radio Coran (mode Islam)', 'Optionnel']
                                 ]
                             }
                         },
                         {
+                            type: 'hint',
+                            variant: 'info',
+                            title: 'Bot ajouté avant la version 5.0 ?',
+                            text: 'Les nouvelles permissions de modération ne s’ajoutent pas toutes seules : réinvitez le bot avec le bouton ci-dessus, ou donnez-les à son rôle dans les paramètres du serveur.'
+                        },
+                        {
                             type: 'section',
                             id: 'hierarchie',
-                            title: '3. Hiérarchie des rôles (Important)',
+                            title: '3. Hiérarchie des rôles (important)',
                             paragraphs: [
-                                'Dans les paramètres de votre serveur Discord > Rôles, faites glisser le rôle d’AzimBot au-dessus des rôles qu’il doit attribuer aux membres (rôles de bienvenue, rôles de niveau).',
-                                'Discord interdit formellement à un bot de gérer un rôle situé plus haut que le sien dans la liste.'
+                                'Dans Paramètres du serveur > Rôles, placez le rôle d’AzimBot au-dessus des rôles qu’il doit donner (bienvenue, niveaux) et des membres qu’il doit pouvoir sanctionner.',
+                                'Discord interdit à un bot d’agir sur un rôle ou un membre placé plus haut que lui.'
                             ]
                         }
                     ]
@@ -140,34 +161,48 @@ const DOCS_FR = [
                 slug: 'parametres',
                 title: 'Paramètres',
                 icon: 'settings',
-                summary: 'Prise en main des commandes de base et accès au dashboard web.',
+                summary: 'Premières commandes, langue du bot et panel web.',
                 sections: [
-                    { id: 'commandes-initiales', label: 'Commandes initiales' },
-                    { id: 'connexion-panel', label: 'Connexion au panel' },
+                    { id: 'commandes-initiales', label: 'Premières commandes' },
+                    { id: 'langue', label: 'Langue du bot' },
+                    { id: 'connexion-panel', label: 'Le panel' },
                 ],
                 content: {
                     badge: 'Prise en main',
                     heading: 'Premiers pas avec AzimBot',
-                    lead: 'Une fois le bot présent sur votre serveur, vous pouvez interagir immédiatement avec les commandes slash ou paramétrer vos préférences depuis le dashboard.',
+                    lead: 'Une fois le bot sur votre serveur, utilisez ses commandes slash ou réglez tout depuis le panel web.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'commandes-initiales',
-                            title: 'Vos premières commandes slash',
+                            title: 'Vos premières commandes',
                             codeList: [
-                                { cmd: '/help', desc: 'Affiche la liste interactive des commandes disponibles sur votre serveur.' },
-                                { cmd: '/ask prompt:Bonjour Azim !', desc: 'Pose une question à l’assistant IA du serveur.' },
-                                { cmd: '/site', desc: 'Affiche le lien vers le site officiel et le panel d’administration.' },
-                                { cmd: '/report', desc: 'Transmet une suggestion ou signale un bug à l’équipe de développement.' }
+                                { cmd: '/help', desc: 'Liste les commandes disponibles sur votre serveur, toujours à jour.' },
+                                { cmd: '/ask question:Bonjour Azim !', desc: 'Pose une question à l’assistant IA.' },
+                                { cmd: '/site', desc: 'Donne le lien du site et du panel.' },
+                                { cmd: '/version', desc: 'Affiche la version du bot et les nouveautés (option historique).' },
+                                { cmd: '/report', desc: 'Signale un bug ou propose une idée à l’équipe.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'langue',
+                            title: 'Français ou anglais',
+                            paragraphs: [
+                                '`/langue` change la langue d’Azim sur votre serveur : noms et descriptions des commandes, réponses et messages. Le changement s’applique en quelques secondes.',
+                                'Le même réglage existe sur le panel, dans l’onglet « Serveur & modération ».'
+                            ],
+                            codeList: [
+                                { cmd: '/langue langue:English', desc: 'Passe Azim en anglais sur ce serveur (les commandes deviennent /mod, /purge, /language…).' }
                             ]
                         },
                         {
                             type: 'section',
                             id: 'connexion-panel',
-                            title: 'Accéder au panel de gestion',
+                            title: 'Le panel de gestion',
                             paragraphs: [
-                                'Rendez-vous sur la page Panel (/dashboard) et connectez-vous avec votre compte Discord.',
-                                'Vous verrez la liste des serveurs que vous administrez. Cliquez sur "Configurer" pour accéder à tous les modules en direct.'
+                                'Ouvrez le Panel et connectez-vous avec Discord : vous voyez les serveurs que vous gérez.',
+                                'Cliquez sur « Configurer » : IA, commandes, bienvenue, niveaux, alertes réseaux, modération, langue et profil du bot se règlent au même endroit.'
                             ]
                         }
                     ]
@@ -177,37 +212,37 @@ const DOCS_FR = [
                 slug: 'ia',
                 title: 'Messages & IA',
                 icon: 'sparkles',
-                summary: 'Configuration du modèle IA, personnalisation du prompt et salon dédié.',
+                summary: 'Poser des questions à l’IA, salon dédié, consignes et langue de réponse.',
                 sections: [
                     { id: 'fonctionnement-ia', label: 'Fonctionnement de l’IA' },
-                    { id: 'parametres-ia', label: 'Paramètres disponibles' },
+                    { id: 'parametres-ia', label: 'Réglages' },
                     { id: 'commandes-ia', label: 'Commandes associées' },
                 ],
                 content: {
-                    badge: 'Intelligence Artificielle',
-                    heading: 'Assistant IA & Personnalisation',
-                    lead: 'Offrez à votre communauté un assistant intelligent capable de répondre aux questions, d’animer les salons et de respecter la personnalité propre à votre serveur.',
+                    badge: 'Intelligence artificielle',
+                    heading: 'Assistant IA',
+                    lead: 'Un assistant qui répond aux questions de vos membres, avec le ton et les règles de votre serveur.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'fonctionnement-ia',
                             title: 'Comment fonctionne l’IA ?',
                             paragraphs: [
-                                'AzimBot s’appuie sur les modèles les plus performants pour générer des réponses naturelles et précises en français, anglais, arabe et autres langues.',
-                                'Il peut répondre soit sur demande via la commande `/ask`, soit en conversation continue si un salon IA dédié est paramétré.'
+                                'Azim répond avec `/ask`, quand on l’appelle par son nom déclencheur dans un message, ou en continu dans un salon IA dédié.',
+                                'Les questions sont envoyées au service Groq le temps de générer la réponse (voir la page Confidentialité).'
                             ]
                         },
                         {
                             type: 'section',
                             id: 'parametres-ia',
-                            title: 'Paramètres configurables dans le Panel',
+                            title: 'Réglages (panel ou /config)',
                             table: {
-                                headers: ['Paramètre', 'Type', 'Description'],
+                                headers: ['Réglage', 'Commande', 'Description'],
                                 rows: [
-                                    ['ia_langue', 'Texte', 'Langue principale de l’assistant (fr, en, ar, etc.)'],
-                                    ['ia_prompt', 'Texte long', 'Consignes de personnalité, ton de voix et règles strictes'],
-                                    ['ia_channel', 'Salon Discord', 'Salon textuel réservé où l’IA répond sans commande'],
-                                    ['ia_active', 'Booléen', 'Activation ou désactivation globale de l’IA sur le serveur']
+                                    ['Langue de réponse', '`/config ia_langue`', 'Langue dans laquelle l’IA répond'],
+                                    ['Consignes', '`/config ia_prompt`', 'Personnalité, ton et règles de l’assistant'],
+                                    ['Nom déclencheur', '`/config nomai`', 'Le nom qui fait répondre l’IA dans un message'],
+                                    ['Clés Groq', '`/config ia_cle_ajouter`', 'Vos propres clés pour l’IA (masquées dans les listes)']
                                 ]
                             }
                         },
@@ -216,9 +251,9 @@ const DOCS_FR = [
                             id: 'commandes-ia',
                             title: 'Commandes IA',
                             codeList: [
-                                { cmd: '/ask prompt:Explique-moi la théorie de la relativité', desc: 'Pose une question ponctuelle avec réponse enrichie.' },
-                                { cmd: '/config ia_prompt', desc: 'Met à jour les consignes personnalisées de l’assistant.' },
-                                { cmd: '/zzzz', desc: 'Met temporairement l’IA en pause dans le salon actuel.' }
+                                { cmd: '/ask question:Explique-moi la relativité', desc: 'Pose une question à l’IA.' },
+                                { cmd: '/zzzz minutes:30', desc: 'Met l’IA en veille dans ce salon (relancez pour la réveiller).' },
+                                { cmd: '/salon nom:annonces style:…', desc: 'Propose un nom de salon stylisé et une description.' }
                             ]
                         }
                     ]
@@ -233,31 +268,42 @@ const DOCS_FR = [
                 slug: 'bienvenue',
                 title: 'Arrivées & départs',
                 icon: 'hand',
-                summary: 'Messages d’arrivée, messages privés et attribution de rôles dès l’adhésion.',
+                summary: 'Messages de bienvenue dans un salon ou en privé, et règles selon les rôles.',
                 sections: [
-                    { id: 'messages-bienvenue', label: 'Messages d’arrivée' },
-                    { id: 'roles-auto', label: 'Rôles automatiques' },
+                    { id: 'messages-bienvenue', label: 'Message de bienvenue' },
+                    { id: 'regles', label: 'Règles par rôle' },
                 ],
                 content: {
                     badge: 'Gestion des membres',
-                    heading: 'Accueil personnalisé & Rôles automatiques',
-                    lead: 'Créez une première impression mémorable pour chaque nouveau venu avec des messages de bienvenue illustrés et des rôles attribués dès la première seconde.',
+                    heading: 'Bienvenue des nouveaux membres',
+                    lead: 'Accueillez chaque nouveau membre avec un message dans un salon, en privé, ou les deux.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'messages-bienvenue',
-                            title: 'Configuration du message d’accueil',
+                            title: 'Le message de bienvenue',
                             paragraphs: [
-                                'Vous pouvez définir un salon textuel public où Azim souhaitera la bienvenue, ou envoyer un message privé chaleureux au nouveau membre.',
-                                'Utilisez les variables dynamiques telles que `{user}`, `{server}` et `{count}` pour personnaliser votre texte.'
+                                'Choisissez le salon, la destination (salon, message privé ou les deux) et le moment d’envoi. Les variables `{user}`, `{server}` et `{count}` personnalisent le texte.'
+                            ],
+                            codeList: [
+                                { cmd: '/welcome activer', desc: 'Active la bienvenue automatique.' },
+                                { cmd: '/welcome salon canal:#bienvenue', desc: 'Choisit le salon de bienvenue.' },
+                                { cmd: '/welcome destination mode:…', desc: 'Salon, message privé ou les deux.' },
+                                { cmd: '/welcome message_defaut message_salon:Bienvenue {user} !', desc: 'Définit le message envoyé par défaut.' },
+                                { cmd: '/welcome test', desc: 'Simule la bienvenue pour vérifier le rendu.' }
                             ]
                         },
                         {
                             type: 'section',
-                            id: 'roles-auto',
-                            title: 'Autorôles',
+                            id: 'regles',
+                            title: 'Règles selon les rôles',
                             paragraphs: [
-                                'Dès qu’un utilisateur rejoint le serveur, AzimBot peut lui assigner un ou plusieurs rôles par défaut (ex: Rôle Membre, Rôle Non-Vérifié).'
+                                'Envoyez un message différent selon le rôle du membre (par exemple aux membres vérifiés), avec un salon spécifique si besoin.'
+                            ],
+                            codeList: [
+                                { cmd: '/welcome regle_ajouter', desc: 'Ajoute une règle : nom, condition, rôle et message.' },
+                                { cmd: '/welcome regles_lister', desc: 'Liste les règles actives.' },
+                                { cmd: '/welcome regle_supprimer', desc: 'Supprime une règle.' }
                             ]
                         }
                     ]
@@ -267,40 +313,34 @@ const DOCS_FR = [
                 slug: 'roles',
                 title: 'Gestion des rôles',
                 icon: 'users',
-                summary: 'Configuration des rôles automatiques, hiérarchie et permissions.',
+                summary: 'Rôles de récompense par niveau et hiérarchie Discord.',
                 sections: [
-                    { id: 'roles-bienvenue', label: 'Rôles à l’arrivée' },
-                    { id: 'roles-niveaux', label: 'Rôles de récompense XP' },
+                    { id: 'roles-niveaux', label: 'Rôles de récompense' },
                     { id: 'hierarchie-discord', label: 'Hiérarchie Discord' },
                 ],
                 content: {
                     badge: 'Gestion des rôles',
-                    heading: 'Gestion & Attribution des Rôles',
-                    lead: 'Automatisez la gestion des rangs de votre serveur Discord : autorôles pour nouveaux membres et rôles exclusifs attribués par palier d’activité.',
+                    heading: 'Rôles automatiques',
+                    lead: 'Donnez automatiquement des rôles à vos membres les plus actifs.',
                     blocks: [
                         {
                             type: 'section',
-                            id: 'roles-bienvenue',
-                            title: '1. Rôles attribués à l’arrivée',
-                            paragraphs: [
-                                'Dès qu’un nouveau membre rejoint votre communauté, AzimBot peut lui assigner un ou plusieurs rôles prédéfinis sans intervention manuelle.',
-                                'Configurez ces rôles directement depuis l’onglet "Accueil & Membres" de votre panel d’administration.'
-                            ]
-                        },
-                        {
-                            type: 'section',
                             id: 'roles-niveaux',
-                            title: '2. Rôles de récompense par palier de niveau',
+                            title: 'Rôles de récompense par niveau',
                             paragraphs: [
-                                'Fidélisez votre serveur en définissant des rôles débloqués automatiquement lorsque les membres atteignent les niveaux 5, 10, 20 ou 50.',
-                                'AzimBot annonce fièrement le déblocage du nouveau rôle avec une carte personnalisée.'
+                                'Quand un membre atteint un niveau, Azim lui donne le rôle associé et l’annonce. Réglable sur le panel (onglet Niveaux) ou par commande.'
+                            ],
+                            codeList: [
+                                { cmd: '/rank recompense_ajouter niveau:10 role:@Actif', desc: 'Donne le rôle @Actif au niveau 10.' },
+                                { cmd: '/rank recompenses_lister', desc: 'Liste les rôles de récompense.' },
+                                { cmd: '/rank recompense_supprimer niveau:10', desc: 'Retire la récompense d’un niveau.' }
                             ]
                         },
                         {
                             type: 'hint',
                             variant: 'warning',
-                            title: 'Règle essentielle de hiérarchie',
-                            text: 'Assurez-vous que le rôle d’AzimBot est positionné au-dessus de tous les rôles qu’il doit attribuer dans les Paramètres du Serveur > Rôles.'
+                            title: 'Règle de hiérarchie',
+                            text: 'Le rôle d’AzimBot doit être placé au-dessus de tous les rôles qu’il donne, dans Paramètres du serveur > Rôles.'
                         }
                     ]
                 }
@@ -314,23 +354,22 @@ const DOCS_FR = [
                 slug: 'niveaux',
                 title: 'Niveaux',
                 icon: 'activity',
-                summary: 'Système d’XP, paliers de niveau, cartes /rank et classement de serveur.',
+                summary: 'XP par message, cartes /rank, classement et réglages.',
                 sections: [
-                    { id: 'mecanique-xp', label: 'Mécanique d’expérience' },
+                    { id: 'mecanique-xp', label: 'Gagner de l’XP' },
                     { id: 'commandes-rank', label: 'Commandes /rank' },
                 ],
                 content: {
-                    badge: 'Engagement & Gamification',
-                    heading: 'Système de Niveaux & XP',
-                    lead: 'Récompensez l’activité de vos membres les plus fidèles avec un système d’XP automatique, des cartes visuelles et des rôles débloqués par palier.',
+                    badge: 'Engagement',
+                    heading: 'Niveaux & XP',
+                    lead: 'Récompensez l’activité de vos membres avec de l’XP, des cartes de niveau et des rôles.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'mecanique-xp',
-                            title: 'Comment les membres gagnent de l’XP ?',
+                            title: 'Comment gagner de l’XP ?',
                             paragraphs: [
-                                'Chaque message envoyé rapporte entre 15 et 25 points d’expérience avec un cooldown de 60 secondes pour éviter le spam abusif.',
-                                'Au fil des niveaux, des rôles exclusifs peuvent être attribués automatiquement.'
+                                'Chaque message rapporte de l’XP, avec un délai entre deux gains pour éviter le spam. Les passages de niveau peuvent être annoncés dans un salon choisi, ou en silence.'
                             ]
                         },
                         {
@@ -338,8 +377,10 @@ const DOCS_FR = [
                             id: 'commandes-rank',
                             title: 'Commandes de niveaux',
                             codeList: [
-                                { cmd: '/rank', desc: 'Affiche votre carte de niveau personnelle avec votre jauge d’XP.' },
-                                { cmd: '/rank membre:@Ami', desc: 'Affiche la carte de progression d’un autre membre.' }
+                                { cmd: '/rank voir', desc: 'Votre carte de niveau (option membre pour un autre membre).' },
+                                { cmd: '/rank classement', desc: 'Les membres les plus actifs du serveur.' },
+                                { cmd: '/rank config activer:Oui salon_annonces:#niveaux', desc: 'Active les niveaux et choisit le salon des annonces (admin).' },
+                                { cmd: '/rank reinitialiser', desc: 'Remet à zéro l’XP d’un membre ou du serveur (admin).' }
                             ]
                         }
                     ]
@@ -349,43 +390,44 @@ const DOCS_FR = [
                 slug: 'reseaux',
                 title: 'Alertes Réseaux',
                 icon: 'megaphone',
-                summary: 'Surveillance et annonces automatiques pour chaînes YouTube et TikTok Live.',
+                summary: 'Nouvelles vidéos YouTube et lives TikTok annoncés automatiquement.',
                 sections: [
                     { id: 'youtube', label: 'Alertes YouTube' },
                     { id: 'tiktok', label: 'Alertes TikTok' },
                 ],
                 content: {
-                    badge: 'Intégrations & Médias',
+                    badge: 'Réseaux sociaux',
                     heading: 'Alertes YouTube & TikTok',
-                    lead: 'Ne manquez plus aucune sortie de vidéo ou lancement de live grâce aux alertes automatisées dans le salon de votre choix.',
+                    lead: 'Annoncez automatiquement les nouvelles vidéos et les lives dans le salon de votre choix.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'youtube',
-                            title: 'Surveillance YouTube',
+                            title: 'YouTube',
                             paragraphs: [
-                                'Ajoutez vos chaînes favorites directement par leur @pseudo (ex: @Inoxtag, @MrBeast), lien complet ou ID UC... pour recevoir un message riche avec miniature, titre et lien direct dès qu’une vidéo est mise en ligne.'
+                                'Ajoutez une chaîne par son @pseudo, son lien ou son identifiant. Les listes affichent le nom, le @pseudo et le lien de chaque chaîne, et le panel montre aussi sa photo.'
                             ],
                             codeList: [
-                                { cmd: '/youtube add chaine:@pseudo', desc: 'Ajoute une chaîne à surveiller via son @handle, lien ou ID UC...' },
-                                { cmd: '/youtube remove chaine:@pseudo', desc: 'Retire une chaîne de la liste de surveillance.' },
-                                { cmd: '/youtube list', desc: 'Affiche toutes les chaînes YouTube suivies sur le serveur.' },
-                                { cmd: '/youtube config salon:#salon', desc: 'Définit le salon textuel de réception des alertes vidéo.' }
+                                { cmd: '/youtube add chaine:@pseudo', desc: 'Suit une chaîne.' },
+                                { cmd: '/youtube remove chaine:@pseudo', desc: 'Arrête de suivre une chaîne.' },
+                                { cmd: '/youtube list', desc: 'Les chaînes suivies, avec nom, @pseudo et lien.' },
+                                { cmd: '/youtube config salon:#videos', desc: 'Salon où annoncer les nouvelles vidéos.' }
                             ]
                         },
                         {
                             type: 'section',
                             id: 'tiktok',
-                            title: 'Surveillance TikTok (Multi-comptes)',
+                            title: 'TikTok (plusieurs comptes)',
                             paragraphs: [
-                                'Suivez plusieurs créateurs TikTok en simultané ! Le bot vérifie régulièrement le statut et alerte instantanément votre communauté avec une annonce et un embed dynamique lors d’un passage en direct.'
+                                'Azim vérifie régulièrement les comptes suivis et annonce leur passage en live.'
                             ],
                             codeList: [
-                                { cmd: '/tiktok add compte:@pseudo', desc: 'Ajoute un compte TikTok à surveiller (@pseudo ou lien).' },
-                                { cmd: '/tiktok remove compte:@pseudo', desc: 'Retire un compte TikTok de la liste.' },
-                                { cmd: '/tiktok list', desc: 'Affiche toutes les chaînes TikTok surveillées et leur statut.' },
-                                { cmd: '/tiktok config salon:#salon', desc: 'Configure le salon textuel pour les alertes de live.' },
-                                { cmd: '/tiktok statut [compte]', desc: 'Vérifie en direct le statut live d’un compte ou de tous les comptes.' }
+                                { cmd: '/tiktok add compte:@pseudo', desc: 'Suit un compte TikTok.' },
+                                { cmd: '/tiktok remove compte:@pseudo', desc: 'Arrête de suivre un compte.' },
+                                { cmd: '/tiktok list', desc: 'Les comptes suivis, avec nom, @pseudo et lien.' },
+                                { cmd: '/tiktok config salon:#lives', desc: 'Salon où annoncer les lives.' },
+                                { cmd: '/tiktok activer', desc: 'Active la surveillance (et /tiktok desactiver pour l’arrêter).' },
+                                { cmd: '/tiktok statut', desc: 'Statut live actuel des comptes suivis.' }
                             ]
                         }
                     ]
@@ -400,41 +442,60 @@ const DOCS_FR = [
                 slug: 'moderation',
                 title: 'Modération & Purge',
                 icon: 'shield',
-                summary: 'Commandes de modération rapide, purge de messages et gestion des alertes.',
+                summary: 'Sanctions, avertissements, salons verrouillés et suppression de messages.',
                 sections: [
-                    { id: 'outils-moderation', label: 'Outils de modération' },
+                    { id: 'commande-mod', label: 'Commande /mod' },
+                    { id: 'journal', label: 'Journal des sanctions' },
                     { id: 'commande-purge', label: 'Commande /purge' },
                 ],
                 content: {
-                    badge: 'Sécurité & Modération',
-                    heading: 'Modération & Nettoyage de salon',
-                    lead: 'Gardez vos salons propres et agréables pour vos membres grâce aux commandes de modération rapide d’AzimBot.',
+                    badge: 'Sécurité & modération',
+                    heading: 'Modération & nettoyage',
+                    lead: 'Toutes les actions de modération dans deux commandes : /mod pour les membres et les salons, /purge pour les messages.',
                     blocks: [
                         {
                             type: 'section',
-                            id: 'outils-moderation',
-                            title: 'Outils à disposition de vos modérateurs',
+                            id: 'commande-mod',
+                            title: 'La commande /mod',
                             paragraphs: [
-                                'AzimBot fournit une panoplie complète pour agir rapidement en cas de raid, de spam ou de débordement.'
+                                'Chaque action vérifie vos permissions Discord : il faut par exemple « Bannir des membres » pour `/mod bannir`.'
+                            ],
+                            codeList: [
+                                { cmd: '/mod bannir membre:@Membre raison:Spam', desc: 'Bannit un membre (option : supprimer ses messages récents).' },
+                                { cmd: '/mod debannir utilisateur:ID', desc: 'Lève un bannissement.' },
+                                { cmd: '/mod expulser membre:@Membre', desc: 'Expulse un membre (il peut revenir avec une invitation).' },
+                                { cmd: '/mod exclure membre:@Membre duree:1h', desc: 'Exclut temporairement : le membre ne peut plus écrire ni parler.' },
+                                { cmd: '/mod fin_exclusion membre:@Membre', desc: 'Met fin à l’exclusion.' },
+                                { cmd: '/mod avertir membre:@Membre raison:…', desc: 'Donne un avertissement.' },
+                                { cmd: '/mod avertissements membre:@Membre', desc: 'Liste les avertissements d’un membre (et /mod effacer_avertissements).' },
+                                { cmd: '/mod mode_lent secondes:10', desc: 'Limite la fréquence des messages dans un salon.' },
+                                { cmd: '/mod verrouiller', desc: 'Empêche les membres d’écrire dans un salon (et /mod deverrouiller).' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'journal',
+                            title: 'Journal des sanctions',
+                            paragraphs: [
+                                'Sur le panel (onglet « Serveur & modération »), choisissez un salon où Azim note chaque sanction, et décidez si le membre sanctionné reçoit un message privé.'
                             ]
                         },
                         {
                             type: 'section',
                             id: 'commande-purge',
                             title: 'La commande /purge',
-                            paragraphs: [
-                                'La commande `/purge` permet de supprimer instantanément entre 1 et 100 messages récents dans un salon textuel.'
-                            ],
                             codeList: [
-                                { cmd: '/purge nombre:50', desc: 'Supprime les 50 derniers messages du salon.' },
-                                { cmd: '/purge nombre:20 utilisateur:@Membre', desc: 'Supprime uniquement les messages envoyés par ce membre précis.' }
+                                { cmd: '/purge messages nombre:200', desc: 'Supprime jusqu’à 1000 messages du salon.' },
+                                { cmd: '/purge messages nombre:50 membre:@Membre', desc: 'Seulement les messages de ce membre (filtres aussi : bots, contient).' },
+                                { cmd: '/purge messages nombre:100 anciens:Oui', desc: 'Inclut les messages de plus de 14 jours (plus lent).' },
+                                { cmd: '/purge salon', desc: 'Vide entièrement le salon : il est recréé à l’identique, après confirmation.' }
                             ]
                         },
                         {
                             type: 'hint',
                             variant: 'warning',
-                            title: 'Limite Discord des 14 jours',
-                            text: 'L’API Discord ne permet pas la suppression en masse de messages datant de plus de 14 jours.'
+                            title: 'Messages de plus de 14 jours',
+                            text: 'Discord ne permet de supprimer en groupe que les messages de moins de 14 jours. Avec l’option anciens, Azim supprime les plus vieux un par un, ce qui prend plus de temps.'
                         }
                     ]
                 }
@@ -443,34 +504,55 @@ const DOCS_FR = [
                 slug: 'utilitaires',
                 title: 'Utilitaires & Profil',
                 icon: 'terminal',
-                summary: 'Commandes pratiques, infos de serveur, rappels et gestion de la photo de profil du bot.',
+                summary: 'Infos serveur, rappels, vitrine sur le site, profil et langue du bot.',
                 sections: [
                     { id: 'commandes-utiles', label: 'Commandes utiles' },
-                    { id: 'avatar-bot', label: 'Photo de profil d’AzimBot' },
+                    { id: 'vitrine', label: 'Votre serveur sur le site' },
+                    { id: 'avatar-bot', label: 'Profil du bot' },
                 ],
                 content: {
                     badge: 'Outils pratiques',
-                    heading: 'Commandes Utilitaires & Avatar',
-                    lead: 'Accédez à une suite d’outils pratiques pour le quotidien de votre serveur.',
+                    heading: 'Utilitaires & profil du bot',
+                    lead: 'Les outils du quotidien pour votre serveur et votre équipe.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'commandes-utiles',
                             title: 'Commandes du quotidien',
                             codeList: [
-                                { cmd: '/serverinfo', desc: 'Affiche les statistiques complètes du serveur (membres, salons, date de création).' },
-                                { cmd: '/userinfo membre:@Membre', desc: 'Consulte la date d’arrivée et les rôles d’un membre.' },
-                                { cmd: '/remindme temps:1h texte:Réunion équipe', desc: 'Programme un rappel automatique envoyé par le bot.' },
-                                { cmd: '/ping', desc: 'Mesure la latence avec l’API Discord.' }
+                                { cmd: '/serverinfo', desc: 'Statistiques du serveur : membres, salons, date de création.' },
+                                { cmd: '/userinfo membre:@Membre', desc: 'Date d’arrivée et rôles d’un membre.' },
+                                { cmd: '/remindme duree:1h message:Réunion', desc: 'Programme un rappel personnel.' },
+                                { cmd: '/permissions', desc: 'Qui peut utiliser chaque commande sur ce serveur.' },
+                                { cmd: '/pubtimer lancer', desc: 'Chrono de session pub pour le staff (terminer, total, classement).' },
+                                { cmd: '/rappelbump', desc: 'Envoie le rappel de bump dans le salon prévu.' },
+                                { cmd: '/ping', desc: 'Latence du bot.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'vitrine',
+                            title: 'Votre serveur sur le site',
+                            paragraphs: [
+                                'Avec `/vitrine`, votre serveur apparaît avec un lien cliquable dans « Autres serveurs » sur le site d’Azim. Également réglable sur le panel.'
+                            ],
+                            codeList: [
+                                { cmd: '/vitrine activer:Oui salon:#bienvenue', desc: 'Crée une invitation vers ce salon et l’affiche sur le site.' },
+                                { cmd: '/vitrine activer:Non', desc: 'Retire le lien du site.' }
                             ]
                         },
                         {
                             type: 'section',
                             id: 'avatar-bot',
-                            title: 'Personnalisation de la photo de profil (/botavatar)',
+                            title: 'Profil du bot sur votre serveur',
                             paragraphs: [
-                                'AzimBot propose une photo de profil officielle haute définition pour votre serveur Discord.',
-                                'Vous pouvez afficher, télécharger l’image officielle ou rétablir l’avatar par défaut à tout moment via `/botavatar`.'
+                                'Changez le nom, la description, l’activité et la photo d’Azim sur votre serveur, avec `/config` ou depuis l’onglet « Profil & logs » du panel.'
+                            ],
+                            codeList: [
+                                { cmd: '/config nom nouveau_nom:Azim', desc: 'Change le nom du bot.' },
+                                { cmd: '/config avatar image:…', desc: 'Change sa photo (et /config avatar_reset pour revenir à l’officielle).' },
+                                { cmd: '/botavatar', desc: 'Affiche, télécharge ou rétablit la photo officielle.' },
+                                { cmd: '/config log_salon salon:#logs', desc: 'Salon où Azim signale ses erreurs et redémarrages.' }
                             ]
                         }
                     ]
@@ -479,114 +561,48 @@ const DOCS_FR = [
         ]
     },
     {
-        category: 'Commandes & support',
+        category: 'Aide & support',
         items: [
-            {
-                slug: 'commandes',
-                title: 'Toutes les commandes',
-                icon: 'terminal',
-                summary: 'Catalogue complet et interactif de toutes les commandes slash d’AzimBot.',
-                sections: [
-                    { id: 'questions-outils', label: 'Questions & Outils' },
-                    { id: 'reglages-accueil', label: 'Réglages & Accueil' },
-                    { id: 'moderation-niveaux', label: 'Modération & Niveaux' },
-                    { id: 'alertes-reseaux', label: 'Alertes & Réseaux' },
-                ],
-                content: {
-                    badge: 'Répertoire complet',
-                    heading: 'Toutes les commandes d’AzimBot',
-                    lead: 'Toutes les commandes d’Azim avec leurs sous-commandes et options. La liste est lue directement sur le bot : elle est toujours à jour.',
-                    blocks: [
-                        {
-                            type: 'section',
-                            id: 'questions-outils',
-                            title: 'Questions & Outils',
-                            codeList: [
-                                { cmd: '/ask prompt:[texte]', desc: 'Pose une question à l’assistant IA du serveur.' },
-                                { cmd: '/site', desc: 'Consulte le site officiel et accède au tableau de bord.' },
-                                { cmd: '/report', desc: 'Signale un bug ou soumets une suggestion pour AzimBot.' },
-                                { cmd: '/help', desc: 'Affiche les commandes actives et leur usage sur le serveur.' },
-                                { cmd: '/botavatar', desc: 'Affiche, télécharge ou rétablit la photo de profil du bot.' },
-                                { cmd: '/ping', desc: 'Mesure la latence Discord et WebSocket.' },
-                                { cmd: '/remindme temps:[délai] texte:[note]', desc: 'Programme un rappel personnel automatique.' },
-                                { cmd: '/salon nom:[texte]', desc: 'Propose un nom et une description de salon.' },
-                                { cmd: '/version', desc: 'Affiche la version et l’historique du bot.' },
-                                { cmd: '/serverinfo', desc: 'Consulte les informations et statistiques du serveur.' },
-                                { cmd: '/userinfo membre:[@user]', desc: 'Affiche le profil Discord d’un membre.' }
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            id: 'reglages-accueil',
-                            title: 'Réglages & Accueil',
-                            codeList: [
-                                { cmd: '/config', desc: 'Règle la langue IA, le prompt, les journaux et le profil du bot.' },
-                                { cmd: '/welcome', desc: 'Configure les messages d’arrivée et les rôles automatiques.' },
-                                { cmd: '/code valeur:[code]', desc: 'Active ou désactive des modules d’extension avec un code d’accès.' },
-                                { cmd: '/permissions', desc: 'Consulte les autorisations requises pour chaque commande.' }
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            id: 'moderation-niveaux',
-                            title: 'Modération & Niveaux',
-                            codeList: [
-                                { cmd: '/purge nombre:[1-100]', desc: 'Supprime un ensemble de messages selon des filtres.' },
-                                { cmd: '/zzzz', desc: 'Suspend temporairement les réponses automatiques de l’IA dans le salon.' },
-                                { cmd: '/rank', desc: 'Affiche votre carte de niveau et votre jauge d’XP.' }
-                            ]
-                        },
-                        {
-                            type: 'section',
-                            id: 'alertes-reseaux',
-                            title: 'Alertes & Réseaux sociaux',
-                            codeList: [
-                                { cmd: '/youtube add chaine:[@pseudo/URL]', desc: 'Surveille une chaîne YouTube et annonce ses nouvelles vidéos.' },
-                                { cmd: '/tiktok add compte:[@pseudo/URL]', desc: 'Alerte instantanément lors du passage en live TikTok (multi-comptes).' },
-                                { cmd: '/pubtimer', desc: 'Suit le temps consacré aux publications de l’équipe.' },
-                                { cmd: '/rappelbump', desc: 'Envoie le rappel de bump du serveur Discord.' }
-                            ]
-                        }
-                    ]
-                }
-            },
             {
                 slug: 'faq',
                 title: 'Foire Aux Questions',
                 icon: 'help',
-                summary: 'Questions fréquentes, résolution de problèmes et support.',
+                summary: 'Questions fréquentes, problèmes courants et support.',
                 sections: [
                     { id: 'general', label: 'Questions générales' },
-                    { id: 'permissions-faq', label: 'Permissions & Rôles' },
+                    { id: 'permissions-faq', label: 'Permissions & rôles' },
                 ],
                 content: {
-                    badge: 'Aide & Dépannage',
-                    heading: 'Foire Aux Questions & Support',
-                    lead: 'Trouvez rapidement des réponses aux interrogations les plus fréquentes concernant l’utilisation d’AzimBot.',
+                    badge: 'Aide & dépannage',
+                    heading: 'Foire Aux Questions',
+                    lead: 'Les réponses aux questions les plus fréquentes sur AzimBot.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'general',
                             title: 'Questions générales',
                             items: [
-                                { strong: 'Le bot est-il gratuit ?', text: 'Oui, toutes les fonctionnalités principales (IA, niveaux, accueil, modération, alertes) sont 100% gratuites.' },
-                                { strong: 'Pourquoi le bot ne répond pas à /ask ?', text: 'Vérifiez que le bot possède la permission "Envoyer des messages" et "Intégrer des liens" dans le salon concerné, et que l’IA n’a pas été mise en pause via /zzzz.' },
-                                { strong: 'Comment modifier les réglages ?', text: 'Connectez-vous sur le Panel de gestion avec votre compte Discord ou utilisez la commande /config.' }
+                                { strong: 'Le bot est-il gratuit ?', text: 'Oui, toutes les fonctionnalités sont gratuites.' },
+                                { strong: 'Azim ne répond pas à /ask ?', text: 'Vérifiez qu’il peut écrire et intégrer des liens dans le salon, et que l’IA n’est pas en veille (`/zzzz`).' },
+                                { strong: 'Comment passer Azim en anglais ?', text: '`/langue langue:English`, ou dans le panel, onglet « Serveur & modération ».' },
+                                { strong: 'Comment afficher mon serveur sur le site ?', text: '`/vitrine activer:Oui`, ou depuis le panel.' },
+                                { strong: 'Où voir les nouveautés ?', text: '`/version` affiche la version actuelle et ses changements ; `/version historique:Oui` les précédentes.' }
                             ]
                         },
                         {
                             type: 'section',
                             id: 'permissions-faq',
-                            title: 'Permissions & Rôles automatiques',
+                            title: 'Permissions & rôles',
                             paragraphs: [
-                                'Si AzimBot n’arrive pas à attribuer un rôle de bienvenue ou de niveau, vérifiez que le rôle du bot se situe plus haut dans la liste des rôles Discord que les rôles qu’il doit distribuer.'
+                                'Si Azim n’arrive pas à donner un rôle ou à sanctionner un membre, placez son rôle plus haut dans la liste des rôles du serveur.',
+                                'Si une commande de modération est refusée, vérifiez que le rôle d’Azim a la permission correspondante (voir Installation).'
                             ]
                         },
                         {
                             type: 'hint',
                             variant: 'info',
-                            title: 'Besoin d’aide supplémentaire ?',
-                            text: 'Rejoignez notre serveur support Discord officiel pour poser vos questions directement à l’équipe ou échanger avec la communauté.'
+                            title: 'Besoin d’aide ?',
+                            text: 'Rejoignez le serveur support pour poser vos questions à l’équipe et à la communauté.'
                         }
                     ]
                 }
@@ -601,30 +617,31 @@ const DOCS_FR = [
                 slug: 'islam-priere',
                 title: 'Horaires & Adhan',
                 icon: 'moon',
-                summary: 'Calcul précis des 5 prières quotidiennes, compte à rebours et alertes Adhan.',
+                summary: 'Horaires des 5 prières, qibla, calendrier hégirien et Ramadan.',
                 sections: [
                     { id: 'calcul-priere', label: 'Calcul des horaires' },
-                    { id: 'commande-priere', label: 'Commande /priere' },
+                    { id: 'commande-priere', label: 'Commandes' },
                 ],
                 content: {
-                    badge: 'Spiritualité Islamique',
-                    heading: 'Horaires des Prières & Adhan',
-                    lead: 'Affichez les heures exactes des 5 prières quotidiennes (Fajr, Dhuhr, Asr, Maghrib, Isha) calculées selon votre ville ou coordonnées GPS.',
+                    badge: 'Spiritualité',
+                    heading: 'Horaires des prières',
+                    lead: 'Les heures des 5 prières (Fajr, Dhuhr, Asr, Maghrib, Isha) pour votre ville, avec le compte à rebours de la prochaine.',
                     blocks: [
                         {
                             type: 'hint',
                             variant: 'tip',
-                            title: 'Calcul astronomique précis',
-                            text: 'AzimBot prend en compte les méthodes officielles de calcul (UOIF 12°, Ligue Islamique Mondiale, etc.) pour vous garantir une exactitude parfaite.'
+                            title: 'Méthode de calcul',
+                            text: 'Choisissez la méthode de calcul (UOIF, Ligue islamique mondiale…) avec l’option methode de `/priere`.'
                         },
                         {
                             type: 'section',
                             id: 'commande-priere',
-                            title: 'La commande /priere',
+                            title: 'Commandes',
                             codeList: [
-                                { cmd: '/priere ville:Paris', desc: 'Affiche les 5 horaires de prière pour la ville demandée avec compte à rebours de la prochaine prière.' },
-                                { cmd: '/qibla ville:Marseille', desc: 'Calcule la direction exacte de la Kaaba (La Mecque) avec degrés de boussole et distance.' },
-                                { cmd: '/hijri', desc: 'Consulte la date du calendrier islamique lunaire et les rappels des Jours Blancs.' }
+                                { cmd: '/priere ville:Paris', desc: 'Les 5 horaires du jour et le compte à rebours de la prochaine prière.' },
+                                { cmd: '/qibla ville:Marseille', desc: 'Direction de la Kaaba en degrés, avec la distance.' },
+                                { cmd: '/hijri', desc: 'La date hégirienne du jour à côté de la date grégorienne.' },
+                                { cmd: '/ramadan ville:Lyon', desc: 'Horaires d’Imsak et d’Iftar, compte à rebours et invocations.' }
                             ]
                         }
                     ]
@@ -634,38 +651,93 @@ const DOCS_FR = [
                 slug: 'islam-coran',
                 title: 'Radio Coran 24/7',
                 icon: 'book',
-                summary: 'Radio Coran en continu dans les salons vocaux et recherche de versets.',
+                summary: 'Radio Coran dans un ou plusieurs salons vocaux, et lecture du Coran.',
                 sections: [
-                    { id: 'radio-coran', label: 'Radio Coran 24/7' },
+                    { id: 'radio-coran', label: 'Commande /radio' },
+                    { id: 'plusieurs-salons', label: 'Plusieurs salons vocaux' },
                     { id: 'commande-coran', label: 'Commande /coran' },
                 ],
                 content: {
-                    badge: 'Saint Coran & Vocaux',
-                    heading: 'Radio Coran 24/7 & Versets',
-                    lead: 'Diffusez le Noble Coran en haute qualité audio 24 heures sur 24 dans vos salons vocaux avec plus de 20 récitateurs renommés.',
+                    badge: 'Coran & vocal',
+                    heading: 'Radio Coran 24/7',
+                    lead: 'Le Noble Coran en continu dans vos salons vocaux, avec 22 récitateurs.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'radio-coran',
                             title: 'La commande /radio',
                             paragraphs: [
-                                'Connectez le bot dans un salon vocal pour lancer la diffusion en direct sans interruption.'
+                                'Rejoignez un salon vocal et lancez `/radio`. Le message affiché permet de changer de récitateur, de sourate, de mettre en pause ou d’arrêter.'
                             ],
                             codeList: [
-                                { cmd: '/radio action:play recitateur:Al-Afasy', desc: 'Lance la radio Coran continue avec Mishary Rashid Al-Afasy.' },
-                                { cmd: '/radio action:stop', desc: 'Arrête la diffusion et déconnecte le bot du salon vocal.' }
+                                { cmd: '/radio', desc: 'Radio continue, à partir d’une sourate au hasard.' },
+                                { cmd: '/radio sourate:18 recitateur:sudais', desc: 'Commence par Al-Kahf avec Abdul Rahman Al-Sudais.' },
+                                { cmd: '/radio sourate:36 enchainer:Non', desc: 'Récite une seule sourate puis s’arrête.' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'plusieurs-salons',
+                            title: 'Plusieurs salons vocaux en même temps',
+                            paragraphs: [
+                                'Discord ne permet qu’un salon vocal par bot et par serveur. Pour diffuser dans un deuxième salon, Azim utilise des bots d’appoint (Azim 2, Azim 3…).',
+                                'Lancez `/radio` depuis un autre salon vocal : si un bot d’appoint est libre, il le rejoint ; sinon la réponse donne le lien pour l’inviter sur votre serveur.'
                             ]
                         },
                         {
                             type: 'section',
                             id: 'commande-coran',
                             title: 'La commande /coran',
+                            codeList: [
+                                { cmd: '/coran sourate numero:1', desc: 'Lit une sourate complète en français.' },
+                                { cmd: '/coran verset sourate:2 numero:255', desc: 'Affiche un verset précis.' },
+                                { cmd: '/coran aleatoire', desc: 'Un verset au hasard.' },
+                                { cmd: '/coran radio', desc: 'Même chose que /radio.' }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                slug: 'islam-mecque',
+                title: 'La Mecque en direct',
+                icon: 'play',
+                summary: 'Regarder La Mecque ou Médine en direct, ensemble dans un salon vocal.',
+                sections: [
+                    { id: 'commande-mecque', label: 'Commande /mecque' },
+                    { id: 'sources', label: 'Les directs' },
+                ],
+                content: {
+                    badge: 'Direct',
+                    heading: 'La Mecque en direct',
+                    lead: 'Le direct de Masjid al-Haram, ou de Masjid an-Nabawi à Médine, regardé ensemble dans un salon vocal.',
+                    blocks: [
+                        {
+                            type: 'section',
+                            id: 'commande-mecque',
+                            title: 'La commande /mecque',
                             paragraphs: [
-                                'Recherchez n’importe quelle sourate ou verset pour afficher le texte arabe calligraphié, la phonétique et la traduction française fidèle.'
+                                'Rejoignez un salon vocal et tapez `/mecque` : la vidéo s’ouvre dans Discord, et les membres du salon peuvent la rejoindre.',
+                                'La vidéo démarre sans le son : cliquez sur « Activer le son ». Le bouton en bas à droite passe en plein écran.'
                             ],
                             codeList: [
-                                { cmd: '/coran sourate:1 verset:1', desc: 'Affiche Al-Fatiha verset 1 avec lecture audio.' }
+                                { cmd: '/mecque', desc: 'Ouvre « La Mecque en direct » dans votre salon vocal.' }
                             ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'sources',
+                            title: 'Les directs',
+                            items: [
+                                { strong: 'La Mecque :', text: 'Masjid al-Haram, diffusé par la chaîne Coran de la radio-télévision saoudienne.' },
+                                { strong: 'Médine :', text: 'Masjid an-Nabawi, diffusé par la chaîne Sunna.' }
+                            ]
+                        },
+                        {
+                            type: 'hint',
+                            variant: 'info',
+                            title: 'Pourquoi pas un partage d’écran ?',
+                            text: 'Discord ne permet pas aux bots de partager leur écran. Les Activités Discord sont la façon prévue pour regarder une vidéo ensemble.'
                         }
                     ]
                 }
@@ -674,31 +746,42 @@ const DOCS_FR = [
                 slug: 'islam-rappels',
                 title: 'Hadiths & Invocations',
                 icon: 'moon',
-                summary: 'Invocations de la Citadelle du Musulman et 40 Hadiths Nawawi.',
+                summary: 'Invocations, hadiths, 99 Noms d’Allah et quiz.',
                 sections: [
-                    { id: 'douas', label: 'Invocations (/doua)' },
-                    { id: 'hadiths', label: 'Enseignements (/hadith)' },
+                    { id: 'douas', label: 'Invocations & Noms' },
+                    { id: 'hadiths', label: 'Hadiths' },
+                    { id: 'quiz', label: 'Quiz' },
                 ],
                 content: {
-                    badge: 'Sagesse & Méditation',
-                    heading: 'Invocations & Hadiths Authentiques',
-                    lead: 'Consultez des centaines d’invocations de protection, du matin et du soir, ainsi que les recueils de hadiths authentiques.',
+                    badge: 'Rappels',
+                    heading: 'Invocations, hadiths & quiz',
+                    lead: 'Invocations de la Citadelle du Musulman, hadiths authentiques, les 99 Noms d’Allah et un quiz à plusieurs.',
                     blocks: [
                         {
                             type: 'section',
                             id: 'douas',
-                            title: 'La commande /doua',
+                            title: 'Invocations & Noms d’Allah',
                             codeList: [
-                                { cmd: '/doua categorie:matin', desc: 'Affiche les invocations authentiques du matin avec transcription phonétique et traduction.' },
-                                { cmd: '/asma', desc: 'Consulte les 99 Noms d’Allah (Asma ul-Husna) avec leur signification profonde.' }
+                                { cmd: '/doua sujet:matin', desc: 'Invocations du matin en arabe, phonétique et français (option aleatoire).' },
+                                { cmd: '/asma numero:1', desc: 'Un des 99 Noms d’Allah avec sa signification (options nom, aleatoire).' }
                             ]
                         },
                         {
                             type: 'section',
                             id: 'hadiths',
-                            title: 'La commande /hadith',
+                            title: 'Hadiths',
                             codeList: [
-                                { cmd: '/hadith', desc: 'Tire un hadith au sort parmi les 40 de l’Imam An-Nawawi ou Sahih Al-Bukhari.' }
+                                { cmd: '/hadith', desc: 'Un hadith authentique en arabe et en français (options theme, numero, aleatoire).' }
+                            ]
+                        },
+                        {
+                            type: 'section',
+                            id: 'quiz',
+                            title: 'Quiz à plusieurs',
+                            codeList: [
+                                { cmd: '/quiz creer', desc: 'Ouvre une partie : thème, difficulté, nombre de questions et temps par question.' },
+                                { cmd: '/quiz score', desc: 'Le score de la partie en cours (et /quiz stop pour l’arrêter).' },
+                                { cmd: '/quiz classement', desc: 'Le classement général des points.' }
                             ]
                         }
                     ]

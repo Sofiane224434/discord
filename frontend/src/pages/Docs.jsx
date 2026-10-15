@@ -189,7 +189,7 @@ function Docs() {
                             <ul>
                                 {cat.items.map((item) => (
                                     <li key={item.slug}>
-                                        <Link to={`/docs/${item.slug}`} className={`dc-nav__link${item.slug === article.slug ? ' is-active' : ''}`}>
+                                        <Link to={`/docs/${item.slug}`} className={`dc-nav__link${item.featured ? ' dc-nav__link--featured' : ''}${item.slug === article.slug ? ' is-active' : ''}`}>
                                             <Icon name={item.icon} size={16} />
                                             <span>{item.title}</span>
                                         </Link>

@@ -40,6 +40,7 @@ const EMPTY_CONFIG = {
         triggerNames: ['azim', 'azimbot'],
         keysCount: 0,
         keysPreviews: [],
+        access: { mode: 'everyone', roleIds: [] },
     },
     logs: { channelId: '', restartAnnouncementEnabled: false },
     welcome: {
@@ -121,6 +122,10 @@ function mergeConfig(data) {
             triggerName: triggerNames[0] || 'azim',
             triggerNames,
             keysPreviews: Array.isArray(aiData.keysPreviews) ? aiData.keysPreviews : [],
+            access: {
+                mode: ['admins', 'roles'].includes(aiData.access?.mode) ? aiData.access.mode : 'everyone',
+                roleIds: Array.isArray(aiData.access?.roleIds) ? aiData.access.roleIds : [],
+            },
         },
         logs: { ...EMPTY_CONFIG.logs, ...data?.logs },
         welcome: {
@@ -330,7 +335,7 @@ function RoleChip({ name, onRemove }) {
 // Prépare la partie « enregistrable » du formulaire pour détecter les modifications
 function serializeForm(form) {
     return JSON.stringify({
-        ai: { systemPrompt: form.ai.systemPrompt, language: form.ai.language, triggerNames: form.ai.triggerNames },
+        ai: { systemPrompt: form.ai.systemPrompt, language: form.ai.language, triggerNames: form.ai.triggerNames, access: form.ai.access },
         logs: form.logs,
         welcome: form.welcome,
         bio: form.profile.bio,
@@ -469,6 +474,7 @@ function GuildConfig() {
                     language: form.ai.language || '',
                     triggerNames: form.ai.triggerNames,
                     triggerName: form.ai.triggerNames[0] || 'azim',
+                    access: form.ai.access,
                 },
                 logs: form.logs,
                 welcome: {
@@ -879,6 +885,41 @@ function GuildConfig() {
                                             onChange={(e) => update('ai', 'systemPrompt', e.target.value)}
                                         />
                                     </Field>
+                                </div>
+                            </Card>
+
+                            {/* Qui peut faire répondre l'IA en lui parlant (nom, mention, réponse) ; /ask se règle dans Commandes */}
+                            <Card title={t('config.ai_access')} desc={t('config.ai_access_desc')}>
+                                <div className="cf-stack">
+                                    <div className="ui-seg" role="radiogroup" aria-label={t('config.ai_access')}>
+                                        {['everyone', 'admins', 'roles'].map((mode) => (
+                                            <button
+                                                key={mode}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={form.ai.access.mode === mode}
+                                                className={form.ai.access.mode === mode ? 'is-active' : ''}
+                                                onClick={() => update('ai', 'access', { ...form.ai.access, mode })}
+                                            >
+                                                {t(`config.ai_access_${mode}`)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    {form.ai.access.mode === 'roles' ? (
+                                        <div className="cf-chips">
+                                            {form.ai.access.roleIds.map((roleId) => (
+                                                <RoleChip key={roleId} name={roleName(roleId)} onRemove={() => update('ai', 'access', { ...form.ai.access, roleIds: form.ai.access.roleIds.filter((id) => id !== roleId) })} />
+                                            ))}
+                                            <SelectInput
+                                                value=""
+                                                onChange={(e) => { if (e.target.value) update('ai', 'access', { ...form.ai.access, roleIds: [...form.ai.access.roleIds, e.target.value] }); }}
+                                                options={roleOptions.filter((r) => !form.ai.access.roleIds.includes(r.value))}
+                                                emptyLabel={t('config.allow_role')}
+                                                className="cf-select--chip"
+                                            />
+                                        </div>
+                                    ) : null}
+                                    <p className="cf-hint">{t('config.ai_access_hint')}</p>
                                 </div>
                             </Card>
 

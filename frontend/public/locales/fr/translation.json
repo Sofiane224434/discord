@@ -657,7 +657,7 @@
     "ai_prompt_ph": "Tu es Azim, l’assistant de ce serveur Discord. Tu tutoies les membres…",
     "keys": "Clés API Groq",
     "keys_desc": "Utilisées uniquement pour ce serveur, enregistrées chiffrées et jamais réaffichées en entier. Les modifications sont enregistrées immédiatement.",
-    "keys_empty": "Aucune clé propre à ce serveur : l’IA utilise les clés par défaut d’Azim, au quota partagé.",
+    "keys_empty": "Aucune clé : l’IA est désactivée sur ce serveur. Ajoutez une clé Groq gratuite (console.groq.com/keys) pour l’activer.",
     "delete": "Supprimer",
     "add_keys": "Ajouter des clés",
     "keys_detected": "{{count}} clé(s) détectée(s)",
@@ -834,7 +834,13 @@
     "page_next": "Page suivante",
     "page_range": "{{from}}–{{to}} sur {{total}}",
     "anonymous_title": "Serveur anonyme",
-    "anonymous_desc": "Ce serveur n’apparaît pas dans « Autres serveurs » sur le site : il compte seulement dans « +x serveurs anonymes ». Même réglage que /vitrine anonyme."
+    "anonymous_desc": "Ce serveur n’apparaît pas dans « Autres serveurs » sur le site : il compte seulement dans « +x serveurs anonymes ». Même réglage que /vitrine anonyme.",
+    "ai_access": "Qui peut parler à l’IA",
+    "ai_access_desc": "Faire répondre Azim avec son nom, une mention ou une réponse à ses messages.",
+    "ai_access_everyone": "Tout le monde",
+    "ai_access_admins": "Administrateurs",
+    "ai_access_roles": "Certains rôles",
+    "ai_access_hint": "Les administrateurs ont toujours accès. La commande /ask se règle dans l’onglet Commandes."
   },
   "loading": {
     "default": "Chargement en cours…",
@@ -915,5 +921,11 @@
     "force_title": "Choisissez un mot de passe plus robuste",
     "force_lead": "Pour protéger votre compte, les mots de passe doivent maintenant respecter des règles plus strictes. Votre mot de passe actuel ne les respecte pas : changez-le pour continuer.",
     "force_submit": "Changer le mot de passe"
+  },
+  "notfound": {
+    "title": "Cette page n’existe pas",
+    "text": "L’adresse est peut-être mal écrite, ou la page a été déplacée.",
+    "home": "Retour à l’accueil",
+    "docs": "Documentation"
   }
 }

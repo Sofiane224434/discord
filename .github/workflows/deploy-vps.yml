@@ -53,6 +53,9 @@ jobs:
               git checkout -B main FETCH_HEAD
             fi
 
+            # Page « site indisponible » (502/503/504) servie par le nginx du VPS pendant les redémarrages
+            if [ -d /var/www/azim-discord-errors ]; then install -m 644 frontend/deploy/errors/erreur-serveur.html /var/www/azim-discord-errors/erreur-serveur.html; fi
+
             # Construit d'abord les images et vérifie la config nginx : en cas d'erreur, l'ancien site reste en ligne
             docker compose -p "$PROJECT" build
             docker run --rm --add-host api:127.0.0.1 "$PROJECT-app" nginx -t

@@ -27,6 +27,7 @@ const Docs = lazyPage(() => import('./pages/Docs.jsx'));
 const Admin = lazyPage(() => import('./pages/Admin.jsx'));
 const Privacy = lazyPage(() => import('./pages/Privacy.jsx'));
 const Legal = lazyPage(() => import('./pages/Legal.jsx'));
+const NotFound = lazyPage(() => import('./pages/NotFound.jsx'));
 
 function App() {
   const { loading, user } = useAuth();
@@ -76,6 +77,8 @@ function App() {
         <Route path="/command-history" element={
           <PrivateRoute><CommandHistory /></PrivateRoute>
         } />
+        {/* Adresse inconnue : page 404 avec l'en-tête et le pied de page du site */}
+        <Route path="*" element={<NotFound />} />
       </Route>
       {/* Routes SANS Header (plein écran) */}
       <Route element={<AuthLayout />}>
@@ -83,7 +86,6 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/oauth/discord/callback" element={<DiscordCallback />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
     </Suspense>
     </ErrorBoundary>

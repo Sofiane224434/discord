@@ -243,7 +243,8 @@ const DOCS_FR = [
                                     ['Langue de réponse', '`/config ia_langue`', 'Langue dans laquelle l’IA répond'],
                                     ['Consignes', '`/config ia_prompt`', 'Personnalité, ton et règles de l’assistant'],
                                     ['Nom déclencheur', '`/config nomai`', 'Le nom qui fait répondre l’IA dans un message'],
-                                    ['Clés Groq', '`/config ia_cle_ajouter`', 'Vos propres clés pour l’IA : enregistrées chiffrées, jamais réaffichées en entier, et chacune peut être retirée (`/config ia_cle_supprimer`). Sans clé, Azim utilise ses clés par défaut.']
+                                    ['Clés Groq', '`/config ia_cle_ajouter`', 'Vos propres clés pour l’IA : enregistrées chiffrées, jamais réaffichées en entier, et chacune peut être retirée (`/config ia_cle_supprimer`). Sans clé, l’IA est désactivée sur le serveur.'],
+                                    ['Qui peut parler à l’IA', 'Panel, onglet IA', 'Tout le monde par défaut, ou seulement les administrateurs, ou certains rôles']
                                 ]
                             }
                         },

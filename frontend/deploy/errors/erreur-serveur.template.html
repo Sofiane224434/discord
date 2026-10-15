@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Azimbot · Retour dans un instant</title>
+<link rel="icon" href="data:image/webp;base64,{{LOGO}}">
+<style>
+@font-face {
+	font-family: "Space Grotesk";
+	font-weight: 300 700;
+	font-display: swap;
+	src: url("data:font/woff2;base64,{{FONT}}") format("woff2");
+}
+:root {
+	--azim-ink: #e7f3ff;
+	--azim-ink-muted: #7f97b0;
+	--azim-surface: #0a1728;
+	--azim-panel: #102239;
+	--azim-line: #285373;
+	--azim-accent: #20b9f2;
+	--azim-accent-strong: #68ddff;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+	margin: 0;
+	display: grid;
+	place-items: center;
+	padding: 24px 16px;
+	background:
+		radial-gradient(60rem 30rem at 50% -10%, color-mix(in srgb, var(--azim-accent) 18%, transparent), transparent 70%),
+		var(--azim-surface);
+	color: var(--azim-ink);
+	font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main {
+	width: 100%;
+	max-width: 520px;
+	padding: 36px 28px;
+	border: 1px solid color-mix(in srgb, var(--azim-line) 70%, transparent);
+	border-radius: 28px;
+	background: color-mix(in srgb, var(--azim-panel) 85%, transparent);
+	text-align: center;
+	box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+.brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 26px;
+	font-size: 26px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+}
+.brand img { width: 44px; height: 44px; }
+.brand b { font-weight: 700; }
+.brand span { color: var(--azim-accent); }
+h1 {
+	margin: 0 0 12px;
+	font-size: clamp(24px, 6vw, 32px);
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+}
+p {
+	margin: 0 auto 26px;
+	max-width: 400px;
+	color: var(--azim-ink-muted);
+	font-size: 15px;
+	line-height: 1.6;
+}
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+}
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 0 20px;
+	border: 1px solid var(--azim-line);
+	border-radius: 14px;
+	background: transparent;
+	color: var(--azim-ink);
+	font: inherit;
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: border-color 0.2s ease, background 0.2s ease;
+}
+.btn:hover { border-color: var(--azim-accent); }
+.btn:focus-visible { outline: 2px solid var(--azim-accent-strong); outline-offset: 2px; }
+.btn--primary {
+	border-color: var(--azim-accent);
+	background: var(--azim-accent);
+	color: #04121f;
+}
+.btn--primary:hover { background: var(--azim-accent-strong); }
+.btn svg { width: 18px; height: 18px; }
+.wait {
+	margin: 22px 0 0;
+	font-size: 13px;
+}
+.wait i {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	margin-right: 8px;
+	vertical-align: -1px;
+	border: 2px solid color-mix(in srgb, var(--azim-accent) 30%, transparent);
+	border-top-color: var(--azim-accent);
+	border-radius: 50%;
+	animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .wait i { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+	<div class="brand"><img src="data:image/webp;base64,{{LOGO}}" alt="" width="44" height="44"><b>Azim<span>bot</span></b></div>
+	<h1 data-t="title">Azim revient dans un instant</h1>
+	<p data-t="text">Le site est en cours de mise à jour ou de redémarrage. Vos réglages ne sont pas perdus : la page se recharge toute seule dès que le site est de retour.</p>
+	<div class="actions">
+		<button type="button" class="btn btn--primary" onclick="location.reload()">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+			<span data-t="retry">Réessayer</span>
+		</button>
+		<a class="btn" href="https://discord.gg/xy3NpkjYsF" rel="noopener">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/></svg>
+			<span data-t="support">Serveur support</span>
+		</a>
+	</div>
+	<p class="wait" role="status"><i aria-hidden="true"></i><span data-t="wait">Nouvel essai automatique toutes les 15 secondes</span></p>
+</main>
+<script>
+// Page affichée par le serveur web quand le site ne répond pas (redémarrage, déploiement) : aucune ressource externe
+(function () {
+	var en = !/^fr/i.test(navigator.language || 'fr');
+	if (en) {
+		var t = {
+			title: 'Azim will be right back',
+			text: 'The website is being updated or restarted. Your settings are safe: this page reloads by itself as soon as the website is back.',
+			retry: 'Try again',
+			support: 'Support server',
+			wait: 'Retrying automatically every 15 seconds',
+		};
+		document.documentElement.lang = 'en';
+		document.title = 'Azimbot · Back in a moment';
+		document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = t[el.getAttribute('data-t')]; });
+	}
+	setInterval(function () {
+		fetch(location.href, { method: 'HEAD', cache: 'no-store' })
+			.then(function (res) { if (res.ok) location.reload(); })
+			.catch(function () {});
+	}, 15000);
+})();
+</script>
+</body>
+</html>

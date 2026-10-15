@@ -243,7 +243,8 @@ const DOCS_EN = [
                                     ['Reply language', '`/config ai_language`', 'Language the AI answers in'],
                                     ['Instructions', '`/config ai_prompt`', 'Personality, tone and rules of the assistant'],
                                     ['Trigger name', '`/config ai_name`', 'The name that makes the AI answer in a message'],
-                                    ['Groq keys', '`/config ai_key_add`', 'Your own AI keys: stored encrypted, never shown in full again, and each one can be removed (`/config ai_key_remove`). Without a key, Azim uses its default keys.']
+                                    ['Groq keys', '`/config ai_key_add`', 'Your own AI keys: stored encrypted, never shown in full again, and each one can be removed (`/config ai_key_remove`). Without a key, AI is off on the server.'],
+                                    ['Who can talk to the AI', 'Panel, AI tab', 'Everyone by default, or only administrators, or specific roles']
                                 ]
                             }
                         },

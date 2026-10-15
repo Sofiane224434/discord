@@ -657,7 +657,7 @@
     "ai_prompt_ph": "You are Azim, this Discord server’s assistant. Be friendly and casual…",
     "keys": "Groq API keys",
     "keys_desc": "Used only for this server, stored encrypted and never shown in full again. Changes are saved immediately.",
-    "keys_empty": "No key of its own: the AI uses Azim’s default keys, with a shared quota.",
+    "keys_empty": "No key: AI is off on this server. Add a free Groq key (console.groq.com/keys) to turn it on.",
     "delete": "Delete",
     "add_keys": "Add keys",
     "keys_detected": "{{count}} key(s) detected",
@@ -834,7 +834,13 @@
     "page_next": "Next page",
     "page_range": "{{from}}–{{to}} of {{total}}",
     "anonymous_title": "Anonymous server",
-    "anonymous_desc": "This server is not listed in “Other servers” on the website: it only counts in “+x anonymous servers”. Same setting as /showcase anonymous."
+    "anonymous_desc": "This server is not listed in “Other servers” on the website: it only counts in “+x anonymous servers”. Same setting as /showcase anonymous.",
+    "ai_access": "Who can talk to the AI",
+    "ai_access_desc": "Getting Azim to answer with its name, a mention or a reply to its messages.",
+    "ai_access_everyone": "Everyone",
+    "ai_access_admins": "Administrators",
+    "ai_access_roles": "Specific roles",
+    "ai_access_hint": "Administrators always have access. The /ask command is set in the Commands tab."
   },
   "loading": {
     "default": "Loading…",
@@ -915,5 +921,11 @@
     "force_title": "Choose a stronger password",
     "force_lead": "To protect your account, passwords must now follow stricter rules. Your current password does not: change it to continue.",
     "force_submit": "Change password"
+  },
+  "notfound": {
+    "title": "This page does not exist",
+    "text": "The address may be misspelled, or the page has moved.",
+    "home": "Back to home",
+    "docs": "Documentation"
   }
 }

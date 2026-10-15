@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>AzimBot — La Mecque en direct</title>
+    <link rel="icon" type="image/png" href="/favicon-islam.png" />
+    <script type="module" crossorigin src="/assets/activite-BrabKvrL.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/links-Durz0wrF.js">
+    <link rel="stylesheet" crossorigin href="/assets/activite-CszfEKix.css">
+  </head>
+  <body>
+    <div id="activity" class="act">
+      <video id="video" class="act-video" playsinline muted autoplay></video>
+
+      <header class="act-bar">
+        <div class="act-title">
+          <span class="act-live"><i></i><span data-t="live">En direct</span></span>
+          <strong id="title">La Mecque</strong>
+        </div>
+        <nav class="act-sources" id="sources" aria-label="Caméra"></nav>
+      </header>
+
+      <div class="act-state" id="state" hidden>
+        <span class="act-spinner" aria-hidden="true"></span>
+        <p id="state-text">Connexion au direct…</p>
+        <button type="button" class="act-btn" id="retry" hidden data-t="retry">Réessayer</button>
+      </div>
+
+      <footer class="act-controls">
+        <button type="button" class="act-btn act-btn--primary" id="sound">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14" /></svg>
+          <span data-t="unmute">Activer le son</span>
+        </button>
+        <button type="button" class="act-btn" id="fullscreen" aria-label="Plein écran">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" /></svg>
+        </button>
+      </footer>
+    </div>
+  </body>
+</html>

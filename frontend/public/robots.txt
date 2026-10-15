@@ -4,5 +4,6 @@ Disallow: /dashboard
 Disallow: /admin
 Disallow: /settings
 Disallow: /api/
+Disallow: /activite
 
 Sitemap: https://discord.azim404.com/sitemap.xml

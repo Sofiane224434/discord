@@ -147,7 +147,8 @@ export const getLiveStream = async (req, res) => {
     try {
         const response = await fetch(`https://aloula.faulio.com/api/v1.1/channels/${channelId}/player`, { signal: AbortSignal.timeout(8000) });
         const data = await response.json();
-        const url = data?.streams?.hls;
+        // Liste « direct » (quelques segments) plutôt que la liste DVR de 4 h, trop lourde à recharger toutes les 4 s
+        const url = typeof data?.streams?.hls === 'string' ? data.streams.hls.replace('/playlist_dvr.m3u8', '/playlist.m3u8') : null;
         if (!response.ok || typeof url !== 'string' || !url.startsWith('https://live.kwikmotion.com/')) throw new Error('Flux absent');
         liveCache.set(req.params.name, { at: Date.now(), url });
         return res.json({ url });

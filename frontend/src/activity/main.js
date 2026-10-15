@@ -131,7 +131,7 @@ function play(url) {
 
     if (Hls.isSupported()) {
         // Débit supposé élevé au départ : le direct démarre directement en bonne qualité au lieu de la plus basse
-        hls = new Hls({ liveSyncDurationCount: 3, enableWorker: true, abrEwmaDefaultEstimate: 6_000_000, capLevelToPlayerSize: false });
+        hls = new Hls({ liveSyncDurationCount: 3, enableWorker: true, abrEwmaDefaultEstimate: 6_000_000, capLevelToPlayerSize: false, maxBufferLength: 20, backBufferLength: 10 });
         hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => null));
         hls.on(Hls.Events.ERROR, (_event, data) => {
             if (!data.fatal) return;
@@ -211,7 +211,10 @@ soundBtn.addEventListener('click', () => {
     renderSound();
 });
 
-document.getElementById('fullscreen').addEventListener('click', () => {
+// Discord n'autorise pas le plein écran dans une Activité (il a son propre bouton d'agrandissement) : bouton masqué
+const fullscreenBtn = document.getElementById('fullscreen');
+fullscreenBtn.hidden = inDiscord || !document.fullscreenEnabled;
+fullscreenBtn.addEventListener('click', () => {
     const root = document.getElementById('activity');
     if (document.fullscreenElement) document.exitFullscreen().catch(() => null);
     else root.requestFullscreen?.().catch(() => null);
@@ -232,13 +235,16 @@ async function start() {
     // Vidéo demandée avec /lecture video dans ce salon vocal ? Sinon, La Mecque en direct.
     const channelId = params.get('channel_id');
     if (channelId) {
-        renderSources();
+        // Rien n'est affiché tant qu'on ne sait pas si c'est une vidéo ou les directs
+        sourcesNav.hidden = true;
+        title.textContent = '';
         showState(t.preparing);
         try {
             const res = await fetch(`${API}/system/activity/${encodeURIComponent(channelId)}`);
             const data = await res.json();
             if (data.type === 'youtube' && data.video?.id) {
-                SOURCES.unshift({
+                // Mode vidéo : seulement la vidéo demandée, sans les directs de La Mecque et Médine
+                SOURCES.splice(0, SOURCES.length, {
                     id: 'youtube',
                     type: 'youtube',
                     isLive: Boolean(data.video.isLive),
@@ -251,6 +257,8 @@ async function start() {
                 return select(SOURCES[0]);
             }
             if (data.type === 'youtube' && data.error) {
+                SOURCES.splice(0, SOURCES.length);
+                current = { id: 'youtube', type: 'youtube', label: { fr: t.video, en: t.video }, detail: { fr: t.video, en: t.video }, urls: [] };
                 renderSources();
                 return showState(`${t.videoFailed} (${data.error})`, { loading: false });
             }

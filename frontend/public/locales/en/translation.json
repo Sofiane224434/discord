@@ -505,7 +505,11 @@
     "delete_confirm": "Delete this report for good?",
     "err_admin": "This action is not possible right now.",
     "delete_message": "The report and its reply will be deleted for everyone.",
-    "new_reply": "New reply"
+    "new_reply": "New reply",
+    "field_identity": "Show as",
+    "identity_anonymous": "Anonymous",
+    "identity_discord": "Discord username",
+    "identity_needs_discord": "Link Discord to your account to show your verified username."
   },
   "settings": {
     "title": "Settings",

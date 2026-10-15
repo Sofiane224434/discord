@@ -505,7 +505,11 @@
     "delete_confirm": "Supprimer définitivement ce retour ?",
     "err_admin": "Action impossible pour le moment.",
     "delete_message": "Le retour et sa réponse seront supprimés pour tout le monde.",
-    "new_reply": "Nouvelle réponse"
+    "new_reply": "Nouvelle réponse",
+    "field_identity": "Afficher",
+    "identity_anonymous": "Anonyme",
+    "identity_discord": "Pseudo Discord",
+    "identity_needs_discord": "Connectez Discord à votre compte pour afficher votre pseudo vérifié."
   },
   "settings": {
     "title": "Paramètres",

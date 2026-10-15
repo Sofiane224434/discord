@@ -36,7 +36,9 @@ export default function Feedback() {
     const [formType, setFormType] = useState('bug');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [authorName, setAuthorName] = useState(user?.username || '');
+    // Anonyme par défaut ; le pseudo Discord (vérifié par la connexion Discord) seulement si la personne le choisit
+    const [showDiscordName, setShowDiscordName] = useState(false);
+    const canShowDiscordName = Boolean(user?.hasDiscord && user?.username);
     const [authorEmail, setAuthorEmail] = useState(user?.email || '');
     const [images, setImages] = useState([]);
     const [submitting, setSubmitting] = useState(false);
@@ -50,9 +52,6 @@ export default function Feedback() {
 
     // Initialiser le pseudo si l'utilisateur se connecte
     useEffect(() => {
-        if (user?.username && !authorName) {
-            setAuthorName(user.username);
-        }
         if (user?.email && !authorEmail) {
             setAuthorEmail(user.email);
         }
@@ -218,7 +217,6 @@ export default function Feedback() {
 
         const cleanTitle = title.trim();
         const cleanDesc = description.trim();
-        const cleanAuthor = authorName.trim();
         const cleanEmail = authorEmail.trim();
 
         if (!cleanTitle) {
@@ -227,10 +225,6 @@ export default function Feedback() {
         }
         if (!cleanDesc) {
             setSubmitError(t('feedback.err_desc'));
-            return;
-        }
-        if (!cleanAuthor) {
-            setSubmitError(t('feedback.err_name'));
             return;
         }
         if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
@@ -244,7 +238,7 @@ export default function Feedback() {
                 type: formType,
                 title: cleanTitle,
                 description: cleanDesc,
-                authorName: cleanAuthor,
+                showName: Boolean(canShowDiscordName && showDiscordName),
                 authorEmail: cleanEmail || null,
                 images: images,
             });
@@ -440,7 +434,7 @@ export default function Feedback() {
                                     <div className="fb-item__meta">
                                         <span className="fb-author">
                                             <i>{(item.authorName || 'A').charAt(0).toUpperCase()}</i>
-                                            {item.authorName || t('feedback.anonymous')}
+                                            {!item.authorName || item.authorName === 'Anonyme' ? t('feedback.anonymous') : item.authorName}
                                         </span>
                                         {item.guildName ? <span>{t('feedback.on_guild', { name: item.guildName })}</span> : null}
                                         <span>{item.source === 'discord' ? t('feedback.via_report') : t('feedback.via_site')}</span>
@@ -548,7 +542,7 @@ export default function Feedback() {
                                 </span>
                                 <textarea
                                     required
-                                    rows={5}
+                                    rows={4}
                                     maxLength={MAX_DESCRIPTION_LENGTH}
                                     placeholder={formType === 'bug' ? t('feedback.ph_desc_bug') : t('feedback.ph_desc_idea')}
                                     value={description}
@@ -585,17 +579,27 @@ export default function Feedback() {
                             </div>
 
                             <div className="fb-form__grid">
-                                <label className="ui-field">
-                                    <span className="ui-field__label">{t('feedback.field_name')}</span>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder={t('feedback.ph_name')}
-                                        value={authorName}
-                                        onChange={(e) => setAuthorName(e.target.value)}
-                                        className="ui-input"
-                                    />
-                                </label>
+                                {/* Identité : anonyme, ou le vrai pseudo Discord du compte (jamais un nom tapé à la main) */}
+                                <div className="ui-field">
+                                    <span className="ui-field__label">{t('feedback.field_identity')}</span>
+                                    <div className="ui-seg fb-identity" role="radiogroup" aria-label={t('feedback.field_identity')}>
+                                        <button type="button" role="radio" aria-checked={!showDiscordName} className={!showDiscordName ? 'is-active' : ''} onClick={() => setShowDiscordName(false)}>
+                                            {t('feedback.identity_anonymous')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            role="radio"
+                                            aria-checked={showDiscordName}
+                                            className={showDiscordName ? 'is-active' : ''}
+                                            disabled={!canShowDiscordName}
+                                            title={canShowDiscordName ? undefined : t('feedback.identity_needs_discord')}
+                                            onClick={() => setShowDiscordName(true)}
+                                        >
+                                            {canShowDiscordName ? user.username : t('feedback.identity_discord')}
+                                        </button>
+                                    </div>
+                                    {!canShowDiscordName ? <span className="cf-hint">{t('feedback.identity_needs_discord')}</span> : null}
+                                </div>
                                 <label className="ui-field">
                                     <span className="ui-field__label">{t('feedback.field_email')} <em>{t('feedback.optional')}</em></span>
                                     <input
@@ -615,7 +619,7 @@ export default function Feedback() {
                                 <button
                                     type="submit"
                                     className="ui-btn ui-btn--primary"
-                                    disabled={submitting || !title.trim() || !description.trim() || !authorName.trim()}
+                                    disabled={submitting || !title.trim() || !description.trim()}
                                 >
                                     {submitting ? t('feedback.sending') : t('feedback.send')}
                                 </button>

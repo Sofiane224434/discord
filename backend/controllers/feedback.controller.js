@@ -103,7 +103,8 @@ export const getFeedbacks = async (req, res) => {
 };
 
 export const createFeedback = async (req, res) => {
-    const { type, title, description, authorName, authorEmail, guildId, guildName, images } = req.body || {};
+    const { type, title, description, showName, authorEmail, guildId, guildName, images } = req.body || {};
+    const discordName = req.user?.discord_id ? req.user.discord_username : null;
 
     if (!title?.trim() || !description?.trim()) {
         return res.status(400).json({ error: 'Le titre et la description sont obligatoires' });
@@ -113,7 +114,7 @@ export const createFeedback = async (req, res) => {
         type: type === 'suggestion' ? 'suggestion' : 'bug',
         title: title.trim().slice(0, 150),
         description: description.trim().slice(0, 2000),
-        authorName: authorName?.trim() || req.user?.username || 'Utilisateur Web',
+        authorName: showName && discordName ? discordName : 'Anonyme',
         authorEmail: authorEmail?.trim() || req.user?.email || null,
         authorUserId: req.user?.id ? String(req.user.id) : null,
         authorId: req.user?.discord_id || null,

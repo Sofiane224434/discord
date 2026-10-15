@@ -995,7 +995,7 @@ body {
 .home-last-check span { color: #ffd184; font-family: 'JetBrains Mono', monospace; }
 
 .home-help-panel {
-	border-left: 2px solid #ffac75;
+	border: 1px solid color-mix(in srgb, #ffac75 35%, transparent);
 }
 
 .home-help-panel h2 {
@@ -3065,8 +3065,8 @@ html.theme-transitioning::after {
 
 .azh-embed {
 	padding: 10px 14px;
-	border-left: 4px solid var(--azim-accent);
-	border-radius: 6px;
+	border: 1px solid color-mix(in srgb, var(--azim-accent) 30%, transparent);
+	border-radius: 8px;
 	background: color-mix(in srgb, var(--azim-surface) 70%, transparent);
 }
 
@@ -3151,9 +3151,6 @@ html.theme-transitioning::after {
 	animation-duration: 55s;
 }
 
-.azh-ribbons:hover .azh-ribbon-track {
-	animation-play-state: paused;
-}
 
 @keyframes azhRibbon {
 	to { transform: translateX(-50%); }
@@ -3580,7 +3577,7 @@ html.theme-transitioning::after {
 	padding: 10px;
 	border-radius: 18px;
 	background: var(--azim-surface);
-	border-left: 4px solid var(--c);
+	border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
 	transform: rotate(1.5deg);
 }
 
@@ -8603,4 +8600,64 @@ button.ft__linkbtn:hover {
 	font-size: 14px;
 	font-weight: 700;
 	text-decoration: none;
+}
+
+/* Barre de défilement aux couleurs du site */
+html {
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--azim-accent) 40%, var(--azim-panel)) var(--azim-surface);
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--azim-surface);
+}
+
+::-webkit-scrollbar-thumb {
+	border: 2px solid var(--azim-surface);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--azim-accent) 40%, var(--azim-panel));
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in srgb, var(--azim-accent) 65%, var(--azim-panel));
+}
+
+/* Fenêtres : contenu plus serré pour tenir sans défilement */
+.ui-modal__head {
+	padding: 18px 22px 0;
+}
+
+.fb-form__body {
+	gap: 14px;
+	padding: 16px 22px 20px;
+}
+
+.fb-form {
+	max-width: 680px;
+}
+
+.fb-identity {
+	display: flex;
+	width: 100%;
+}
+
+.fb-identity button {
+	flex: 1;
+	justify-content: center;
+	padding: 8px 12px;
+}
+
+.fb-identity button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.fb-identity button.is-active {
+	background: var(--azim-panel-raised);
+	color: var(--azim-ink);
 }

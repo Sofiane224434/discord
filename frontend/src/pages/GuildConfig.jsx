@@ -482,8 +482,8 @@ function GuildConfig() {
 
             await adminService.updateGuildConfig(guildId, {
                 ai: {
-                    systemPrompt: form.ai.systemPrompt,
-                    language: form.ai.language,
+                    systemPrompt: form.ai.systemPrompt || '',
+                    language: form.ai.language || '',
                     triggerNames: form.ai.triggerNames,
                     triggerName: form.ai.triggerNames[0] || 'azim',
                 },
@@ -500,7 +500,7 @@ function GuildConfig() {
                         dmMessage: r.dmMessage,
                     })),
                 },
-                profile: { bio: form.profile.bio },
+                profile: { bio: form.profile.bio || '' },
                 youtube: form.youtube,
                 tiktok: form.tiktok,
                 rank: form.rank,

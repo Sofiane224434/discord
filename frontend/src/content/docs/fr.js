@@ -469,6 +469,8 @@ const DOCS_FR = [
                             title: 'La vidéo, à regarder ensemble',
                             paragraphs: [
                                 '`/lecture video` ouvre l’Activité d’Azim dans votre salon vocal avec la vidéo demandée. Les membres du salon peuvent la rejoindre ; chacun la regarde depuis le début.',
+                                'Relancez `/lecture video` pendant qu’une vidéo est en cours : la nouvelle s’ajoute à la file d’attente, affichée dans l’Activité.',
+                                'Pause, lecture, vidéo suivante, boucle et arrêt sont communs à tout le salon : dans l’Activité, ou avec les boutons du message posté par Azim.',
                                 'La vidéo démarre sans le son : cliquez sur « Activer le son ».'
                             ],
                             codeList: [

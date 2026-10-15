@@ -95,12 +95,13 @@ export const getCommands = async (_req, res) => {
 };
 
 // --- Activité Discord (/activite) : vidéo demandée avec /lecture video, ou La Mecque en direct ---
-function botRequest(path, signal) {
+function botRequest(path, signal, body = null) {
     const baseUrl = (process.env.BOT_API_URL || '').trim().replace(/\/+$/, '');
     if (!baseUrl) throw new Error('Bot API non configurée');
     const headers = {};
     if (process.env.BOT_API_TOKEN) headers['x-dashboard-token'] = process.env.BOT_API_TOKEN;
-    return fetch(`${baseUrl}${path}`, { headers, signal });
+    if (body) headers['Content-Type'] = 'application/json';
+    return fetch(`${baseUrl}${path}`, body ? { method: 'POST', headers, body: JSON.stringify(body), signal } : { headers, signal });
 }
 
 export const getActivity = async (req, res) => {
@@ -114,6 +115,26 @@ export const getActivity = async (req, res) => {
     } catch {
         // Bot injoignable : on ne sait pas si le serveur est en mode Islam, donc pas de directs de La Mecque
         return res.json({ type: 'none' });
+    }
+};
+
+// Commandes de la vidéo regardée ensemble (pause, lecture, suivante, arrêt, boucle, fin) : état partagé du salon
+const ACTIVITY_ACTIONS = ['pause', 'play', 'skip', 'stop', 'loop', 'ended'];
+const lastControl = new Map(); // salon -> heure de la dernière commande
+
+export const controlActivity = async (req, res) => {
+    const { channelId } = req.params;
+    const { action, playId } = req.body || {};
+    if (!/^\d{5,25}$/.test(channelId) || !ACTIVITY_ACTIONS.includes(action)) return res.status(400).json({ error: 'Commande invalide' });
+    // Anti-rafale : une commande toutes les 300 ms par salon (sauf la fin de vidéo, dédoublonnée par le bot)
+    const now = Date.now();
+    if (action !== 'ended' && now - (lastControl.get(channelId) || 0) < 300) return res.status(429).json({ error: 'Trop rapide' });
+    lastControl.set(channelId, now);
+    try {
+        const response = await botRequest(`/activity/${channelId}/control`, AbortSignal.timeout(45000), { action, playId: Number(playId) || null });
+        return res.status(response.ok ? 200 : 502).json(await response.json());
+    } catch {
+        return res.status(502).json({ error: 'Bot injoignable' });
     }
 };
 

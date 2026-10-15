@@ -44,12 +44,16 @@ const TEXT = {
         retry: 'Réessayer', failed: 'Le direct ne répond pas pour le moment.', fullscreen: 'Plein écran', camera: 'Caméra',
         video: 'Vidéo', loop: 'Boucle', preparing: 'Préparation de la vidéo…', videoFailed: 'Cette vidéo ne peut pas être lue pour le moment.',
         nothing: 'Aucune vidéo demandée dans ce salon. Lancez-en une avec /lecture video.',
+        pause: 'Pause', play: 'Lecture', next: 'Suivante', stop: 'Arrêter', upNext: 'À suivre',
+        stopped: 'Lecture arrêtée. Lancez une autre vidéo avec /lecture video.',
     },
     en: {
         live: 'Live', connecting: 'Connecting to the live stream…', unmute: 'Turn sound on', mute: 'Mute',
         retry: 'Try again', failed: 'The live stream is not responding right now.', fullscreen: 'Full screen', camera: 'Camera',
         video: 'Video', loop: 'Loop', preparing: 'Preparing the video…', videoFailed: 'This video cannot be played right now.',
         nothing: 'No video requested in this channel. Start one with /play video.',
+        pause: 'Pause', play: 'Play', next: 'Next', stop: 'Stop', upNext: 'Up next',
+        stopped: 'Playback stopped. Start another video with /play video.',
     },
 };
 
@@ -69,7 +73,17 @@ const sourcesNav = document.getElementById('sources');
 const title = document.getElementById('title');
 const liveBadge = document.querySelector('.act-live');
 const loopBtn = document.getElementById('loop');
+const playPauseBtn = document.getElementById('playpause');
+const nextBtn = document.getElementById('next');
+const stopBtn = document.getElementById('stop');
+const queueBox = document.getElementById('queue');
+const queueList = document.getElementById('queue-list');
+const channelId = params.get('channel_id');
 let loop = false;
+// Vidéos YouTube (/lecture video) : état partagé par tout le salon, gardé par le bot
+let watching = false;
+let playId = null;
+let sharedPaused = false;
 
 let hls = null;
 let current = SOURCES[0];
@@ -117,11 +131,123 @@ function renderLoop() {
     loopBtn.classList.toggle('act-btn--primary', loop);
     loopBtn.setAttribute('aria-pressed', String(loop));
 }
-loopBtn.addEventListener('click', () => { loop = !loop; renderLoop(); });
 
-// Le flux est envoyé au fur et à mesure (pas de retour en arrière) : en boucle, on le redemande depuis le début
+// --- Vidéo YouTube regardée ensemble : file, pause, suivante, arrêt et boucle sont communs à tout le salon ---
+
+function renderPlayPause() {
+    playPauseBtn.querySelector('[data-icon="pause"]').hidden = sharedPaused;
+    playPauseBtn.querySelector('[data-icon="play"]').hidden = !sharedPaused;
+    playPauseBtn.querySelector('span').textContent = sharedPaused ? t.play : t.pause;
+    playPauseBtn.setAttribute('aria-pressed', String(sharedPaused));
+}
+
+function renderQueue(queue) {
+    queueBox.hidden = !queue.length;
+    queueList.replaceChildren(...queue.slice(0, 5).map((item) => {
+        const li = document.createElement('li');
+        li.textContent = item.title;
+        li.title = item.title;
+        return li;
+    }));
+}
+
+function showWatchControls(visible) {
+    [playPauseBtn, nextBtn, stopBtn].forEach((btn) => { btn.hidden = !visible; });
+    if (!visible) queueBox.hidden = true;
+}
+
+// Applique l'état du salon : nouvelle vidéo, pause ou reprise, file d'attente, boucle
+function applyState(data) {
+    if (data?.type !== 'youtube' || !data.video?.id) {
+        if (playId !== null) {
+            playId = null;
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+            showWatchControls(false);
+            loopBtn.hidden = true;
+            liveBadge.hidden = true;
+            title.textContent = '';
+            showState(data?.error ? `${t.videoFailed} (${data.error})` : t.stopped, { loading: false });
+        }
+        return;
+    }
+    loop = Boolean(data.loop);
+    renderLoop();
+    sharedPaused = Boolean(data.paused);
+    renderPlayPause();
+    renderQueue(data.queue || []);
+    showWatchControls(true);
+    if (data.playId !== playId) {
+        playId = data.playId;
+        SOURCES.splice(0, SOURCES.length, {
+            id: 'youtube',
+            type: 'youtube',
+            isLive: Boolean(data.video.isLive),
+            label: { fr: t.video, en: t.video },
+            detail: { fr: data.video.title, en: data.video.title },
+            urls: [`${API}/system/youtube/${data.video.id}/video?p=${playId}`],
+        });
+        current = SOURCES[0];
+        renderSources();
+        playFile(current.urls[0]);
+    }
+    if (sharedPaused && !video.paused) video.pause();
+    if (!sharedPaused && video.paused && video.getAttribute('src') && !video.ended) video.play().catch(() => null);
+}
+
+async function fetchState() {
+    const res = await fetch(`${API}/system/activity/${encodeURIComponent(channelId)}`);
+    return res.json();
+}
+
+async function sendControl(action) {
+    try {
+        const res = await fetch(`${API}/system/activity/${encodeURIComponent(channelId)}/control`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, playId }),
+        });
+        if (res.ok) applyState(await res.json());
+    } catch (error) {
+        console.warn('[Activité] Commande :', error);
+    }
+}
+
+// Les autres spectateurs (ou les boutons du message Discord) peuvent changer l'état : on le relit régulièrement
+let polling = false;
+function startPolling() {
+    setInterval(async () => {
+        if (polling) return;
+        polling = true;
+        try {
+            applyState(await fetchState());
+        } catch {
+            // réseau momentanément coupé : prochain essai
+        } finally {
+            polling = false;
+        }
+    }, 3000);
+}
+
+playPauseBtn.addEventListener('click', () => {
+    sharedPaused = !sharedPaused;
+    renderPlayPause();
+    if (sharedPaused) video.pause();
+    else video.play().catch(() => null);
+    sendControl(sharedPaused ? 'pause' : 'play');
+});
+nextBtn.addEventListener('click', () => sendControl('skip'));
+stopBtn.addEventListener('click', () => sendControl('stop'));
+loopBtn.addEventListener('click', () => {
+    if (watching) return sendControl('loop');
+    loop = !loop;
+    return renderLoop();
+});
+
+// Fin de la vidéo : le bot passe à la suivante (ou la relance en boucle) pour tout le salon
 video.addEventListener('ended', () => {
-    if (current.type === 'youtube' && loop) playFile(`${current.urls[0]}?r=${Date.now()}`);
+    if (watching && playId !== null) sendControl('ended');
 });
 
 function play(url) {
@@ -235,35 +361,28 @@ async function start() {
     renderSound();
 
     // Vidéo demandée avec /lecture video dans ce salon vocal ? Sinon, La Mecque en direct.
-    const channelId = params.get('channel_id');
     if (channelId) {
         // Rien n'est affiché tant qu'on ne sait pas si c'est une vidéo ou les directs
         sourcesNav.hidden = true;
         title.textContent = '';
         showState(t.preparing);
         try {
-            const res = await fetch(`${API}/system/activity/${encodeURIComponent(channelId)}`);
-            const data = await res.json();
+            const data = await fetchState();
             if (data.type === 'youtube' && data.video?.id) {
-                // Mode vidéo : seulement la vidéo demandée, sans les directs de La Mecque et Médine
-                SOURCES.splice(0, SOURCES.length, {
-                    id: 'youtube',
-                    type: 'youtube',
-                    isLive: Boolean(data.video.isLive),
-                    label: { fr: t.video, en: t.video },
-                    detail: { fr: data.video.title, en: data.video.title },
-                    urls: [`${API}/system/youtube/${data.video.id}/video`],
-                });
-                loop = Boolean(data.video.loop);
-                renderLoop();
-                return select(SOURCES[0]);
+                // Mode vidéo : seulement les vidéos demandées, sans les directs de La Mecque et Médine
+                watching = true;
+                applyState(data);
+                return startPolling();
             }
             if ((data.type === 'youtube' && data.error) || data.type === 'none') {
                 // Erreur de la vidéo, ou serveur sans mode Islam (pas de directs de La Mecque) : seulement un message
                 SOURCES.splice(0, SOURCES.length);
                 current = { id: 'youtube', type: 'youtube', label: { fr: t.video, en: t.video }, detail: { fr: t.video, en: t.video }, urls: [] };
                 renderSources();
-                return showState(data.type === 'none' ? t.nothing : `${t.videoFailed} (${data.error})`, { loading: false });
+                showState(data.type === 'none' ? t.nothing : `${t.videoFailed} (${data.error})`, { loading: false });
+                // Une vidéo peut être demandée ensuite avec /lecture video : elle s'affichera ici
+                watching = true;
+                return startPolling();
             }
         } catch (error) {
             console.warn('[Activité] Vidéo demandée :', error);

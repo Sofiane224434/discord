@@ -469,6 +469,8 @@ const DOCS_EN = [
                             title: 'The video, watched together',
                             paragraphs: [
                                 '`/play video` opens Azim’s Activity in your voice channel with the requested video. Members of the channel can join it; each one watches from the start.',
+                                'Run `/play video` again while a video is playing: the new one joins the queue, shown in the Activity.',
+                                'Pause, play, next video, loop and stop are shared by the whole channel: in the Activity, or with the buttons of the message Azim posts.',
                                 'The video starts muted: click “Turn sound on”.'
                             ],
                             codeList: [
